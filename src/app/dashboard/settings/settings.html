@@ -1,0 +1,99 @@
+<div style="padding:28px 32px;max-width:680px;">
+
+  <div style="margin-bottom:28px;">
+    <h1 style="font-size:20px;font-weight:600;color:var(--fg-1);margin:0 0 4px;">Settings</h1>
+    <p style="font-size:13px;color:var(--fg-3);margin:0;">Manage your account and security preferences.</p>
+  </div>
+
+  @if (loading()) {
+    <div style="text-align:center;padding:60px 0;color:var(--fg-3);font-size:14px;">Loading…</div>
+  } @else {
+
+    <!-- Profile section -->
+    <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;">
+      <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0 0 20px;">Profile</h2>
+
+      @if (error()) {
+        <div style="background:var(--danger-bg);border:1px solid rgba(184,69,69,0.20);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--danger);margin-bottom:16px;">
+          {{ error() }}
+        </div>
+      }
+      @if (success()) {
+        <div style="background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--success);margin-bottom:16px;">
+          Profile updated successfully.
+        </div>
+      }
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">First name</label>
+            <input type="text" class="field" [value]="firstName()" (input)="firstName.set($any($event.target).value)" placeholder="First name" />
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Last name</label>
+            <input type="text" class="field" [value]="lastName()" (input)="lastName.set($any($event.target).value)" placeholder="Last name" />
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Email</label>
+          <input type="email" class="field" [value]="profile()?.email ?? ''" readonly
+            style="background:var(--bg-sunken);color:var(--fg-3);cursor:not-allowed;" />
+        </div>
+
+        @if (profile()?.organizationName) {
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Organization</label>
+            <input type="text" class="field" [value]="profile()?.organizationName ?? ''" readonly
+              style="background:var(--bg-sunken);color:var(--fg-3);cursor:not-allowed;" />
+          </div>
+        }
+
+        <div style="display:flex;justify-content:flex-end;">
+          <button class="btn-primary" (click)="saveProfile()" [disabled]="saving()" style="padding:9px 22px;">
+            {{ saving() ? 'Saving…' : 'Save changes' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password section -->
+    <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;">
+      <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0 0 20px;">Change password</h2>
+
+      @if (passwordError()) {
+        <div style="background:var(--danger-bg);border:1px solid rgba(184,69,69,0.20);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--danger);margin-bottom:16px;">
+          {{ passwordError() }}
+        </div>
+      }
+      @if (passwordSuccess()) {
+        <div style="background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--success);margin-bottom:16px;">
+          Password changed successfully.
+        </div>
+      }
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Current password</label>
+          <input type="password" class="field" [value]="currentPassword()" (input)="currentPassword.set($any($event.target).value)" placeholder="Current password" autocomplete="current-password" />
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">New password</label>
+          <input type="password" class="field" [value]="newPassword()" (input)="newPassword.set($any($event.target).value)" placeholder="New password" autocomplete="new-password" />
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Confirm new password</label>
+          <input type="password" class="field" [value]="confirmPassword()" (input)="confirmPassword.set($any($event.target).value)" placeholder="Confirm new password" autocomplete="new-password" />
+        </div>
+        <div style="display:flex;justify-content:flex-end;">
+          <button class="btn-primary" (click)="changePassword()" [disabled]="savingPassword()" style="padding:9px 22px;">
+            {{ savingPassword() ? 'Updating…' : 'Update password' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+  }
+
+</div>

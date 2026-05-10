@@ -1,0 +1,100 @@
+<div style="padding:28px 32px;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1 style="font-size:20px;font-weight:600;color:var(--fg-1);margin:0 0 4px;">Documents</h1>
+      <p style="font-size:13px;color:var(--fg-3);margin:0;">Manage compliance documents, contracts, and certifications.</p>
+    </div>
+    <label class="btn-upload" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:var(--cirvio-hunter);color:white;border-radius:var(--radius-md);font-size:14px;font-weight:500;transition:opacity var(--dur-fast) var(--ease-out);"
+      [style.opacity]="uploading() ? '0.6' : '1'">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      {{ uploading() ? 'Uploading…' : 'Upload' }}
+      <input type="file" style="display:none;" [disabled]="uploading()" (change)="onFileChange($event)" />
+    </label>
+  </div>
+
+  @if (error()) {
+    <div style="background:var(--danger-bg);border:1px solid rgba(184,69,69,0.20);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--danger);margin-bottom:20px;">
+      {{ error() }}
+    </div>
+  }
+
+  <!-- Search -->
+  <div style="position:relative;max-width:320px;margin-bottom:20px;">
+    <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--fg-3);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" placeholder="Search documents…" class="field"
+      [value]="search()" (input)="search.set($any($event.target).value)"
+      style="padding-left:36px;" />
+  </div>
+
+  <!-- Content -->
+  @if (loading()) {
+    <div style="text-align:center;padding:60px 0;color:var(--fg-3);font-size:14px;">Loading documents…</div>
+  } @else if (filtered.length === 0) {
+    <div style="text-align:center;padding:60px 0;">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-sunken);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--fg-3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <p style="font-size:15px;font-weight:500;color:var(--fg-2);margin:0 0 6px;">No documents found</p>
+      <p style="font-size:13px;color:var(--fg-3);margin:0;">Upload your first compliance document to get started.</p>
+    </div>
+  } @else {
+    <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+      <!-- Table header -->
+      <div style="display:grid;grid-template-columns:1fr 120px 120px 100px 80px;gap:16px;padding:11px 20px;background:var(--bg-sunken);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.05em;">
+        <span>Name</span>
+        <span>Type</span>
+        <span>Uploaded</span>
+        <span>Status</span>
+        <span></span>
+      </div>
+      @for (doc of filtered; track doc.id) {
+        <div style="display:grid;grid-template-columns:1fr 120px 120px 100px 80px;gap:16px;padding:14px 20px;border-bottom:1px solid var(--border-soft);align-items:center;"
+             onmouseenter="this.style.background='var(--bg-sunken)'"
+             onmouseleave="this.style.background=''">
+          <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+            <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:var(--cirvio-mint-50);border:1px solid var(--cirvio-mint-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cirvio-sage)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div style="min-width:0;">
+              <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ doc.name }}</p>
+              <p style="font-size:12px;color:var(--fg-3);margin:0;">{{ formatSize(doc.size) }}</p>
+            </div>
+          </div>
+          <span style="font-size:13px;color:var(--fg-2);">{{ doc.type }}</span>
+          <span style="font-size:13px;color:var(--fg-2);">{{ formatDate(doc.uploadedAt) }}</span>
+          <span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--radius-pill);font-size:12px;font-weight:500;"
+                [style.color]="statusColor(doc.status)"
+                [style.background]="statusBg(doc.status)">
+            {{ doc.status }}
+          </span>
+          <div style="display:flex;justify-content:flex-end;">
+            <button (click)="deleteDocument(doc.id)"
+              style="background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--radius-sm);color:var(--fg-3);display:flex;transition:color var(--dur-fast) var(--ease-out);"
+              onmouseenter="this.style.color='var(--danger)'"
+              onmouseleave="this.style.color='var(--fg-3)'"
+              title="Delete">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>

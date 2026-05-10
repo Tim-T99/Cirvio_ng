@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { SidenavComponent } from '../ui/sidenav/sidenav';
+import { SidenavComponent } from './ui/sidenav/sidenav';
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
   imports: [RouterOutlet, SidenavComponent],
   templateUrl: './dashboard.html',
 })

@@ -1,8 +1,6 @@
-<div class="flex h-screen flex-col md:flex-row">
-  <div class="w-full md:w-64 shrink-0">
-    <app-sidenav />
-  </div>
-  <main class="flex-1 overflow-y-auto md:p-4">
+<div style="display:flex;height:100vh;overflow:hidden;background:var(--bg);">
+  <app-sidenav />
+  <main style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
     <router-outlet />
   </main>
 </div>
