@@ -1,0 +1,38 @@
+<section class="flex justify-center items-center h-screen">
+  <form (ngSubmit)="handleLogin()" class="text-center flex flex-col gap-4 w-full max-w-sm px-4">
+    <h1 class="text-2xl font-bold text-foreground">Welcome to Cirvio</h1>
+    <h2 class="text-lg text-foreground/70">Login</h2>
+
+    @if (error()) {
+      <p class="text-red-400 text-sm">{{ error() }}</p>
+    }
+
+    <div class="flex flex-col gap-2">
+      <input
+        name="email"
+        type="email"
+        placeholder="Email"
+        [(ngModel)]="email"
+        required
+        class="input"
+      />
+      <input
+        name="password"
+        type="password"
+        placeholder="Password"
+        [(ngModel)]="password"
+        required
+        class="input"
+      />
+    </div>
+
+    <button type="submit" [disabled]="loading()" class="enter">
+      {{ loading() ? 'Logging in...' : 'Log In' }}
+    </button>
+
+    <p class="text-foreground/70 text-sm">
+      Don't have an account?
+      <a routerLink="/signup" class="font-bold text-foreground hover:underline">Sign Up</a>
+    </p>
+  </form>
+</section>

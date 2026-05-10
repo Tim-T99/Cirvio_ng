@@ -1,0 +1,66 @@
+<section class="flex justify-center items-center min-h-screen py-10">
+  <form (ngSubmit)="handleSubmit()" class="text-center flex flex-col gap-4 w-full max-w-sm px-4">
+    <h1 class="text-2xl font-bold text-foreground">Create an Account</h1>
+    <h2 class="text-lg text-foreground/70">Sign Up</h2>
+
+    @if (errors()['form']) {
+      <p class="text-red-400 text-sm">{{ errors()['form'] }}</p>
+    }
+
+    <div class="flex flex-col gap-1">
+      <input
+        name="email"
+        type="email"
+        placeholder="Email"
+        [(ngModel)]="email"
+        required
+        class="input"
+      />
+
+      <input
+        name="username"
+        type="text"
+        placeholder="Username"
+        [(ngModel)]="username"
+        required
+        class="input"
+      />
+      @if (errors()['username']) {
+        <p class="text-red-400 text-xs px-2">{{ errors()['username'] }}</p>
+      }
+
+      <input
+        name="password"
+        type="password"
+        placeholder="Password"
+        [(ngModel)]="password"
+        required
+        class="input"
+      />
+      @if (errors()['password']) {
+        <p class="text-red-400 text-xs px-2">{{ errors()['password'] }}</p>
+      }
+
+      <input
+        name="confirmPassword"
+        type="password"
+        placeholder="Confirm Password"
+        [(ngModel)]="confirmPassword"
+        required
+        class="input"
+      />
+      @if (errors()['confirmPassword']) {
+        <p class="text-red-400 text-xs px-2">{{ errors()['confirmPassword'] }}</p>
+      }
+    </div>
+
+    <button type="submit" [disabled]="loading()" class="enter">
+      {{ loading() ? 'Creating account...' : 'Sign Up' }}
+    </button>
+
+    <p class="text-foreground/70 text-sm">
+      Already have an account?
+      <a routerLink="/" class="font-bold text-foreground hover:underline">Log In</a>
+    </p>
+  </form>
+</section>

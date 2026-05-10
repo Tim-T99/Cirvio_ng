@@ -1,0 +1,10 @@
+@for (link of links; track link.href) {
+  <a
+    [routerLink]="link.href"
+    routerLinkActive="bg-sky-200 text-blue-600"
+    [routerLinkActiveOptions]="{ exact: link.href === '/dashboard' }"
+    class="flex h-12 grow items-center justify-center gap-2 rounded-md p-3 text-sm font-medium hover:bg-sky-50 hover:text-blue-500 md:flex-none md:justify-start md:p-2 md:px-3"
+  >
+    <p class="hidden md:block">{{ link.name }}</p>
+  </a>
+}

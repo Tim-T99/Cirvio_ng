@@ -1,3 +1,77 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+/* =========================
+   Light theme (default)
+   ========================= */
+:root {
+  --background: #000302;
+  --foreground: #ededed;
+
+  --inputBg: #e3f7ec;
+  --hunterGreen: #17422B;
+
+  --border: #d1d5db;
+  --accent: #8cc9b5;
+}
+
+/* =========================
+   Dark theme
+   ========================= */
+@theme light {
+  --background: #0f0f0f;
+  --foreground: #ededed;
+
+  --inputBg: #171717;
+
+  --border: #374151;
+  --accent: #3b82f6;
+}
+
+/* =========================
+   Expose variables to Tailwind
+   ========================= */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-inputBg: var(--inputBg);
+  --color-hunterGreen: var(--hunterGreen);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+}
+
+/* =========================
+   Base styles
+   ========================= */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* =========================
+   Components
+   ========================= */
+
+.input {
+  @apply bg-inputBg text-emerald-900 px-4 py-2 rounded-xl w-full transition-colors focus:ring-0 active:border active:border-accent m-2;
+}
+
+.enter {
+  @apply bg-emerald-900 text-white px-6 py-2 rounded-xl mt-4 mb-2 w-full cursor-pointer
+    hover:bg-emerald-700 transition-colors;
+}
+
+.btn-upload {
+  @apply flex items-center justify-center gap-3 max-w-fit cursor-pointer rounded-xl
+    border-2 border-blue-700 bg-blue-700/30 px-4 py-2 m-5
+    text-blue-700 font-medium transition-all duration-300
+    hover:bg-blue-700/20 hover:text-white;
+}
+
+.upload-file {
+  @apply flex items-center justify-center gap-3 max-w-fit cursor-pointer rounded-xl
+    border-2 border-orange-700 bg-orange-500/30 px-4 py-2 m-5
+    text-orange-700 font-medium transition-all duration-300
+    hover:bg-orange-700/20 hover:text-white;
+}
