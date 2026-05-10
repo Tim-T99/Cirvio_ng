@@ -1,0 +1,65 @@
+<footer style="background: var(--neutral-900); color: var(--fg-on-dark); padding: 64px 40px 0;">
+  <div
+    class="footer-grid"
+    style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; max-width: 1200px; margin: 0 auto;"
+  >
+    <!-- Brand -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <a routerLink="/" style="display: inline-block; line-height: 0;">
+        <app-logo [width]="120" color="var(--cirvio-mint)" />
+      </a>
+      <p style="font-size: 14px; color: var(--neutral-400); line-height: 1.65; max-width: 280px; margin: 0;">
+        Workforce compliance software built for Gulf and UAE HR teams. Manage employees, visas, and payroll in one place.
+      </p>
+      <p style="font-size: 13px; color: var(--neutral-500); margin: 0;">
+        Dubai, UAE &mdash; serving teams across the Gulf
+      </p>
+    </div>
+
+    <!-- Product links -->
+    <div>
+      <p style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--neutral-500); margin: 0 0 20px;">
+        Product
+      </p>
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px;">
+        <li><a routerLink="/features" style="font-size: 14px; color: var(--neutral-300); text-decoration: none; transition: color 150ms ease;" onmouseenter="this.style.color='var(--neutral-0)'" onmouseleave="this.style.color='var(--neutral-300)'">Features</a></li>
+        <li><a routerLink="/pricing" style="font-size: 14px; color: var(--neutral-300); text-decoration: none; transition: color 150ms ease;" onmouseenter="this.style.color='var(--neutral-0)'" onmouseleave="this.style.color='var(--neutral-300)'">Pricing</a></li>
+        <li><a routerLink="/about" style="font-size: 14px; color: var(--neutral-300); text-decoration: none; transition: color 150ms ease;" onmouseenter="this.style.color='var(--neutral-0)'" onmouseleave="this.style.color='var(--neutral-300)'">About</a></li>
+        <li><a routerLink="/contact" style="font-size: 14px; color: var(--neutral-300); text-decoration: none; transition: color 150ms ease;" onmouseenter="this.style.color='var(--neutral-0)'" onmouseleave="this.style.color='var(--neutral-300)'">Contact</a></li>
+      </ul>
+    </div>
+
+    <!-- Account links -->
+    <div>
+      <p style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--neutral-500); margin: 0 0 20px;">
+        Account
+      </p>
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px;">
+        <li><a routerLink="/login" style="font-size: 14px; color: var(--neutral-300); text-decoration: none; transition: color 150ms ease;" onmouseenter="this.style.color='var(--neutral-0)'" onmouseleave="this.style.color='var(--neutral-300)'">Log in</a></li>
+        <li><a routerLink="/signup" style="font-size: 14px; color: var(--neutral-300); text-decoration: none; transition: color 150ms ease;" onmouseenter="this.style.color='var(--neutral-0)'" onmouseleave="this.style.color='var(--neutral-300)'">Sign up</a></li>
+        <li><a routerLink="/admin" style="font-size: 14px; color: var(--neutral-300); text-decoration: none; transition: color 150ms ease;" onmouseenter="this.style.color='var(--neutral-0)'" onmouseleave="this.style.color='var(--neutral-300)'">Admin</a></li>
+      </ul>
+    </div>
+
+    <!-- Legal links -->
+    <div>
+      <p style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--neutral-500); margin: 0 0 20px;">
+        Legal
+      </p>
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px;">
+        <li><a routerLink="/privacy" style="font-size: 14px; color: var(--neutral-300); text-decoration: none; transition: color 150ms ease;" onmouseenter="this.style.color='var(--neutral-0)'" onmouseleave="this.style.color='var(--neutral-300)'">Privacy Policy</a></li>
+        <li><a routerLink="/terms" style="font-size: 14px; color: var(--neutral-300); text-decoration: none; transition: color 150ms ease;" onmouseenter="this.style.color='var(--neutral-0)'" onmouseleave="this.style.color='var(--neutral-300)'">Terms of Service</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div style="max-width: 1200px; margin: 48px auto 0; border-top: 1px solid rgba(255,255,255,0.08); padding: 24px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+    <p style="font-size: 13px; color: var(--neutral-500); margin: 0;">
+      &copy; {{ year }} Cirvio. All rights reserved.
+    </p>
+    <p style="font-size: 13px; color: var(--neutral-500); margin: 0;">
+      Trusted by teams across the Gulf and beyond.
+    </p>
+  </div>
+</footer>

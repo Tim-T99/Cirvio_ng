@@ -1,3 +1,359 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+/* =====================================================================
+   Cirvio Design System — Foundations
+   ===================================================================== */
+
+:root {
+  /* Brand greens */
+  --cirvio-sage: #4A795D;
+  --cirvio-sage-700: #3C6450;
+  --cirvio-sage-800: #2C4B3C;
+  --cirvio-hunter: #17422B;
+  --cirvio-mint: #8CC9B5;
+  --cirvio-mint-50: #E3F7EC;
+  --cirvio-mint-100: #D2EFE0;
+  --cirvio-mint-300: #A9DCC4;
+
+  /* Warm neutrals */
+  --neutral-0: #FFFFFF;
+  --neutral-25: #F8F8F6;
+  --neutral-50: #F1F1EE;
+  --neutral-100: #E8E8E4;
+  --neutral-200: #D9D9D4;
+  --neutral-300: #BFBFB9;
+  --neutral-400: #8E8E89;
+  --neutral-500: #6B6B66;
+  --neutral-600: #4A4A46;
+  --neutral-700: #2D2D2A;
+  --neutral-800: #1A1A18;
+  --neutral-900: #0E0E0C;
+  --neutral-950: #000302;
+
+  /* Semantic backgrounds */
+  --bg: var(--neutral-25);
+  --bg-elev-1: rgba(255, 255, 255, 0.62);
+  --bg-elev-2: rgba(255, 255, 255, 0.78);
+  --bg-sunken: var(--neutral-50);
+  --bg-inverse: var(--neutral-900);
+
+  /* Semantic foregrounds */
+  --fg-1: var(--neutral-900);
+  --fg-2: var(--neutral-600);
+  --fg-3: var(--neutral-400);
+  --fg-on-dark: #ECECE8;
+  --fg-on-brand: #FFFFFF;
+
+  /* Borders */
+  --border-soft: rgba(20, 20, 18, 0.06);
+  --border: rgba(20, 20, 18, 0.10);
+  --border-strong: rgba(20, 20, 18, 0.18);
+  --border-brand: var(--cirvio-hunter);
+
+  /* Status */
+  --success: #2F8F5E;
+  --success-bg: #E3F7EC;
+  --warning: #C68A2E;
+  --warning-bg: #FBF1DD;
+  --danger: #B84545;
+  --danger-bg: #FBE6E6;
+  --info: #3F6FB3;
+  --info-bg: #E3ECF7;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(20, 20, 18, 0.04);
+  --shadow-sm: 0 2px 6px rgba(20, 20, 18, 0.05), 0 1px 2px rgba(20, 20, 18, 0.04);
+  --shadow-md: 0 8px 24px rgba(20, 20, 18, 0.07), 0 2px 6px rgba(20, 20, 18, 0.04);
+  --shadow-lg: 0 24px 60px rgba(20, 20, 18, 0.10), 0 8px 18px rgba(20, 20, 18, 0.05);
+  --shadow-xl: 0 40px 80px rgba(20, 20, 18, 0.12), 0 12px 24px rgba(20, 20, 18, 0.06);
+  --shadow-glass:
+    0 1px 0 rgba(255, 255, 255, 0.70) inset,
+    0 12px 40px rgba(20, 20, 18, 0.06),
+    0 1px 2px rgba(20, 20, 18, 0.05);
+
+  /* Radii */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 360ms;
+
+  /* Legacy compat */
+  --background: var(--neutral-25);
+  --foreground: var(--neutral-900);
+  --inputBg: var(--cirvio-mint-50);
+  --hunterGreen: var(--cirvio-hunter);
+  --accent: var(--cirvio-mint);
+}
+
+/* Dark sidebar */
+[data-surface="inverse"] {
+  --bg: var(--neutral-900);
+  --fg-1: var(--fg-on-dark);
+  --fg-2: var(--neutral-400);
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+/* =====================================================================
+   Expose to Tailwind
+   ===================================================================== */
+
+@theme inline {
+  --color-background: var(--neutral-25);
+  --color-foreground: var(--neutral-900);
+  --color-sage: var(--cirvio-sage);
+  --color-hunter: var(--cirvio-hunter);
+  --color-mint: var(--cirvio-mint);
+  --color-mint-50: var(--cirvio-mint-50);
+  --color-inputBg: var(--cirvio-mint-50);
+  --color-hunterGreen: var(--cirvio-hunter);
+  --color-accent: var(--cirvio-mint);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+}
+
+/* =====================================================================
+   Base
+   ===================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--fg-1);
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =====================================================================
+   Animations
+   ===================================================================== */
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-fade-up   { animation: fade-up var(--dur-slow) var(--ease-out) both; }
+.animate-fade-up-1 { animation: fade-up var(--dur-slow) var(--ease-out) 0ms   both; }
+.animate-fade-up-2 { animation: fade-up var(--dur-slow) var(--ease-out) 80ms  both; }
+.animate-fade-up-3 { animation: fade-up var(--dur-slow) var(--ease-out) 160ms both; }
+.animate-fade-up-4 { animation: fade-up var(--dur-slow) var(--ease-out) 240ms both; }
+.animate-fade-up-5 { animation: fade-up var(--dur-slow) var(--ease-out) 320ms both; }
+
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
+}
+.reveal.visible  { opacity: 1; transform: translateY(0); }
+.reveal-d1 { transition-delay: 60ms; }
+.reveal-d2 { transition-delay: 120ms; }
+.reveal-d3 { transition-delay: 180ms; }
+
+/* =====================================================================
+   Primitives
+   ===================================================================== */
+
+.cirvio-glass {
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--cirvio-sage);
+  color: var(--fg-on-brand);
+  border-radius: var(--radius-md);
+  padding: 10px 22px;
+  font-weight: 500;
+  font-size: 15px;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  white-space: nowrap;
+}
+.btn-primary:hover  { background: var(--cirvio-sage-700); }
+.btn-primary:active { transform: translateY(1px); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--fg-1);
+  border-radius: var(--radius-md);
+  padding: 10px 22px;
+  font-weight: 500;
+  font-size: 15px;
+  font-family: inherit;
+  border: 1px solid var(--border-strong);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  white-space: nowrap;
+}
+.btn-ghost:hover { background: var(--bg-elev-2); }
+
+/* Form field */
+.field {
+  width: 100%;
+  background: var(--neutral-0);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--fg-1);
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.field::placeholder { color: var(--fg-3); }
+.field:focus {
+  border-color: var(--cirvio-sage);
+  box-shadow: 0 0 0 3px rgba(74, 121, 93, 0.12);
+}
+.field.error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(184, 69, 69, 0.10);
+}
+
+/* Legacy classes (dashboard pages) */
+.input {
+  width: 100%;
+  background: var(--cirvio-mint-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--neutral-900);
+  outline: none;
+  margin: 4px 0;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.input::placeholder { color: var(--fg-3); }
+.input:focus { border-color: var(--cirvio-sage); box-shadow: 0 0 0 3px rgba(74, 121, 93, 0.10); }
+
+.enter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: var(--cirvio-sage);
+  color: white;
+  border-radius: var(--radius-md);
+  padding: 10px 22px;
+  font-weight: 500;
+  font-family: inherit;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.enter:hover { background: var(--cirvio-sage-700); }
+.enter:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: fit-content;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--cirvio-mint);
+  background: rgba(140, 201, 181, 0.15);
+  padding: 8px 16px;
+  color: var(--cirvio-sage);
+  font-weight: 500;
+  font-family: inherit;
+  font-size: 14px;
+  transition: background var(--dur-base) var(--ease-out);
+}
+.btn-upload:hover { background: rgba(140, 201, 181, 0.28); }
+
+.upload-file {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: fit-content;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--warning);
+  background: rgba(198, 138, 46, 0.12);
+  padding: 8px 16px;
+  color: var(--warning);
+  font-weight: 500;
+  font-family: inherit;
+  font-size: 14px;
+  transition: background var(--dur-base) var(--ease-out);
+}
+.upload-file:hover { background: rgba(198, 138, 46, 0.22); }
+
+/* =====================================================================
+   Responsive utilities
+   ===================================================================== */
+
+.desktop-only { display: flex; }
+.mobile-only  { display: none; }
+
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only  { display: flex !important; }
+
+  .marketing-hero { grid-template-columns: 1fr !important; padding: 48px 20px 56px !important; gap: 40px !important; text-align: center; }
+  .marketing-hero h1 { font-size: 36px !important; }
+  .marketing-hero .hero-ctas { justify-content: center !important; }
+  .col-2   { grid-template-columns: 1fr !important; }
+  .col-3   { grid-template-columns: 1fr !important; }
+  .col-4   { grid-template-columns: 1fr 1fr !important; }
+  .section-pad   { padding: 56px 20px !important; }
+  .section-title { font-size: 28px !important; }
+  .pricing-grid  { grid-template-columns: 1fr !important; }
+  .contact-grid  { grid-template-columns: 1fr !important; }
+  .footer-grid   { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
+}
+
+@media (max-width: 480px) {
+  .col-4       { grid-template-columns: 1fr !important; }
+  .footer-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .col-3         { grid-template-columns: 1fr 1fr !important; }
+  .pricing-grid  { grid-template-columns: 1fr 1fr !important; }
+  .marketing-hero h1 { font-size: 44px !important; }
+}

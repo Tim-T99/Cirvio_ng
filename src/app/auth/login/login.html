@@ -1,0 +1,95 @@
+<div style="min-height:100vh;background:var(--bg);display:flex;flex-direction:column;">
+  <!-- Header -->
+  <header style="padding:20px 32px;border-bottom:1px solid var(--border-soft);">
+    <a routerLink="/" style="font-size:20px;font-weight:600;color:var(--cirvio-sage);text-decoration:none;letter-spacing:-0.02em;">
+      Cirvio
+    </a>
+  </header>
+
+  <!-- Form -->
+  <main style="flex:1;display:flex;align-items:center;justify-content:center;padding:48px 24px;">
+    <div class="animate-fade-up-1" style="width:100%;max-width:420px;">
+      <div class="cirvio-glass" style="padding:40px 36px;">
+        <div style="margin-bottom:32px;">
+          <h1 style="font-size:26px;font-weight:600;letter-spacing:-0.015em;color:var(--fg-1);margin-bottom:8px;">
+            Welcome back
+          </h1>
+          <p style="font-size:15px;color:var(--fg-2);">Log in to your Cirvio workspace.</p>
+        </div>
+
+        @if (error()) {
+          <div style="background:var(--danger-bg);border:1px solid rgba(184,69,69,0.20);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--danger);margin-bottom:20px;">
+            {{ error() }}
+          </div>
+        }
+
+        <form (submit)="handleSubmit($event)" style="display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Email</label>
+            <input
+              name="email"
+              type="email"
+              placeholder="you@company.com"
+              [value]="email()"
+              (input)="email.set($any($event.target).value)"
+              required
+              autocomplete="email"
+              class="field"
+            />
+          </div>
+
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <label style="font-size:13px;font-weight:500;color:var(--fg-2);">Password</label>
+              <a routerLink="/forgot-password" style="font-size:13px;color:var(--cirvio-sage);text-decoration:none;">
+                Forgot password?
+              </a>
+            </div>
+            <div style="position:relative;">
+              <input
+                name="password"
+                [type]="showPassword() ? 'text' : 'password'"
+                placeholder="Password"
+                [value]="password()"
+                (input)="password.set($any($event.target).value)"
+                required
+                autocomplete="current-password"
+                class="field"
+                style="padding-right:44px;"
+              />
+              <button type="button" (click)="showPassword.set(!showPassword())" tabindex="-1"
+                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--fg-3);padding:0;display:flex;">
+                @if (showPassword()) {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                }
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="!isFormReady || loading()"
+            style="width:100%;padding:11px 22px;margin-top:4px;">
+            {{ loading() ? 'Logging in…' : 'Log in' }}
+          </button>
+        </form>
+      </div>
+
+      <p style="text-align:center;margin-top:20px;font-size:14px;color:var(--fg-2);">
+        Don't have an account?
+        <a routerLink="/signup" style="color:var(--cirvio-sage);font-weight:500;text-decoration:none;">Sign up</a>
+      </p>
+      <p style="text-align:center;margin-top:12px;font-size:13px;color:var(--fg-3);">
+        Admin?
+        <a routerLink="/admin" style="color:var(--fg-2);text-decoration:none;">Admin portal</a>
+      </p>
+    </div>
+  </main>
+</div>

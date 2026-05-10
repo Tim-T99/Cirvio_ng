@@ -1,0 +1,120 @@
+<div style="min-height:100vh;background:var(--bg);display:flex;flex-direction:column;">
+  <header style="padding:20px 32px;border-bottom:1px solid var(--border-soft);">
+    <a routerLink="/" style="font-size:20px;font-weight:600;color:var(--cirvio-sage);text-decoration:none;letter-spacing:-0.02em;">Cirvio</a>
+  </header>
+
+  <main style="flex:1;display:flex;align-items:flex-start;justify-content:center;padding:48px 24px 64px;">
+    <div class="animate-fade-up-1" style="width:100%;max-width:460px;">
+
+      @if (tokenError()) {
+        <div class="cirvio-glass" style="padding:40px 36px;text-align:center;">
+          <div style="width:48px;height:48px;background:var(--danger-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <h1 style="font-size:20px;font-weight:600;color:var(--fg-1);margin-bottom:8px;">Invalid invite link</h1>
+          <p style="font-size:14px;color:var(--fg-2);margin-bottom:24px;">{{ tokenError() }}</p>
+          <a routerLink="/login" class="btn-primary" style="display:inline-block;padding:10px 24px;text-decoration:none;">Go to login</a>
+        </div>
+      } @else if (success()) {
+        <div class="cirvio-glass" style="padding:40px 36px;text-align:center;">
+          <div style="width:48px;height:48px;background:var(--cirvio-mint-50);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--cirvio-sage)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <h1 style="font-size:20px;font-weight:600;color:var(--fg-1);margin-bottom:8px;">Welcome aboard!</h1>
+          <p style="font-size:14px;color:var(--fg-2);">Your account has been set up. Redirecting you to login…</p>
+        </div>
+      } @else {
+        <div class="cirvio-glass" style="padding:40px 36px;">
+          <div style="margin-bottom:32px;">
+            <h1 style="font-size:26px;font-weight:600;letter-spacing:-0.015em;color:var(--fg-1);margin-bottom:8px;">Accept your invite</h1>
+            @if (inviteInfo()) {
+              <p style="font-size:15px;color:var(--fg-2);">
+                You've been invited to join <strong style="color:var(--fg-1);">{{ inviteInfo()?.organizationName }}</strong> as {{ inviteInfo()?.email }}.
+              </p>
+            } @else {
+              <p style="font-size:15px;color:var(--fg-2);">Complete your profile to get started.</p>
+            }
+          </div>
+
+          @if (serverError()) {
+            <div style="background:var(--danger-bg);border:1px solid rgba(184,69,69,0.20);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--danger);margin-bottom:20px;">
+              {{ serverError() }}
+            </div>
+          }
+
+          <form (submit)="handleSubmit($event)" style="display:flex;flex-direction:column;gap:16px;">
+            <!-- Name row -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">First name</label>
+                <input name="firstName" type="text" placeholder="Jane"
+                  [value]="firstName()" (input)="firstName.set($any($event.target).value)"
+                  required autocomplete="given-name" class="field" />
+              </div>
+              <div>
+                <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Last name</label>
+                <input name="lastName" type="text" placeholder="Doe"
+                  [value]="lastName()" (input)="lastName.set($any($event.target).value)"
+                  required autocomplete="family-name" class="field" />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div>
+              <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Password</label>
+              <div style="position:relative;">
+                <input name="password" [type]="showPassword() ? 'text' : 'password'" placeholder="Password"
+                  [value]="password()" (input)="password.set($any($event.target).value)"
+                  (focus)="passwordFocused.set(true)" (blur)="passwordFocused.set(false)"
+                  required autocomplete="new-password" class="field" style="padding-right:44px;" />
+                <button type="button" (click)="showPassword.set(!showPassword())" tabindex="-1"
+                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--fg-3);padding:0;display:flex;">
+                  @if (showPassword()) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
+              </div>
+              @if (passwordFocused() || password()) {
+                <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;padding:8px 10px;background:var(--bg-sunken);border-radius:var(--radius-sm);border:1px solid var(--border-soft);">
+                  <app-password-rule [met]="passwordRules().length"    label="8+ characters" />
+                  <app-password-rule [met]="passwordRules().uppercase" label="Uppercase letter" />
+                  <app-password-rule [met]="passwordRules().number"    label="Contains a number" />
+                  <app-password-rule [met]="passwordRules().special"   label="Special character" />
+                </div>
+              }
+            </div>
+
+            <!-- Confirm password -->
+            <div>
+              <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Confirm password</label>
+              <input name="confirmPassword" [type]="showPassword() ? 'text' : 'password'" placeholder="Confirm password"
+                [value]="confirmPassword()" (input)="confirmPassword.set($any($event.target).value)"
+                required autocomplete="new-password" class="field" />
+              @if (confirmPassword() && password() !== confirmPassword()) {
+                <p style="font-size:12px;color:var(--danger);margin-top:4px;">Passwords do not match</p>
+              }
+            </div>
+
+            <button type="submit" class="btn-primary"
+              [disabled]="!isFormReady() || loading()"
+              style="width:100%;padding:11px 22px;margin-top:4px;">
+              {{ loading() ? 'Setting up account…' : 'Set up account' }}
+            </button>
+          </form>
+        </div>
+
+        <p style="text-align:center;margin-top:20px;font-size:14px;color:var(--fg-2);">
+          Already have an account?
+          <a routerLink="/login" style="color:var(--cirvio-sage);font-weight:500;text-decoration:none;">Log in</a>
+        </p>
+      }
+
+    </div>
+  </main>
+</div>

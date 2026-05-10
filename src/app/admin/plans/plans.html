@@ -1,0 +1,180 @@
+<div style="padding: 32px 36px; max-width: 1100px;">
+
+  <!-- Header -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px;">
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700; color: var(--fg-1); margin: 0 0 4px; letter-spacing: -0.01em;">Plans</h1>
+      <p style="font-size: 14px; color: var(--fg-2); margin: 0;">Manage subscription plans available to tenants</p>
+    </div>
+    <button (click)="openCreate()" class="btn-primary" style="padding: 9px 18px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      New Plan
+    </button>
+  </div>
+
+  @if (error()) {
+    <div style="background: var(--danger-bg); border: 1px solid var(--danger); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 20px; font-size: 14px; color: var(--danger);">
+      {{ error() }}
+    </div>
+  }
+
+  <!-- Plan cards -->
+  @if (loading()) {
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+      @for (n of [1,2,3]; track n) {
+        <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; box-shadow: var(--shadow-sm);">
+          <div style="width: 60%; height: 18px; background: var(--neutral-100); border-radius: 4px; margin-bottom: 12px;"></div>
+          <div style="width: 40%; height: 32px; background: var(--neutral-100); border-radius: 4px; margin-bottom: 16px;"></div>
+          <div style="height: 60px; background: var(--neutral-100); border-radius: 4px;"></div>
+        </div>
+      }
+    </div>
+  } @else if (plans().length === 0) {
+    <div style="
+      background: var(--bg-elev-1); border: 1px dashed var(--border);
+      border-radius: var(--radius-lg); padding: 60px;
+      text-align: center;
+    ">
+      <p style="font-size: 15px; font-weight: 500; color: var(--fg-2); margin: 0 0 8px;">No plans yet</p>
+      <p style="font-size: 14px; color: var(--fg-3); margin: 0 0 24px;">Create your first subscription plan to get started.</p>
+      <button (click)="openCreate()" class="btn-primary">Create a plan</button>
+    </div>
+  } @else {
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+      @for (plan of plans(); track plan.id) {
+        <div style="
+          background: var(--bg-elev-1); border: 1px solid var(--border);
+          border-radius: var(--radius-lg); padding: 28px;
+          box-shadow: var(--shadow-sm);
+          opacity: {{ plan.isActive ? 1 : 0.6 }};
+        ">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px;">
+            <div>
+              <p style="font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 4px;">Plan</p>
+              <h3 style="font-size: 18px; font-weight: 700; color: var(--fg-1); margin: 0;">{{ plan.name }}</h3>
+            </div>
+            <span
+              [style.background]="plan.isActive ? 'var(--success-bg)' : 'var(--neutral-100)'"
+              [style.color]="plan.isActive ? 'var(--success)' : 'var(--fg-3)'"
+              style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 10px; border-radius: var(--radius-pill);"
+            >{{ plan.isActive ? 'Active' : 'Inactive' }}</span>
+          </div>
+
+          <div style="margin-bottom: 20px;">
+            <span style="font-size: 36px; font-weight: 700; color: var(--fg-1); letter-spacing: -0.03em;">AED {{ plan.priceAed }}</span>
+            <span style="font-size: 14px; color: var(--fg-2);">
+              / {{ plan.billingCycleMonths === 1 ? 'month' : plan.billingCycleMonths + ' months' }}
+            </span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; padding: 16px; background: var(--neutral-50); border-radius: var(--radius-sm);">
+            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+              <span style="color: var(--fg-2);">Max employees</span>
+              <span style="font-weight: 600; color: var(--fg-1);">{{ plan.maxEmployees }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+              <span style="color: var(--fg-2);">Max admins</span>
+              <span style="font-weight: 600; color: var(--fg-1);">{{ plan.maxAdmins }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+              <span style="color: var(--fg-2);">Billing cycle</span>
+              <span style="font-weight: 600; color: var(--fg-1);">{{ plan.billingCycleMonths }} mo</span>
+            </div>
+          </div>
+
+          <button
+            (click)="openEdit(plan)"
+            class="btn-ghost"
+            style="width: 100%; padding: 8px; font-size: 13px;"
+          >Edit plan</button>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal backdrop + dialog -->
+@if (showModal()) {
+  <div
+    style="
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(14,14,12,0.55);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    "
+    (click)="closeModal()"
+  >
+    <div
+      style="
+        background: var(--neutral-0); border: 1px solid var(--border);
+        border-radius: var(--radius-xl); box-shadow: var(--shadow-xl);
+        padding: 36px; width: 100%; max-width: 480px;
+      "
+      (click)="$event.stopPropagation()"
+    >
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;">
+        <h2 style="font-size: 18px; font-weight: 700; color: var(--fg-1); margin: 0;">
+          {{ editingPlan() ? 'Edit plan' : 'Create plan' }}
+        </h2>
+        <button
+          (click)="closeModal()"
+          style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-xs);cursor:pointer;color:var(--fg-2);"
+        >
+          <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M2 2L16 16M16 2L2 16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      @if (saveError()) {
+        <div style="background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:20px;font-size:13px;color:var(--danger);">
+          {{ saveError() }}
+        </div>
+      }
+
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Plan name</label>
+          <input type="text" class="field" placeholder="e.g. Starter" [value]="form().name" (input)="setField('name', $any($event.target).value)" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Price (AED/mo)</label>
+            <input type="number" class="field" placeholder="299" [value]="form().priceAed" (input)="setField('priceAed', +$any($event.target).value)" />
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Billing cycle (months)</label>
+            <input type="number" class="field" placeholder="1" min="1" [value]="form().billingCycleMonths" (input)="setField('billingCycleMonths', +$any($event.target).value)" />
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Max employees</label>
+            <input type="number" class="field" placeholder="50" [value]="form().maxEmployees" (input)="setField('maxEmployees', +$any($event.target).value)" />
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Max admins</label>
+            <input type="number" class="field" placeholder="2" [value]="form().maxAdmins" (input)="setField('maxAdmins', +$any($event.target).value)" />
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input
+            type="checkbox"
+            id="planActive"
+            [checked]="form().isActive"
+            (change)="setField('isActive', $any($event.target).checked)"
+            style="width:16px;height:16px;cursor:pointer;"
+          />
+          <label for="planActive" style="font-size:14px;color:var(--fg-1);cursor:pointer;">Plan is active</label>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:28px;">
+        <button (click)="closeModal()" class="btn-ghost" style="flex:1;padding:10px;">Cancel</button>
+        <button (click)="save()" class="btn-primary" [disabled]="saving()" style="flex:1;padding:10px;">
+          {{ saving() ? 'Saving...' : (editingPlan() ? 'Save changes' : 'Create plan') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
