@@ -1,0 +1,598 @@
+// ═════════════════════════════════════════════════════════════════
+// CIRVIO — PRISMA SCHEMA
+// UAE Staff Management SaaS
+// Stack: PostgreSQL + Prisma + Railway
+// ID strategy: uuid via gen_random_uuid() (pgcrypto extension)
+// ═════════════════════════════════════════════════════════════════
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [pgcrypto]
+}
+
+
+// ─────────────────────────────────────────────
+// ENUMS
+// Grouped here for easy reference and editing
+// ─────────────────────────────────────────────
+
+enum AdminRole {
+  SUPER_ADMIN
+  SUPPORT
+}
+
+enum UserRole {
+  TENANT_ADMIN
+  HR_MANAGER
+  VIEWER
+}
+
+enum TenantStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum Emirate {
+  ABU_DHABI
+  DUBAI
+  SHARJAH
+  AJMAN
+  UMM_AL_QUWAIN
+  RAS_AL_KHAIMAH
+  FUJAIRAH
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  ON_LEAVE
+  SUSPENDED
+  TERMINATED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNSPECIFIED
+}
+
+enum VisaType {
+  EMPLOYMENT
+  INVESTOR
+  DEPENDENT
+  FREELANCE
+  GOLDEN
+  TOURIST
+}
+
+enum VisaStatus {
+  ACTIVE
+  EXPIRING_SOON
+  EXPIRED
+  CANCELLED
+  RENEWAL_IN_PROGRESS
+}
+
+enum VisaAlertType {
+  NINETY_DAYS
+  SIXTY_DAYS
+  THIRTY_DAYS
+  FOURTEEN_DAYS
+  SEVEN_DAYS
+  EXPIRED
+}
+
+enum AlertStatus {
+  PENDING
+  SENT
+  DISMISSED
+  RESOLVED
+}
+
+enum WpsStatus {
+  PENDING
+  SUBMITTED
+  CONFIRMED
+  FAILED
+  EXEMPT
+}
+
+enum SifStatus {
+  DRAFT
+  READY
+  SUBMITTED
+  CONFIRMED
+  REJECTED
+}
+
+enum WpsAlertType {
+  PAYMENT_DUE
+  PAYMENT_OVERDUE
+  VIOLATION_RAISED
+}
+
+enum DocumentType {
+  VISA_COPY
+  ENTRY_PERMIT
+  PASSPORT_COPY
+  EMIRATES_ID
+  LABOUR_CARD
+  OFFER_LETTER
+  CONTRACT
+  MEDICAL_CERTIFICATE
+  OTHER
+}
+
+
+// ─────────────────────────────────────────────
+// ADMIN DOMAIN
+// Top-level authority: SuperAdmin + platform config
+// Operates above all tenants — never tenant-scoped
+// ─────────────────────────────────────────────
+
+model Admin {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String         @unique
+  passwordHash String
+  name         String
+  role         AdminRole      @default(SUPPORT)
+  isActive     Boolean        @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  auditLogs    AuditLog[]
+  sessions     AdminSession[]
+}
+
+model AdminSession {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adminId   String   @db.Uuid
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adminId    String?  @db.Uuid
+  action     String   // e.g. "TENANT_SUSPENDED", "PLAN_CHANGED"
+  targetType String?  // e.g. "Tenant", "User"
+  targetId   String?  @db.Uuid
+  meta       Json?    // any extra context
+  createdAt  DateTime @default(now())
+
+  admin      Admin?   @relation(fields: [adminId], references: [id], onDelete: SetNull)
+}
+
+
+// ─────────────────────────────────────────────
+// PLAN DOMAIN
+// Subscription tiers assigned to tenants
+// Managed by SuperAdmin only
+// ─────────────────────────────────────────────
+
+model Plan {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String   @unique  // e.g. "Starter", "Growth", "Enterprise"
+  maxEmployees       Int
+  maxAdmins          Int
+  priceAed           Float
+  billingCycleMonths Int      @default(1)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  tenants            Tenant[]
+}
+
+
+// ─────────────────────────────────────────────
+// TENANT DOMAIN
+// A Tenant = one company subscribed to Cirvio
+// All operational data is scoped to a Tenant
+// ─────────────────────────────────────────────
+
+model Tenant {
+  id                   String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String
+  slug                 String       @unique  // e.g. "acme-logistics" → used in URLs
+  email                String       @unique  // primary billing/contact email
+  phone                String?
+  logoUrl              String?
+  industry             String?      // e.g. "Logistics", "Construction", "Retail"
+
+  // Subscription
+  planId               String?      @db.Uuid
+  plan                 Plan?        @relation(fields: [planId], references: [id])
+  status               TenantStatus @default(TRIAL)
+  trialEndsAt          DateTime?
+  subscriptionEndsAt   DateTime?
+
+  // UAE-specific
+  tradelicenseNo       String?
+  tradelicenseExpiry   DateTime?
+  emirate              Emirate?
+
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  // Relations
+  users                User[]
+  employees            Employee[]
+  departments          Department[]
+  visaRecords          VisaRecord[]
+  wpsRecords           WpsRecord[]
+  documents            Document[]
+  invites              TenantInvite[]
+}
+
+model TenantInvite {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String    @db.Uuid
+  email      String
+  role       UserRole
+  token      String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+
+// ─────────────────────────────────────────────
+// USER DOMAIN
+// Humans who log into Cirvio on behalf of a tenant
+// Always scoped to one Tenant
+// ─────────────────────────────────────────────
+
+model User {
+  id           String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String            @db.Uuid
+  email        String
+  passwordHash String
+  firstName    String
+  lastName     String
+  avatarUrl    String?
+  phone        String?
+
+  role         UserRole          @default(VIEWER)
+  isActive     Boolean           @default(true)
+  lastLoginAt  DateTime?
+
+  // Optional link to an employee record
+  employeeId   String?           @unique @db.Uuid
+
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee     Employee?         @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  sessions     UserSession[]
+  activityLogs UserActivityLog[]
+
+  @@unique([tenantId, email])    // same email allowed across tenants, not within one
+}
+
+model UserSession {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserActivityLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @db.Uuid
+  action     String   // e.g. "EMPLOYEE_CREATED", "VISA_UPDATED"
+  targetType String?
+  targetId   String?  @db.Uuid
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+// ─────────────────────────────────────────────
+// EMPLOYEE DOMAIN
+// Core operational record per tenant
+// VisaRecord, WpsRecord, Document all hang off this
+// ─────────────────────────────────────────────
+
+model Employee {
+  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId         String         @db.Uuid
+
+  // Personal Info
+  firstName        String
+  lastName         String
+  middleName       String?
+  dateOfBirth      DateTime?
+  gender           Gender?
+  nationality      String         // ISO 3166-1 alpha-2 e.g. "KE", "IN", "PH"
+  photoUrl         String?
+
+  // Contact
+  personalEmail    String?
+  workEmail        String?
+  phone            String?
+  emergencyContact Json?          // { name, phone, relationship }
+
+  // Employment
+  employeeNo       String?        // internal HR reference
+  jobTitle         String
+  departmentId     String?        @db.Uuid
+  employmentType   EmploymentType @default(FULL_TIME)
+  startDate        DateTime
+  endDate          DateTime?      // null = currently employed
+  status           EmployeeStatus @default(ACTIVE)
+
+  // UAE-specific Identity
+  eidNumber        String?        // Emirates ID number
+  eidExpiry        DateTime?
+  passportNumber   String?
+  passportExpiry   DateTime?
+  labourCardNo     String?
+  wpsPersonId      String?        // MOHRE-assigned WPS person ID
+  wpsBankCode      String?        // bank routing code for SIF file
+
+  // Salary (for WPS correlation)
+  basicSalaryAed   Float?
+  allowancesAed    Float?
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  // Relations
+  tenant           Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department       Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  user             User?          // reverse of User.employeeId
+  visaRecords      VisaRecord[]
+  wpsRecords       WpsRecord[]
+  documents        Document[]
+
+  @@unique([tenantId, eidNumber])
+  @@unique([tenantId, employeeNo])
+}
+
+model Department {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String     @db.Uuid
+  name        String     // e.g. "Operations", "Finance", "HR"
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employees   Employee[]
+
+  @@unique([tenantId, name])
+}
+
+
+// ─────────────────────────────────────────────
+// VISA DOMAIN
+// Core differentiator #1
+// Full UAE visa lifecycle + expiry alert engine
+// ─────────────────────────────────────────────
+
+model VisaRecord {
+  id                  String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId            String      @db.Uuid
+  employeeId          String      @db.Uuid
+
+  // Visa Details
+  visaType            VisaType
+  visaNumber          String?
+  sponsorName         String?     // sponsoring entity (may differ from tenant name)
+  sponsorId           String?     // UAE establishment ID
+
+  // Entry Permit → Residence Visa flow
+  entryPermitNo       String?
+  entryPermitIssue    DateTime?
+  entryPermitExpiry   DateTime?
+
+  residenceVisaNo     String?
+  issueDate           DateTime?
+  expiryDate          DateTime    // required — primary date driving all alerts
+  gracePeriodDays     Int         @default(30)
+
+  // Status
+  status              VisaStatus  @default(ACTIVE)
+  emirate             Emirate?    // issuing emirate
+
+  // Medical & Biometrics (part of UAE visa process)
+  medicalDoneAt       DateTime?
+  biometricsDoneAt    DateTime?
+
+  // Renewal tracking
+  renewalInitiatedAt  DateTime?
+  renewalCompletedAt  DateTime?
+  previousVisaId      String?     @db.Uuid  // self-reference for renewal chain
+
+  notes               String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  // Relations
+  tenant              Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee            Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  alerts              VisaAlert[]
+  documents           Document[]
+
+  previousVisa        VisaRecord?  @relation("VisaRenewalChain", fields: [previousVisaId], references: [id], onDelete: SetNull)
+  renewals            VisaRecord[] @relation("VisaRenewalChain")
+}
+
+model VisaAlert {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String        @db.Uuid
+  visaRecordId  String        @db.Uuid
+  employeeId    String        @db.Uuid
+
+  alertType     VisaAlertType
+  triggerDate   DateTime      // when the alert should fire
+  daysRemaining Int           // snapshot at time of alert creation
+  status        AlertStatus   @default(PENDING)
+  sentAt        DateTime?
+  dismissedAt   DateTime?
+  dismissedBy   String?       @db.Uuid  // userId who dismissed
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  visaRecord    VisaRecord    @relation(fields: [visaRecordId], references: [id], onDelete: Cascade)
+}
+
+
+// ─────────────────────────────────────────────
+// WPS DOMAIN
+// Core differentiator #2
+// UAE Wages Protection System compliance
+// Salary disbursement tracking per pay cycle
+// ─────────────────────────────────────────────
+
+model WpsRecord {
+  id                 String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String      @db.Uuid
+  employeeId         String      @db.Uuid
+
+  // Pay Cycle
+  month              Int         // 1–12
+  year               Int
+  paymentDate        DateTime?   // actual date salary was transferred
+
+  // Salary Breakdown (AED)
+  basicSalary        Float
+  housingAllowance   Float       @default(0)
+  transportAllowance Float       @default(0)
+  otherAllowances    Float       @default(0)
+  deductions         Float       @default(0)
+  netSalary          Float       // basicSalary + allowances - deductions
+
+  // WPS Identifiers
+  wpsPersonId        String?     // MOHRE-assigned WPS person ID
+  wpsBankCode        String?     // bank routing code for SIF file
+  wpsAgentId         String?     // employer WPS agent ID from MOHRE
+  silaReference      String?     // Sila payment network reference
+
+  // Status
+  status             WpsStatus   @default(PENDING)
+  submittedAt        DateTime?   // when SIF file was submitted to bank
+  confirmedAt        DateTime?   // when MOHRE confirmed receipt
+
+  // Violation tracking
+  isLate             Boolean     @default(false)  // paid after 10th of following month
+  lateByDays         Int?
+  violationRef       String?     // MOHRE violation reference if fined
+
+  notes              String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  // Relations
+  tenant             Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee           Employee    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  sifFileId          String?     @db.Uuid
+  sifFile            SifFile?    @relation(fields: [sifFileId], references: [id], onDelete: SetNull)
+  alerts             WpsAlert[]
+
+  @@unique([tenantId, employeeId, month, year])  // one record per employee per pay cycle
+}
+
+model SifFile {
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String     @db.Uuid
+  month          Int
+  year           Int
+  fileName       String
+  fileUrl        String     // stored in your file bucket
+  employeeCount  Int
+  totalAmountAed Float
+
+  status         SifStatus  @default(DRAFT)
+  generatedAt    DateTime   @default(now())
+  submittedAt    DateTime?
+  confirmedAt    DateTime?
+
+  wpsRecords     WpsRecord[]
+
+  @@unique([tenantId, month, year])  // one SIF file per tenant per pay cycle
+}
+
+model WpsAlert {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String       @db.Uuid
+  wpsRecordId  String       @db.Uuid
+  employeeId   String       @db.Uuid
+
+  alertType    WpsAlertType
+  triggerDate  DateTime
+  status       AlertStatus  @default(PENDING)
+  sentAt       DateTime?
+  dismissedAt  DateTime?
+  dismissedBy  String?      @db.Uuid  // userId who dismissed
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  wpsRecord    WpsRecord    @relation(fields: [wpsRecordId], references: [id], onDelete: Cascade)
+}
+
+
+// ─────────────────────────────────────────────
+// DOCUMENT DOMAIN
+// File attachment layer
+// Linked to Employee, VisaRecord, or both
+// ─────────────────────────────────────────────
+
+model Document {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String       @db.Uuid
+  employeeId   String       @db.Uuid
+
+  // Optional parent record links
+  visaRecordId String?      @db.Uuid
+
+  // File Info
+  documentType DocumentType
+  fileName     String
+  fileUrl      String       // stored in your file bucket (R2, S3, etc.)
+  fileSizeKb   Int?
+  mimeType     String?      // e.g. "application/pdf", "image/jpeg"
+
+  // Expiry tracking (some docs expire e.g. medical certs)
+  expiryDate   DateTime?
+  notes        String?
+
+  uploadedBy   String?      @db.Uuid  // userId who uploaded
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  employee     Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  visaRecord   VisaRecord?  @relation(fields: [visaRecordId], references: [id], onDelete: SetNull)
+}

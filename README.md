@@ -10,6 +10,46 @@ To start a local development server, run:
 ng serve
 ```
 
+## Backend
+
+To start the backend server, run:
+
+```bash
+cd backend
+npm install
+npm run server
+```
+
+## CI/CD
+
+This project uses GitHub Actions for automatic deployment.
+
+### Frontend (Angular) to Vercel
+
+- Deploys on push to `main` branch when frontend files change.
+- Requires the following GitHub secrets:
+  - `VERCEL_TOKEN`: Your Vercel token
+  - `VERCEL_ORG_ID`: Your Vercel organization ID
+  - `VERCEL_PROJECT_ID`: Your Vercel project ID for the frontend
+
+### Backend (Node.js) to Vercel
+
+- Deploys on push to `main` branch when backend files change.
+- Requires the following GitHub secrets:
+  - `VERCEL_TOKEN`: Your Vercel token
+  - `VERCEL_ORG_ID`: Your Vercel organization ID
+  - `VERCEL_BACKEND_PROJECT_ID`: Your Vercel project ID for the backend
+
+### Database (Supabase)
+
+- Pushes database schema changes on push to `main` branch when backend files change.
+- Requires the following GitHub secrets:
+  - `SUPABASE_ACCESS_TOKEN`: Your Supabase access token
+  - `SUPABASE_PROJECT_REF`: Your Supabase project reference
+
+To set up secrets, go to your GitHub repository Settings > Secrets and variables > Actions.
+```
+
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
 ## Code scaffolding
