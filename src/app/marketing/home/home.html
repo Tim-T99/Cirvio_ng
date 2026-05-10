@@ -1,239 +1,235 @@
-<!-- ===== HERO ===== -->
-<section
-  class="marketing-hero"
-  style="
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    gap: 64px;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 88px 40px 96px;
-  "
->
-  <div class="animate-fade-up-1">
-    <p style="
-      display: inline-block;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--cirvio-sage);
-      background: var(--cirvio-mint-50);
-      border: 1px solid var(--cirvio-mint-300);
-      border-radius: var(--radius-pill);
-      padding: 4px 14px;
-      margin-bottom: 24px;
-    ">Built for the Gulf &mdash; Dubai &bull; Riyadh &bull; Doha</p>
+<div style="background:var(--bg);">
 
-    <h1 style="
-      font-size: 52px;
-      font-weight: 700;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-      color: var(--fg-1);
-      margin: 0 0 24px;
-    ">
-      Workforce compliance,<br />
-      <span style="color: var(--cirvio-sage);">simplified.</span>
-    </h1>
+  <!-- Hero -->
+  <section class="marketing-hero" style="max-width:1200px;margin:0 auto;padding:80px 32px 96px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
 
-    <p style="
-      font-size: 18px;
-      color: var(--fg-2);
-      line-height: 1.65;
-      margin: 0 0 36px;
-      max-width: 480px;
-    ">
-      Cirvio helps UAE and Gulf HR teams manage employee records, track visa renewals, and stay 100% audit-ready &mdash; without the spreadsheet chaos.
-    </p>
-
-    <div class="hero-ctas" style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-      <a routerLink="/signup" class="btn-primary" style="padding: 12px 28px; font-size: 16px;">
-        Get started free
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <div>
+      <div class="animate-fade-up-1" style="display:inline-flex;align-items:center;gap:8px;background:var(--cirvio-mint-50);border:1px solid var(--cirvio-mint-100);border-radius:var(--radius-pill);padding:5px 14px;font-size:13px;font-weight:500;color:var(--cirvio-hunter);margin-bottom:28px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 21h18M3 21V7l9-4 9 4v14M9 21v-6h6v6"/>
         </svg>
-      </a>
-      <a routerLink="/contact" class="btn-ghost" style="padding: 12px 28px; font-size: 16px;">
-        Book a demo
-      </a>
-    </div>
-  </div>
-
-  <!-- Right column: stat strip displayed vertically on hero -->
-  <div class="animate-fade-up-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-    @for (stat of stats; track stat.label) {
-      <div style="
-        background: var(--bg-elev-1);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: 28px 24px;
-        box-shadow: var(--shadow-sm);
-        backdrop-filter: blur(8px);
-      ">
-        <p style="font-size: 28px; font-weight: 700; color: var(--cirvio-hunter); margin: 0 0 6px; letter-spacing: -0.02em;">{{ stat.value }}</p>
-        <p style="font-size: 13px; color: var(--fg-2); margin: 0; font-weight: 500;">{{ stat.label }}</p>
+        Trusted by teams across the Gulf
       </div>
-    }
-  </div>
-</section>
 
-<!-- ===== FEATURES ===== -->
-<section class="section-pad" style="padding: 80px 40px; background: var(--neutral-50);">
-  <div style="max-width: 1200px; margin: 0 auto;">
-    <div style="text-align: center; margin-bottom: 56px;" class="reveal">
-      <h2 class="section-title" style="font-size: 36px; font-weight: 700; letter-spacing: -0.02em; color: var(--fg-1); margin: 0 0 16px;">
-        Everything your HR team needs
-      </h2>
-      <p style="font-size: 17px; color: var(--fg-2); max-width: 520px; margin: 0 auto; line-height: 1.6;">
-        Purpose-built for Gulf compliance requirements. Cirvio handles the complexity so you don&rsquo;t have to.
+      <h1 class="animate-fade-up-2" style="font-size:52px;font-weight:600;line-height:1.06;letter-spacing:-0.025em;color:var(--fg-1);margin:0 0 22px;">
+        Workforce<br>
+        compliance,<br>
+        <span style="color:var(--cirvio-sage);">simplified.</span>
+      </h1>
+
+      <p class="animate-fade-up-3" style="font-size:18px;color:var(--fg-2);line-height:1.65;margin:0 0 36px;max-width:460px;">
+        Track employee visas, manage payroll compliance, and stay ahead of every regulatory deadline — from a single platform built for modern HR teams.
+      </p>
+
+      <div class="hero-ctas animate-fade-up-4" style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a routerLink="/signup" class="btn-primary" style="padding:12px 24px;font-size:15px;">
+          Start free trial
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+        <a routerLink="/contact" class="btn-ghost" style="padding:12px 24px;font-size:15px;">Book a demo</a>
+      </div>
+
+      <p class="animate-fade-up-5" style="margin-top:18px;font-size:13px;color:var(--fg-3);">
+        No credit card required · 14-day free trial
       </p>
     </div>
 
-    <div class="col-3" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
-      @for (feat of features; track feat.title; let i = $index) {
-        <div
-          class="reveal"
-          [class]="'reveal-d' + (i + 1)"
-          style="
-            background: var(--bg-elev-1);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 28px 24px;
-            box-shadow: var(--shadow-sm);
-          "
-        >
-          <div style="
-            width: 44px;
-            height: 44px;
-            border-radius: var(--radius-sm);
-            background: var(--cirvio-mint-50);
-            border: 1px solid var(--cirvio-mint-300);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 18px;
-            color: var(--cirvio-sage);
-          ">
-            @if (feat.icon === 'people') {
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-              </svg>
-            }
-            @if (feat.icon === 'visa') {
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.75"/>
-                <path d="M2 10h20" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-                <path d="M6 15h4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-              </svg>
-            }
-            @if (feat.icon === 'payroll') {
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.75"/>
-                <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            }
-            @if (feat.icon === 'alert') {
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-              </svg>
+    <!-- Dashboard mockup -->
+    <div class="animate-fade-up-3" style="position:relative;">
+      <div style="position:absolute;inset:-40px;background:radial-gradient(ellipse at 60% 40%, rgba(140,201,181,0.16) 0%, transparent 70%);pointer-events:none;"></div>
+
+      <div class="cirvio-glass" style="overflow:hidden;position:relative;">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border-soft);background:rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:13px;font-weight:600;color:var(--fg-1);">Compliance Overview</span>
+          <span style="font-size:12px;color:var(--success);font-weight:500;display:flex;align-items:center;gap:5px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;"></span>
+            All systems active
+          </span>
+        </div>
+
+        <div style="padding:20px;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+            @for (s of heroStats; track s.label) {
+              <div style="background:var(--neutral-50);border:1px solid var(--border-soft);border-radius:12px;padding:14px 16px;">
+                <p style="font-size:11px;color:var(--fg-3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;font-weight:500;">{{ s.label }}</p>
+                <p style="font-size:22px;font-weight:600;letter-spacing:-0.02em;"
+                   [style.color]="s.warn ? 'var(--warning)' : (s.ok ? 'var(--success)' : 'var(--fg-1)')">{{ s.value }}</p>
+                <p style="font-size:11px;color:var(--fg-3);margin-top:2px;">{{ s.sub }}</p>
+              </div>
             }
           </div>
-          <h3 style="font-size: 16px; font-weight: 600; color: var(--fg-1); margin: 0 0 10px;">{{ feat.title }}</h3>
-          <p style="font-size: 14px; color: var(--fg-2); line-height: 1.65; margin: 0;">{{ feat.desc }}</p>
+
+          <div style="background:var(--neutral-50);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;">
+            <div style="padding:10px 16px;border-bottom:1px solid var(--border-soft);">
+              <span style="font-size:12px;font-weight:600;color:var(--fg-2);">Upcoming alerts</span>
+            </div>
+            @for (a of heroAlerts; track a.name; let last = $last) {
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;"
+                   [style.border-bottom]="last ? 'none' : '1px solid var(--border-soft)'">
+                <div>
+                  <p style="font-size:13px;font-weight:500;color:var(--fg-1);">{{ a.name }}</p>
+                  <p style="font-size:11px;color:var(--fg-3);">{{ a.type }}</p>
+                </div>
+                <span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:var(--radius-pill);"
+                      [style.background]="a.urgent ? 'var(--danger-bg)' : 'var(--warning-bg)'"
+                      [style.color]="a.urgent ? 'var(--danger)' : 'var(--warning)'">
+                  {{ a.days }}d left
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats strip -->
+  <div style="background:var(--cirvio-hunter);padding:0 32px;">
+    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);">
+      @for (s of stats; track s.label; let i = $index; let last = $last) {
+        <div style="padding:28px 32px;text-align:center;"
+             [style.border-right]="last ? 'none' : '1px solid rgba(255,255,255,0.08)'">
+          <p style="font-size:26px;font-weight:600;color:var(--cirvio-mint);letter-spacing:-0.02em;margin-bottom:4px;">{{ s.value }}</p>
+          <p style="font-size:13px;color:rgba(236,236,232,0.65);font-weight:500;">{{ s.label }}</p>
         </div>
       }
     </div>
   </div>
-</section>
 
-<!-- ===== HOW IT WORKS ===== -->
-<section class="section-pad" style="padding: 80px 40px;">
-  <div style="max-width: 1200px; margin: 0 auto;">
-    <div style="text-align: center; margin-bottom: 56px;" class="reveal">
-      <h2 class="section-title" style="font-size: 36px; font-weight: 700; letter-spacing: -0.02em; color: var(--fg-1); margin: 0 0 16px;">
-        How it works
-      </h2>
-      <p style="font-size: 17px; color: var(--fg-2); max-width: 480px; margin: 0 auto; line-height: 1.6;">
-        Get your compliance programme running in under an hour.
-      </p>
+  <!-- Features -->
+  <section class="section-pad" style="padding:88px 32px;background:var(--neutral-50);border-top:1px solid var(--border-soft);">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div class="reveal" style="text-align:center;margin-bottom:56px;">
+        <p style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--cirvio-sage);margin-bottom:10px;">Everything you need</p>
+        <h2 class="section-title" style="font-size:36px;font-weight:600;letter-spacing:-0.015em;color:var(--fg-1);margin-bottom:12px;">
+          One platform for every workforce obligation.
+        </h2>
+        <p style="font-size:16px;color:var(--fg-2);max-width:520px;margin:0 auto;line-height:1.65;">
+          Cirvio brings employee records, visa tracking, and payroll compliance into a single, organised workspace — wherever your team is based.
+        </p>
+      </div>
+
+      <div class="col-2" style="display:grid;grid-template-columns:repeat(2,1fr);gap:24px;">
+        @for (f of features; track f.title) {
+          <div class="cirvio-glass reveal" style="padding:32px;">
+            <div style="width:48px;height:48px;border-radius:12px;background:var(--cirvio-mint-50);display:flex;align-items:center;justify-content:center;color:var(--cirvio-sage);margin-bottom:20px;">
+              @if (f.icon === 'users') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              }
+              @if (f.icon === 'shield') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+              }
+              @if (f.icon === 'file') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></svg>
+              }
+              @if (f.icon === 'bell') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              }
+            </div>
+            <h3 style="font-size:18px;font-weight:600;color:var(--fg-1);margin-bottom:10px;">{{ f.title }}</h3>
+            <p style="font-size:14px;color:var(--fg-2);line-height:1.65;">{{ f.desc }}</p>
+            <a routerLink="/features" style="display:inline-flex;align-items:center;gap:5px;margin-top:20px;font-size:13px;font-weight:500;color:var(--cirvio-sage);text-decoration:none;">
+              Learn more
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+          </div>
+        }
+      </div>
     </div>
+  </section>
 
-    <div style="display: flex; flex-direction: column; gap: 0; max-width: 700px; margin: 0 auto;">
-      @for (step of steps; track step.num; let i = $index; let last = $last) {
-        <div
-          class="reveal"
-          [class]="'reveal-d' + (i + 1)"
-          style="display: flex; gap: 28px; align-items: flex-start;"
-        >
-          <div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0;">
-            <div style="
-              width: 48px;
-              height: 48px;
-              border-radius: 50%;
-              background: var(--cirvio-hunter);
-              color: white;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 13px;
-              font-weight: 700;
-              letter-spacing: 0.04em;
-              flex-shrink: 0;
-            ">{{ step.num }}</div>
-            @if (!last) {
-              <div style="width: 2px; height: 56px; background: var(--border); margin: 8px 0;"></div>
-            }
+  <!-- How it works -->
+  <section class="section-pad" style="padding:88px 32px;">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div class="reveal" style="text-align:center;margin-bottom:64px;">
+        <p style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--cirvio-sage);margin-bottom:10px;">How it works</p>
+        <h2 class="section-title" style="font-size:36px;font-weight:600;letter-spacing:-0.015em;color:var(--fg-1);">
+          Up and running in minutes.
+        </h2>
+      </div>
+
+      <div class="col-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:40px;position:relative;">
+        <div class="desktop-only" style="position:absolute;top:36px;left:18%;right:18%;height:1px;background:linear-gradient(90deg, var(--cirvio-mint-100), var(--cirvio-mint), var(--cirvio-mint-100));"></div>
+        @for (s of steps; track s.n; let i = $index) {
+          <div class="reveal" [class]="'reveal reveal-d' + (i + 1)" style="text-align:center;position:relative;z-index:1;">
+            <div style="width:60px;height:60px;border-radius:50%;margin:0 auto 20px;background:var(--neutral-0);border:2px solid var(--cirvio-mint-100);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);">
+              <span style="font-size:16px;font-weight:700;color:var(--cirvio-sage);">{{ s.n }}</span>
+            </div>
+            <h3 style="font-size:18px;font-weight:600;color:var(--fg-1);margin-bottom:10px;">{{ s.title }}</h3>
+            <p style="font-size:14px;color:var(--fg-2);line-height:1.65;">{{ s.desc }}</p>
           </div>
-          <div style="padding-top: 10px; padding-bottom: 32px;">
-            <h3 style="font-size: 17px; font-weight: 600; color: var(--fg-1); margin: 0 0 8px;">{{ step.title }}</h3>
-            <p style="font-size: 15px; color: var(--fg-2); line-height: 1.65; margin: 0;">{{ step.desc }}</p>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Compliance checklist -->
+  <section class="section-pad" style="padding:88px 32px;background:var(--neutral-50);border-top:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft);">
+    <div class="col-2" style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
+      <div class="reveal">
+        <p style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--cirvio-sage);margin-bottom:12px;">Built-in compliance coverage</p>
+        <h2 class="section-title" style="font-size:34px;font-weight:600;letter-spacing:-0.015em;color:var(--fg-1);margin-bottom:16px;line-height:1.2;">
+          Every obligation, tracked automatically.
+        </h2>
+        <p style="font-size:15px;color:var(--fg-2);line-height:1.65;margin-bottom:28px;">
+          From employment visas to payroll cycles, Cirvio monitors every compliance requirement so your HR team can focus on people, not paperwork.
+        </p>
+        @for (item of checklist; track item) {
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span style="font-size:14px;color:var(--fg-1);line-height:1.5;">{{ item }}</span>
           </div>
+        }
+        <a routerLink="/features" class="btn-primary" style="margin-top:28px;display:inline-flex;padding:11px 22px;">
+          Explore all features
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      </div>
+
+      <div class="reveal" style="position:relative;">
+        <div class="cirvio-glass" style="padding:28px;">
+          <p style="font-size:13px;font-weight:600;color:var(--fg-1);margin-bottom:16px;">Compliance calendar — June 2025</p>
+          @for (item of calendar; track item.name; let i = $index; let last = $last) {
+            <div style="display:flex;align-items:center;gap:14px;padding:12px 0;"
+                 [style.border-bottom]="last ? 'none' : '1px solid var(--border-soft)'">
+              <div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;" [style.background]="item.dot"></div>
+              <div style="flex:1;">
+                <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin-bottom:2px;">{{ item.name }}</p>
+                <p style="font-size:12px;color:var(--fg-3);">{{ item.date }}</p>
+              </div>
+              <span style="font-size:11px;font-weight:500;padding:2px 8px;border-radius:var(--radius-pill);white-space:nowrap;"
+                    [style.background]="item.status === 'action needed' ? 'var(--danger-bg)' : 'var(--warning-bg)'"
+                    [style.color]="item.status === 'action needed' ? 'var(--danger)' : 'var(--warning)'">
+                {{ item.status }}
+              </span>
+            </div>
+          }
         </div>
-      }
+      </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ===== CTA BANNER ===== -->
-<section style="
-  background: var(--cirvio-hunter);
-  padding: 72px 40px;
-  text-align: center;
-">
-  <div style="max-width: 600px; margin: 0 auto;">
-    <h2 style="font-size: 36px; font-weight: 700; color: white; letter-spacing: -0.02em; margin: 0 0 18px;">
-      Ready to simplify compliance?
-    </h2>
-    <p style="font-size: 17px; color: var(--cirvio-mint); margin: 0 0 36px; line-height: 1.6;">
-      Join hundreds of Gulf HR teams already using Cirvio. No credit card required for your 14-day free trial.
-    </p>
-    <a
-      routerLink="/signup"
-      style="
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        background: var(--cirvio-mint);
-        color: var(--cirvio-hunter);
-        border-radius: var(--radius-md);
-        padding: 14px 32px;
-        font-size: 16px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: background var(--dur-fast) var(--ease-out);
-      "
-      onmouseenter="this.style.background='var(--cirvio-mint-300)'"
-      onmouseleave="this.style.background='var(--cirvio-mint)'"
-    >
-      Start your free trial
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </a>
-  </div>
-</section>
+  <!-- CTA banner -->
+  <section class="section-pad" style="padding:96px 32px;">
+    <div class="cirvio-glass reveal" style="max-width:760px;margin:0 auto;text-align:center;padding:64px 48px;">
+      <h2 style="font-size:38px;font-weight:600;letter-spacing:-0.02em;color:var(--fg-1);margin-bottom:14px;">
+        Start managing compliance the right way.
+      </h2>
+      <p style="font-size:16px;color:var(--fg-2);margin-bottom:32px;line-height:1.65;">
+        14 days free. No credit card required. Set up in under 10 minutes.
+      </p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a routerLink="/signup" class="btn-primary" style="padding:13px 28px;font-size:16px;">
+          Start free trial
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a routerLink="/contact" class="btn-ghost" style="padding:13px 28px;font-size:16px;">Talk to sales</a>
+      </div>
+    </div>
+  </section>
+
+</div>

@@ -1,216 +1,119 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { RouterLink } from '@angular/router';
+
+interface FeatureBlock {
+  icon: string;
+  title: string;
+  subtitle: string;
+  points: string[];
+  visual: { label: string; value: string; color: string }[];
+}
+
+interface Extra { icon: string; title: string; desc: string; }
 
 @Component({
   selector: 'app-features',
   standalone: true,
-  template: `
-    <!-- Hero -->
-    <section class="section-pad" style="padding: 80px 40px 64px; background: var(--neutral-50); border-bottom: 1px solid var(--border-soft);">
-      <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
-        <p style="
-          display: inline-block;
-          font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
-          color: var(--cirvio-sage); background: var(--cirvio-mint-50);
-          border: 1px solid var(--cirvio-mint-300); border-radius: var(--radius-pill);
-          padding: 4px 14px; margin-bottom: 20px;
-        ">Platform Features</p>
-        <h1 class="section-title animate-fade-up-1" style="font-size: 44px; font-weight: 700; letter-spacing: -0.02em; color: var(--fg-1); margin: 0 0 20px;">
-          Built for Gulf HR compliance
-        </h1>
-        <p class="animate-fade-up-2" style="font-size: 18px; color: var(--fg-2); max-width: 560px; margin: 0 auto; line-height: 1.65;">
-          Every feature in Cirvio is designed around the specific regulatory requirements of UAE, Saudi Arabia, Qatar, and the broader GCC region.
-        </p>
-      </div>
-    </section>
-
-    <!-- Employee Records -->
-    <section class="section-pad" style="padding: 80px 40px;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;">
-          <div class="reveal">
-            <div style="
-              width: 48px; height: 48px; border-radius: var(--radius-sm);
-              background: var(--cirvio-mint-50); border: 1px solid var(--cirvio-mint-300);
-              display: flex; align-items: center; justify-content: center;
-              color: var(--cirvio-sage); margin-bottom: 20px;
-            ">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.75"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h2 style="font-size: 28px; font-weight: 700; color: var(--fg-1); margin: 0 0 16px; letter-spacing: -0.01em;">Employee Records</h2>
-            <p style="font-size: 16px; color: var(--fg-2); line-height: 1.7; margin: 0 0 20px;">
-              Centralise all employee data in a single, secure repository. Store contracts, offer letters, passport copies, Emirates IDs, and certifications with version history and audit trails.
-            </p>
-            <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px;">
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Role-based access control
-              </li>
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Document version history
-              </li>
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                CSV bulk import &amp; export
-              </li>
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Full audit log for inspections
-              </li>
-            </ul>
-          </div>
-          <div class="reveal reveal-d2" style="
-            background: var(--neutral-50); border: 1px solid var(--border);
-            border-radius: var(--radius-xl); padding: 40px;
-            aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;
-          ">
-            <p style="color: var(--fg-3); font-size: 14px;">Employee records dashboard</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Visa Tracking -->
-    <section class="section-pad" style="padding: 80px 40px; background: var(--neutral-50);">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;">
-          <div class="reveal" style="
-            background: var(--neutral-0); border: 1px solid var(--border);
-            border-radius: var(--radius-xl); padding: 40px;
-            aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; order: -1;
-          ">
-            <p style="color: var(--fg-3); font-size: 14px;">Visa tracking dashboard</p>
-          </div>
-          <div class="reveal reveal-d2">
-            <div style="
-              width: 48px; height: 48px; border-radius: var(--radius-sm);
-              background: var(--cirvio-mint-50); border: 1px solid var(--cirvio-mint-300);
-              display: flex; align-items: center; justify-content: center;
-              color: var(--cirvio-sage); margin-bottom: 20px;
-            ">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.75"/>
-                <path d="M2 10h20" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-                <path d="M6 15h4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h2 style="font-size: 28px; font-weight: 700; color: var(--fg-1); margin: 0 0 16px; letter-spacing: -0.01em;">Visa &amp; Document Tracking</h2>
-            <p style="font-size: 16px; color: var(--fg-2); line-height: 1.7; margin: 0 0 20px;">
-              Never miss a visa or Emirates ID renewal again. Cirvio monitors expiry dates across your entire workforce and fires proactive alerts at 90, 60, and 30 days out.
-            </p>
-            <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px;">
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Visa, Emirates ID, work permit tracking
-              </li>
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Configurable expiry alert thresholds
-              </li>
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Bulk renewal workflow tools
-              </li>
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Multi-country support (UAE, KSA, QA, BH, KW, OM)
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Payroll Compliance -->
-    <section class="section-pad" style="padding: 80px 40px;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;">
-          <div class="reveal">
-            <div style="
-              width: 48px; height: 48px; border-radius: var(--radius-sm);
-              background: var(--cirvio-mint-50); border: 1px solid var(--cirvio-mint-300);
-              display: flex; align-items: center; justify-content: center;
-              color: var(--cirvio-sage); margin-bottom: 20px;
-            ">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.75"/>
-                <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <h2 style="font-size: 28px; font-weight: 700; color: var(--fg-1); margin: 0 0 16px; letter-spacing: -0.01em;">Payroll Compliance (WPS)</h2>
-            <p style="font-size: 16px; color: var(--fg-2); line-height: 1.7; margin: 0 0 20px;">
-              UAE Wage Protection System compliance made simple. Generate SIF files, validate payroll data against MoHRE requirements, and maintain a complete payment history ready for audit.
-            </p>
-            <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px;">
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Automated WPS SIF file generation
-              </li>
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                MoHRE validation checks
-              </li>
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Payroll history &amp; variance reports
-              </li>
-              <li style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--fg-2);">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="var(--success)" stroke-width="1.5"/><path d="M5 8l2 2 4-4" stroke="var(--success)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Direct bank file integrations
-              </li>
-            </ul>
-          </div>
-          <div class="reveal reveal-d2" style="
-            background: var(--neutral-50); border: 1px solid var(--border);
-            border-radius: var(--radius-xl); padding: 40px;
-            aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;
-          ">
-            <p style="color: var(--fg-3); font-size: 14px;">WPS compliance dashboard</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Smart Alerts -->
-    <section class="section-pad" style="padding: 80px 40px; background: var(--neutral-50);">
-      <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
-        <div class="reveal" style="margin-bottom: 48px;">
-          <div style="
-            width: 56px; height: 56px; border-radius: var(--radius-md);
-            background: var(--cirvio-mint-50); border: 1px solid var(--cirvio-mint-300);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--cirvio-sage); margin: 0 auto 20px;
-          ">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h2 style="font-size: 36px; font-weight: 700; color: var(--fg-1); margin: 0 0 16px; letter-spacing: -0.02em;">Smart Alerts</h2>
-          <p style="font-size: 17px; color: var(--fg-2); max-width: 520px; margin: 0 auto; line-height: 1.65;">
-            Proactive notifications keep your team ahead of every deadline. Configure exactly when and how you get notified.
-          </p>
-        </div>
-        <div class="col-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; text-align: left;">
-          <div class="reveal reveal-d1" style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 24px; box-shadow: var(--shadow-sm);">
-            <h3 style="font-size: 16px; font-weight: 600; color: var(--fg-1); margin: 0 0 10px;">Email Notifications</h3>
-            <p style="font-size: 14px; color: var(--fg-2); line-height: 1.65; margin: 0;">Scheduled digest emails and instant alerts for critical events sent directly to HR managers and responsible admins.</p>
-          </div>
-          <div class="reveal reveal-d2" style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 24px; box-shadow: var(--shadow-sm);">
-            <h3 style="font-size: 16px; font-weight: 600; color: var(--fg-1); margin: 0 0 10px;">In-App Push</h3>
-            <p style="font-size: 14px; color: var(--fg-2); line-height: 1.65; margin: 0;">Real-time dashboard notifications with severity levels &mdash; critical, warning, and informational &mdash; so you always know what needs attention first.</p>
-          </div>
-          <div class="reveal reveal-d3" style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 24px; box-shadow: var(--shadow-sm);">
-            <h3 style="font-size: 16px; font-weight: 600; color: var(--fg-1); margin: 0 0 10px;">Custom Thresholds</h3>
-            <p style="font-size: 14px; color: var(--fg-2); line-height: 1.65; margin: 0;">Configure per-document-type alert windows. Default to 90/60/30 days or set your own schedule based on your renewal lead times.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  `,
+  imports: [RouterLink],
+  templateUrl: './features.html',
 })
-export class FeaturesComponent {}
+export class FeaturesComponent implements AfterViewInit, OnDestroy {
+  private platformId = inject(PLATFORM_ID);
+  private observer?: IntersectionObserver;
+
+  readonly features: FeatureBlock[] = [
+    {
+      icon: 'users',
+      title: 'Employee Management',
+      subtitle: 'Complete digital HR records for every team member.',
+      points: [
+        'Full employee profiles — personal details, emergency contacts, job history',
+        'Department and role management with organisational hierarchy',
+        'Employment contract storage and expiry tracking',
+        'Bulk employee import via CSV or manual entry',
+        'Role-based access so HR managers see only what they need',
+      ],
+      visual: [
+        { label: 'Total employees',  value: '84',  color: 'var(--fg-1)' },
+        { label: 'Departments',      value: '9',   color: 'var(--fg-1)' },
+        { label: 'Active contracts', value: '81',  color: 'var(--success)' },
+        { label: 'Expiring soon',    value: '3',   color: 'var(--warning)' },
+      ],
+    },
+    {
+      icon: 'shield',
+      title: 'Visa & Immigration Tracking',
+      subtitle: 'Never miss a visa renewal again.',
+      points: [
+        'Track all visa types — employment, residence, investor, visit',
+        'Automated expiry alerts at 90, 60, and 30 days',
+        'Store visa documents, entry stamps, and renewal records',
+        'GDRFA and ICA status monitoring',
+        'Renewal workflow with assignable tasks for your PRO team',
+      ],
+      visual: [
+        { label: 'Employment visa', value: '62',  color: 'var(--success)' },
+        { label: 'Residence visa',  value: '18',  color: 'var(--success)' },
+        { label: 'Expiring <30d',   value: '6',   color: 'var(--danger)' },
+        { label: 'Expiring <60d',   value: '11',  color: 'var(--warning)' },
+      ],
+    },
+    {
+      icon: 'file',
+      title: 'WPS Compliance',
+      subtitle: 'Wage Protection System filing, simplified.',
+      points: [
+        'Monthly payroll records with full audit trail',
+        'WPS SIF file generation for MOHRE submission',
+        'Salary history per employee with change log',
+        'Filing deadline reminders and calendar view',
+        'MOL compliance status dashboard',
+      ],
+      visual: [
+        { label: 'Last WPS filing',   value: 'On time',    color: 'var(--success)' },
+        { label: 'This cycle status', value: 'Due Jun 14', color: 'var(--warning)' },
+        { label: 'Employees paid',    value: '84 / 84',    color: 'var(--success)' },
+        { label: 'SIF file',          value: 'Ready',      color: 'var(--info)' },
+      ],
+    },
+    {
+      icon: 'bell',
+      title: 'Smart Alerts',
+      subtitle: 'Proactive notifications before deadlines hit.',
+      points: [
+        'Configurable alert windows — 30, 60, or 90 days',
+        'Email and in-app notifications for all team members',
+        'Escalation rules if actions are not acknowledged',
+        'Digest summaries — daily or weekly compliance reports',
+        'Alert history and acknowledgement audit trail',
+      ],
+      visual: [
+        { label: 'Active alerts',  value: '14', color: 'var(--warning)' },
+        { label: 'Resolved today', value: '3',  color: 'var(--success)' },
+        { label: 'Critical',       value: '2',  color: 'var(--danger)' },
+        { label: 'Upcoming 30d',   value: '9',  color: 'var(--info)' },
+      ],
+    },
+  ];
+
+  readonly extras: Extra[] = [
+    { icon: 'doc',     title: 'Document Storage',   desc: 'Centralised, secure document repository for all employee and company files.' },
+    { icon: 'chart',   title: 'Compliance Reports', desc: 'Export audit-ready reports for MOHRE, GDRFA, and internal HR reviews.' },
+    { icon: 'lock',    title: 'Role-based Access',  desc: 'Tenant Admin, HR Manager, and Viewer roles with granular permissions.' },
+    { icon: 'refresh', title: 'Renewal Workflows',  desc: 'Assign renewal tasks to your PRO team with due dates and status tracking.' },
+  ];
+
+  ngAfterViewInit() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.observer = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.1 }
+    );
+    document.querySelectorAll('.reveal').forEach(el => this.observer!.observe(el));
+  }
+
+  ngOnDestroy() {
+    this.observer?.disconnect();
+  }
+}

@@ -1,0 +1,123 @@
+<div style="background:var(--bg);">
+
+  <!-- Page header -->
+  <section style="background:var(--cirvio-hunter);padding:72px 32px 80px;text-align:center;">
+    <p style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--cirvio-mint);margin-bottom:16px;">Platform features</p>
+    <h1 style="font-size:48px;font-weight:600;letter-spacing:-0.025em;color:var(--fg-on-dark);margin-bottom:18px;line-height:1.1;">
+      Every tool your HR team needs.
+    </h1>
+    <p style="font-size:18px;color:rgba(236,236,232,0.7);max-width:520px;margin:0 auto 32px;line-height:1.65;">
+      Built for complex, multi-national workforces — with deep specialisation in UAE and GCC compliance requirements.
+    </p>
+    <a routerLink="/signup" class="btn-primary" style="padding:12px 24px;font-size:15px;background:var(--cirvio-mint);color:var(--cirvio-hunter);">
+      Start free trial
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </section>
+
+  <!-- Feature sections -->
+  @for (f of features; track f.title; let i = $index) {
+    <section class="section-pad" style="padding:80px 32px;border-top:1px solid var(--border-soft);"
+             [style.background]="i % 2 === 0 ? 'var(--bg)' : 'var(--neutral-50)'">
+      <div class="col-2" style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
+
+        <!-- Content -->
+        <div class="reveal" [style.order]="i % 2 !== 0 ? 2 : 1">
+          <div style="width:52px;height:52px;border-radius:14px;background:var(--cirvio-mint-50);border:1px solid var(--cirvio-mint-100);display:flex;align-items:center;justify-content:center;color:var(--cirvio-sage);margin-bottom:20px;">
+            @if (f.icon === 'users') {
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            }
+            @if (f.icon === 'shield') {
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            }
+            @if (f.icon === 'file') {
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></svg>
+            }
+            @if (f.icon === 'bell') {
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            }
+          </div>
+          <h2 style="font-size:30px;font-weight:600;letter-spacing:-0.015em;color:var(--fg-1);margin-bottom:8px;">{{ f.title }}</h2>
+          <p style="font-size:16px;color:var(--fg-2);margin-bottom:24px;line-height:1.6;">{{ f.subtitle }}</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            @for (p of f.points; track p) {
+              <div style="display:flex;align-items:flex-start;gap:10px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:3px;">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span style="font-size:14px;color:var(--fg-1);line-height:1.55;">{{ p }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Visual -->
+        <div class="reveal" [style.order]="i % 2 !== 0 ? 1 : 2">
+          <div class="cirvio-glass" style="padding:28px;">
+            <p style="font-size:11px;font-weight:600;color:var(--fg-2);margin-bottom:20px;text-transform:uppercase;letter-spacing:0.06em;">
+              {{ f.title }} — Live snapshot
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              @for (v of f.visual; track v.label) {
+                <div style="background:var(--neutral-50);border:1px solid var(--border-soft);border-radius:12px;padding:18px 20px;">
+                  <p style="font-size:11px;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;font-weight:500;">{{ v.label }}</p>
+                  <p style="font-size:24px;font-weight:600;letter-spacing:-0.02em;" [style.color]="v.color">{{ v.value }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  }
+
+  <!-- Additional features grid -->
+  <section class="section-pad" style="padding:80px 32px;background:var(--neutral-50);border-top:1px solid var(--border-soft);">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div class="reveal" style="text-align:center;margin-bottom:48px;">
+        <h2 style="font-size:30px;font-weight:600;letter-spacing:-0.015em;color:var(--fg-1);">And more, built in.</h2>
+      </div>
+      <div class="col-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;">
+        @for (e of extras; track e.title) {
+          <div class="cirvio-glass reveal" style="padding:24px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--cirvio-mint-50);display:flex;align-items:center;justify-content:center;color:var(--cirvio-sage);margin-bottom:14px;">
+              @if (e.icon === 'doc') {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              }
+              @if (e.icon === 'chart') {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              }
+              @if (e.icon === 'lock') {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              }
+              @if (e.icon === 'refresh') {
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              }
+            </div>
+            <h3 style="font-size:15px;font-weight:600;color:var(--fg-1);margin-bottom:8px;">{{ e.title }}</h3>
+            <p style="font-size:13px;color:var(--fg-2);line-height:1.6;">{{ e.desc }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section-pad" style="padding:80px 32px;text-align:center;">
+    <h2 style="font-size:34px;font-weight:600;letter-spacing:-0.02em;color:var(--fg-1);margin-bottom:14px;">
+      Ready to get started?
+    </h2>
+    <p style="font-size:16px;color:var(--fg-2);margin-bottom:32px;">
+      Try Cirvio free for 14 days. No credit card required.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a routerLink="/signup" class="btn-primary" style="padding:12px 24px;font-size:15px;">
+        Start free trial
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a routerLink="/pricing" class="btn-ghost" style="padding:12px 24px;font-size:15px;">View pricing</a>
+    </div>
+  </section>
+
+</div>
