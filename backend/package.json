@@ -1,8 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
-  "type": "module",
+  "main": "server.ts",
   "scripts": {
     "server": "nodemon --exec tsx server.ts",
     "build": "prisma generate && tsc",
