@@ -1,0 +1,123 @@
+<div style="background:var(--bg);">
+
+  <!-- Page header -->
+  <section style="background:var(--cirvio-hunter);padding:72px 32px 80px;text-align:center;">
+    <p style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--cirvio-mint);margin-bottom:16px;">Pricing</p>
+    <h1 style="font-size:48px;font-weight:600;letter-spacing:-0.025em;color:var(--fg-on-dark);margin-bottom:18px;line-height:1.1;">
+      Simple, transparent pricing.
+    </h1>
+    <p style="font-size:18px;color:rgba(236,236,232,0.7);max-width:480px;margin:0 auto;line-height:1.65;">
+      No hidden fees. No per-module charges. Everything your team needs to stay compliant, in one flat price.
+    </p>
+  </section>
+
+  <!-- Pricing cards -->
+  <section style="padding:80px 32px;background:var(--bg);">
+    <div style="max-width:1100px;margin:0 auto;">
+      <div class="col-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch;">
+        @for (p of plans; track p.name) {
+          <div class="reveal cirvio-glass" style="padding:32px 28px;border-radius:20px;display:flex;flex-direction:column;position:relative;"
+               [style.border]="p.highlight ? '2px solid var(--cirvio-sage)' : '1px solid var(--border)'"
+               [style.background]="p.highlight ? 'var(--cirvio-mint-50)' : 'var(--bg)'">
+
+            @if (p.badge) {
+              <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--cirvio-sage);color:#fff;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:4px 14px;border-radius:99px;white-space:nowrap;">
+                {{ p.badge }}
+              </div>
+            }
+
+            <div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;"
+                 [style.background]="p.highlight ? 'var(--cirvio-sage)' : 'var(--cirvio-mint-50)'"
+                 [style.border]="p.highlight ? 'none' : '1px solid var(--cirvio-mint-100)'"
+                 [style.color]="p.highlight ? '#fff' : 'var(--cirvio-sage)'">
+              @if (p.icon === 'zap') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              }
+              @if (p.icon === 'building') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 21V7l9-4 9 4v14M9 21v-6h6v6"/></svg>
+              }
+              @if (p.icon === 'globe') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              }
+            </div>
+
+            <h2 style="font-size:20px;font-weight:600;color:var(--fg-1);margin-bottom:4px;">{{ p.name }}</h2>
+            <p style="font-size:13px;color:var(--fg-3);margin-bottom:20px;line-height:1.5;">{{ p.desc }}</p>
+
+            <div style="margin-bottom:28px;">
+              <span style="font-size:38px;font-weight:700;color:var(--fg-1);letter-spacing:-0.03em;">{{ p.price }}</span>
+              @if (p.period) {
+                <span style="font-size:15px;color:var(--fg-3);margin-left:4px;">{{ p.period }}</span>
+              }
+            </div>
+
+            <a [routerLink]="p.ctaHref" [class]="p.highlight ? 'btn-primary' : 'btn-ghost'" style="padding:11px 20px;font-size:14px;justify-content:center;margin-bottom:28px;">
+              {{ p.cta }}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+
+            <div style="height:1px;background:var(--border-soft);margin-bottom:24px;"></div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;flex:1;">
+              @for (f of p.features; track f) {
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span style="font-size:13px;color:var(--fg-2);line-height:1.5;">{{ f }}</span>
+                </div>
+              }
+            </div>
+
+          </div>
+        }
+      </div>
+
+      <p class="reveal" style="text-align:center;margin-top:32px;font-size:13px;color:var(--fg-3);">
+        All prices exclude VAT. Annual billing available at 2 months free.
+      </p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section style="padding:80px 32px;background:var(--neutral-50);border-top:1px solid var(--border-soft);">
+    <div style="max-width:720px;margin:0 auto;">
+      <div class="reveal" style="text-align:center;margin-bottom:52px;">
+        <h2 style="font-size:30px;font-weight:600;letter-spacing:-0.015em;color:var(--fg-1);margin-bottom:12px;">
+          Frequently asked questions
+        </h2>
+        <p style="font-size:15px;color:var(--fg-2);">
+          Still have questions?
+          <a routerLink="/contact" style="color:var(--cirvio-sage);text-decoration:none;font-weight:500;">Get in touch →</a>
+        </p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        @for (f of faqs; track f.q) {
+          <div class="cirvio-glass reveal" style="padding:24px 28px;border-radius:16px;">
+            <h3 style="font-size:15px;font-weight:600;color:var(--fg-1);margin-bottom:8px;">{{ f.q }}</h3>
+            <p style="font-size:14px;color:var(--fg-2);line-height:1.65;margin:0;">{{ f.a }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section style="padding:80px 32px;text-align:center;">
+    <h2 style="font-size:34px;font-weight:600;letter-spacing:-0.02em;color:var(--fg-1);margin-bottom:14px;">
+      14 days free. No card required.
+    </h2>
+    <p style="font-size:16px;color:var(--fg-2);margin-bottom:32px;">
+      Get started today and see how Cirvio simplifies your UAE compliance workflow.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a routerLink="/signup" class="btn-primary" style="padding:12px 24px;font-size:15px;">
+        Start free trial
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a routerLink="/contact" class="btn-ghost" style="padding:12px 24px;font-size:15px;">Talk to sales</a>
+    </div>
+  </section>
+
+</div>
