@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "server": "nodemon --exec tsx server.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "generate": "prisma generate",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
