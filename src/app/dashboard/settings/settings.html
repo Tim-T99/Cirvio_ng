@@ -42,11 +42,20 @@
             style="background:var(--bg-sunken);color:var(--fg-3);cursor:not-allowed;" />
         </div>
 
-        @if (profile()?.organizationName) {
+        @if (profile()?.organizationName || profile()?.tenant?.name) {
           <div>
             <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Organization</label>
-            <input type="text" class="field" [value]="profile()?.organizationName ?? ''" readonly
+            <input type="text" class="field" [value]="profile()?.organizationName ?? profile()?.tenant?.name ?? ''" readonly
               style="background:var(--bg-sunken);color:var(--fg-3);cursor:not-allowed;" />
+          </div>
+        }
+
+        @if (profile()?.tenant?.country) {
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Country</label>
+            <input type="text" class="field" [value]="countryName" readonly
+              style="background:var(--bg-sunken);color:var(--fg-3);cursor:not-allowed;" />
+            <p style="font-size:12px;color:var(--fg-3);margin-top:6px;">Contact support to change your country.</p>
           </div>
         }
 

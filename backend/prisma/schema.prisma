@@ -224,7 +224,10 @@ model Tenant {
   trialEndsAt          DateTime?
   subscriptionEndsAt   DateTime?
 
-  // UAE-specific
+  // Country (ISO 3166-1 alpha-2) — drives which compliance modules are surfaced
+  country              String       @default("AE")
+
+  // UAE-specific (only used when country = "AE")
   tradelicenseNo       String?
   tradelicenseExpiry   DateTime?
   emirate              Emirate?

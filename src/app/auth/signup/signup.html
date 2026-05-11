@@ -30,6 +30,23 @@
             }
           </div>
 
+          <!-- Country -->
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Country</label>
+            <select name="country" class="field" style="appearance:none;cursor:pointer;"
+              [value]="country()" (change)="country.set($any($event.target).value)" required>
+              @for (c of countries; track c.code) {
+                <option [value]="c.code">{{ c.name }}</option>
+              }
+            </select>
+            @if (country() !== 'AE') {
+              <p style="font-size:12px;color:var(--fg-3);margin-top:6px;line-height:1.45;">
+                Full compliance modules (visa tracking, WPS, Emirates ID) are currently UAE-only.
+                You'll get core HR features and early access as we ship modules for your region.
+              </p>
+            }
+          </div>
+
           <!-- Name row -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div>

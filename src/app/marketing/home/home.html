@@ -87,7 +87,7 @@
 
   <!-- Stats strip -->
   <div style="background:var(--cirvio-hunter);padding:0 32px;">
-    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);">
+    <div class="stats-strip" style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);">
       @for (s of stats; track s.label; let i = $index; let last = $last) {
         <div style="padding:28px 32px;text-align:center;"
              [style.border-right]="last ? 'none' : '1px solid rgba(255,255,255,0.08)'">

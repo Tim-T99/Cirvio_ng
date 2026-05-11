@@ -285,6 +285,13 @@ export const getUserById = async (
           department: { select: { name: true } },
         },
       },
+      tenant: {
+        select: {
+          id: true,
+          name: true,
+          country: true,
+        },
+      },
     },
   })
 
