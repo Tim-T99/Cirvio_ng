@@ -12,6 +12,7 @@ import { PasswordRuleComponent } from '../password-rule/password-rule';
 })
 export class SignupComponent {
   organizationName = signal('');
+  country = signal('AE');
   firstName = signal('');
   lastName = signal('');
   email = signal('');
@@ -23,6 +24,16 @@ export class SignupComponent {
   errors = signal<Record<string, string>>({});
   serverError = signal('');
   loading = signal(false);
+
+  readonly countries: { code: string; name: string }[] = [
+    { code: 'AE', name: 'United Arab Emirates' },
+    { code: 'SA', name: 'Saudi Arabia' },
+    { code: 'QA', name: 'Qatar' },
+    { code: 'BH', name: 'Bahrain' },
+    { code: 'KW', name: 'Kuwait' },
+    { code: 'OM', name: 'Oman' },
+    { code: 'OTHER', name: 'Other' },
+  ];
 
   private readonly EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
@@ -77,6 +88,7 @@ export class SignupComponent {
     this.serverError.set('');
     this.auth.register({
       organizationName: this.organizationName(),
+      country: this.country(),
       firstName: this.firstName(),
       lastName: this.lastName(),
       email: this.email().trim(),

@@ -63,6 +63,7 @@ export class AuthService {
     lastName: string;
     email: string;
     password: string;
+    country: string;
   }) {
     return this.http.post<LoginResponse>(`${environment.apiUrl}/api/auth/register`, payload).pipe(
       tap((res) => {

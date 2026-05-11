@@ -9,7 +9,18 @@ interface UserProfile {
   email: string;
   role: string;
   organizationName?: string;
+  tenant?: { id: string; name: string; country: string };
 }
+
+const COUNTRY_NAMES: Record<string, string> = {
+  AE: 'United Arab Emirates',
+  SA: 'Saudi Arabia',
+  QA: 'Qatar',
+  BH: 'Bahrain',
+  KW: 'Kuwait',
+  OM: 'Oman',
+  OTHER: 'Other',
+};
 
 @Component({
   selector: 'app-settings',
@@ -28,6 +39,11 @@ export class SettingsComponent implements OnInit {
 
   firstName = signal('');
   lastName = signal('');
+
+  get countryName(): string {
+    const code = this.profile()?.tenant?.country ?? 'AE';
+    return COUNTRY_NAMES[code] ?? code;
+  }
 
   currentPassword = signal('');
   newPassword = signal('');

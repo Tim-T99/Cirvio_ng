@@ -2,8 +2,8 @@
 
   <!-- Header -->
   <div style="padding:20px 28px;border-bottom:1px solid var(--border-soft);flex-shrink:0;">
-    <h1 style="font-size:18px;font-weight:600;color:var(--fg-1);margin:0 0 2px;">Compliance Assistant</h1>
-    <p style="font-size:13px;color:var(--fg-3);margin:0;">Ask anything about UAE labour law, visas, WPS, and Gulf HR compliance.</p>
+    <h1 style="font-size:18px;font-weight:600;color:var(--fg-1);margin:0 0 2px;">{{ isUae ? 'Compliance Assistant' : 'HR Assistant' }}</h1>
+    <p style="font-size:13px;color:var(--fg-3);margin:0;">{{ headerSubtitle }}</p>
   </div>
 
   <!-- Messages -->
