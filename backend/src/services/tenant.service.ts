@@ -64,7 +64,7 @@ export const registerTenant = async (data: {
 
   const passwordHash = await hashPassword(data.password)
 
-  const { tenant, user } = await prisma.$transaction(async (tx: typeof prisma) => {
+  const { tenant, user } = await prisma.$transaction(async (tx) => {
     const tenant = await tx.tenant.create({
       data: {
         name: data.organizationName,
