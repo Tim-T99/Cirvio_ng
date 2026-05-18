@@ -54,10 +54,13 @@ export class AcceptInviteComponent implements OnInit {
     const t = this.route.snapshot.queryParamMap.get('token') ?? '';
     if (!t) { this.tokenError.set('No invite token found. Please check your invite link.'); return; }
     this.token.set(t);
-    this.http.get<{ email?: string; organizationName?: string; error?: string }>(
-      `${environment.apiUrl}/api/auth/accept-invite?token=${encodeURIComponent(t)}`
+    this.http.get<{ email?: string; role?: string; tenant?: { name?: string }; error?: string }>(
+      `${environment.apiUrl}/api/tenant/invites/validate/${encodeURIComponent(t)}`
     ).subscribe({
-      next: (d) => { if (d.error) this.tokenError.set(d.error); else this.inviteInfo.set(d); },
+      next: (d) => {
+        if (d.error) this.tokenError.set(d.error);
+        else this.inviteInfo.set({ email: d.email, organizationName: d.tenant?.name });
+      },
       error: () => this.tokenError.set('Unable to validate invite link. Please try again.'),
     });
   }
@@ -67,12 +70,10 @@ export class AcceptInviteComponent implements OnInit {
     if (!this.isFormReady() || !this.token()) return;
     this.loading.set(true);
     this.serverError.set('');
-    this.http.post(`${environment.apiUrl}/api/auth/accept-invite`, {
-      token: this.token(),
+    this.http.post(`${environment.apiUrl}/api/tenant/invites/accept/${encodeURIComponent(this.token())}`, {
       firstName: this.firstName(),
       lastName: this.lastName(),
       password: this.password(),
-      confirmPassword: this.confirmPassword(),
     }).subscribe({
       next: () => {
         this.success.set(true);

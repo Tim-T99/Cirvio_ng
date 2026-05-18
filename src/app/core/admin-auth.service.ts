@@ -50,7 +50,7 @@ export class AdminAuthService {
 
   login(email: string, password: string) {
     return this.http
-      .post<AdminLoginResponse>(`${environment.apiUrl}/api/auth/admin/login`, { email, password })
+      .post<AdminLoginResponse>(`${environment.apiUrl}/api/admin/login`, { email, password })
       .pipe(
         tap((res) => {
           this._token.set(res.token);
@@ -60,7 +60,7 @@ export class AdminAuthService {
   }
 
   logout() {
-    this.http.post(`${environment.apiUrl}/api/auth/logout`, {}).subscribe({ error: () => {} });
+    this.http.post(`${environment.apiUrl}/api/admin/logout`, {}).subscribe({ error: () => {} });
     this._token.set(null);
     this.deleteCookie('cirvio_admin_token');
     this.router.navigate(['/admin']);

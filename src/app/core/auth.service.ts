@@ -48,7 +48,7 @@ export class AuthService {
 
   login(email: string, password: string) {
     return this.http
-      .post<LoginResponse>(`${environment.apiUrl}/api/auth/login`, { email, password })
+      .post<LoginResponse>(`${environment.apiUrl}/api/users/login`, { email, password })
       .pipe(
         tap((res) => {
           this._token.set(res.token);
@@ -65,7 +65,7 @@ export class AuthService {
     password: string;
     country: string;
   }) {
-    return this.http.post<LoginResponse>(`${environment.apiUrl}/api/auth/register`, payload).pipe(
+    return this.http.post<LoginResponse>(`${environment.apiUrl}/api/tenant/register`, payload).pipe(
       tap((res) => {
         this._token.set(res.token);
         this.setCookie('cirvio_token', res.token);
@@ -74,7 +74,7 @@ export class AuthService {
   }
 
   logout() {
-    this.http.post(`${environment.apiUrl}/api/auth/logout`, {}).subscribe({ error: () => {} });
+    this.http.post(`${environment.apiUrl}/api/users/logout`, {}).subscribe({ error: () => {} });
     this._token.set(null);
     this.deleteCookie('cirvio_token');
     this.router.navigate(['/login']);
