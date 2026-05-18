@@ -92,7 +92,7 @@ export class SettingsComponent implements OnInit {
     if (this.newPassword() !== this.confirmPassword()) { this.passwordError.set('New passwords do not match.'); return; }
     if (this.newPassword().length < 8) { this.passwordError.set('New password must be at least 8 characters.'); return; }
     this.savingPassword.set(true);
-    this.http.post(`${environment.apiUrl}/api/users/change-password`, {
+    this.http.patch(`${environment.apiUrl}/api/users/me/password`, {
       currentPassword: this.currentPassword(),
       newPassword: this.newPassword(),
     }).subscribe({
