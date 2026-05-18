@@ -1,7 +1,7 @@
 // ═════════════════════════════════════════════════════════════════
 // CIRVIO — PRISMA SCHEMA
-// UAE Staff Management SaaS
-// Stack: PostgreSQL + Prisma + Railway
+// Multi-tenant Staff Management SaaS (UAE-first; country per tenant)
+// Stack: PostgreSQL (Supabase) + Prisma + Vercel
 // ID strategy: uuid via gen_random_uuid() (pgcrypto extension)
 // ═════════════════════════════════════════════════════════════════
 
