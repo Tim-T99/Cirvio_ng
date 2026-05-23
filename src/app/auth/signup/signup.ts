@@ -3,11 +3,12 @@ import { RouterLink } from '@angular/router';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { PasswordRuleComponent } from '../password-rule/password-rule';
+import { LogoComponent } from '../../shared/logo/logo';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [RouterLink, PasswordRuleComponent],
+  imports: [RouterLink, PasswordRuleComponent, LogoComponent],
   templateUrl: './signup.html',
 })
 export class SignupComponent {

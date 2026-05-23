@@ -2,11 +2,12 @@ import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Router } from '@angular/router';
 import { AdminAuthService } from '../../core/admin-auth.service';
+import { LogoComponent } from '../../shared/logo/logo';
 
 @Component({
   selector: 'app-admin-login',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, LogoComponent],
   templateUrl: './admin-login.html',
 })
 export class AdminLoginComponent {
