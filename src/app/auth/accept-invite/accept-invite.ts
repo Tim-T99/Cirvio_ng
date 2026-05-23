@@ -3,12 +3,13 @@ import { RouterLink } from '@angular/router';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { PasswordRuleComponent } from '../password-rule/password-rule';
+import { LogoComponent } from '../../shared/logo/logo';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-accept-invite',
   standalone: true,
-  imports: [RouterLink, PasswordRuleComponent],
+  imports: [RouterLink, PasswordRuleComponent, LogoComponent],
   templateUrl: './accept-invite.html',
 })
 export class AcceptInviteComponent implements OnInit {

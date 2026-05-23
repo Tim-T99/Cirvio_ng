@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { LogoComponent } from '../../../shared/logo/logo';
 
 interface UserProfile {
   firstName?: string;
@@ -14,7 +15,7 @@ interface UserProfile {
 @Component({
   selector: 'app-sidenav',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, LogoComponent],
   templateUrl: './sidenav.html',
 })
 export class SidenavComponent {
