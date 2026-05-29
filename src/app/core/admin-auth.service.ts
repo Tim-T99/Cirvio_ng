@@ -17,6 +17,7 @@ export class AdminAuthService {
   private platformId = inject(PLATFORM_ID);
 
   private _token = signal<string | null>(this.readCookie('cirvio_admin_token'));
+  private _adminEmail = signal<string>(this.readCookie('cirvio_admin_email') ?? '');
   readonly token = this._token.asReadonly();
   readonly isLoggedIn = computed(() => !!this._token());
 
@@ -39,13 +40,7 @@ export class AdminAuthService {
   }
 
   get adminEmail(): string {
-    const token = this._token();
-    if (!token) return '';
-    try {
-      const payload = token.split('.')[1];
-      const data = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-      return data.email ?? '';
-    } catch { return ''; }
+    return this._adminEmail();
   }
 
   login(email: string, password: string) {
@@ -55,6 +50,8 @@ export class AdminAuthService {
         tap((res) => {
           this._token.set(res.token);
           this.setCookie('cirvio_admin_token', res.token);
+          this._adminEmail.set(res.admin.email);
+          this.setCookie('cirvio_admin_email', res.admin.email);
         })
       );
   }
@@ -62,7 +59,9 @@ export class AdminAuthService {
   logout() {
     this.http.post(`${environment.apiUrl}/api/admin/logout`, {}).subscribe({ error: () => {} });
     this._token.set(null);
+    this._adminEmail.set('');
     this.deleteCookie('cirvio_admin_token');
+    this.deleteCookie('cirvio_admin_email');
     this.router.navigate(['/admin']);
   }
 }
