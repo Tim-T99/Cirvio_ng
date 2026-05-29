@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 export interface AuditEntry {
   id: string;
@@ -48,7 +49,7 @@ export class AuditComponent implements OnInit {
     this.error.set('');
     const s = this.search() ? `&search=${encodeURIComponent(this.search())}` : '';
     this.http
-      .get<AuditResponse>(`/api/admin/audit?page=${this.page()}&limit=${this.limit}${s}`)
+      .get<AuditResponse>(`${environment.apiUrl}/api/admin/audit?page=${this.page()}&limit=${this.limit}${s}`)
       .subscribe({
         next: (data) => {
           this.entries.set(data.entries ?? []);

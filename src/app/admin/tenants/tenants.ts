@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 export interface Tenant {
   id: string;
@@ -54,7 +55,7 @@ export class TenantsComponent implements OnInit {
     const status = this.statusFilter() === 'ALL' ? '' : `&status=${this.statusFilter().toLowerCase()}`;
     const search = this.search() ? `&search=${encodeURIComponent(this.search())}` : '';
     this.http
-      .get<TenantsResponse>(`/api/admin/tenants?page=${this.page()}&limit=${this.limit}${search}${status}`)
+      .get<TenantsResponse>(`${environment.apiUrl}/api/admin/tenants?page=${this.page()}&limit=${this.limit}${search}${status}`)
       .subscribe({
         next: (data) => {
           this.tenants.set(data.tenants ?? []);
@@ -98,7 +99,7 @@ export class TenantsComponent implements OnInit {
   updateStatus(tenant: Tenant, newStatus: string): void {
     this.closeMenu();
     this.http
-      .patch(`/api/admin/tenants/${tenant.id}/status`, { status: newStatus })
+      .patch(`${environment.apiUrl}/api/admin/tenants/${tenant.id}/status`, { status: newStatus })
       .subscribe({
         next: () => this.fetchTenants(),
         error: () => this.error.set(`Failed to update status for ${tenant.companyName}.`),

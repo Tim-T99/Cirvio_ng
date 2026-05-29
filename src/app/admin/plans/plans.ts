@@ -1,5 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 export interface Plan {
   id: string;
@@ -54,7 +55,7 @@ export class PlansComponent implements OnInit {
   fetchPlans(): void {
     this.loading.set(true);
     this.error.set('');
-    this.http.get<Plan[]>('/api/admin/plans').subscribe({
+    this.http.get<Plan[]>(`${environment.apiUrl}/api/admin/plans`).subscribe({
       next: (data) => {
         this.plans.set(data ?? []);
         this.loading.set(false);
@@ -114,8 +115,8 @@ export class PlansComponent implements OnInit {
     };
     const editing = this.editingPlan();
     const req = editing
-      ? this.http.patch<Plan>(`/api/admin/plans/${editing.id}`, payload)
-      : this.http.post<Plan>('/api/admin/plans', payload);
+      ? this.http.patch<Plan>(`${environment.apiUrl}/api/admin/plans/${editing.id}`, payload)
+      : this.http.post<Plan>(`${environment.apiUrl}/api/admin/plans`, payload);
 
     req.subscribe({
       next: () => {

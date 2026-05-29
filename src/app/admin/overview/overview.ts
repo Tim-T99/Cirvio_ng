@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 interface Stats {
   totalTenants: number;
@@ -45,7 +46,7 @@ export class OverviewComponent implements OnInit {
     this.loadingTenants.set(true);
     this.error.set('');
 
-    this.http.get<Stats>('/api/admin/stats').subscribe({
+    this.http.get<Stats>(`${environment.apiUrl}/api/admin/stats`).subscribe({
       next: (data) => {
         this.stats.set(data);
         this.loadingStats.set(false);
@@ -57,7 +58,7 @@ export class OverviewComponent implements OnInit {
     });
 
     this.http
-      .get<{ tenants: Tenant[] }>('/api/admin/tenants?limit=6&sortBy=createdAt&order=desc')
+      .get<{ tenants: Tenant[] }>(`${environment.apiUrl}/api/admin/tenants?limit=6&sortBy=createdAt&order=desc`)
       .subscribe({
         next: (data) => {
           this.recentTenants.set(data.tenants ?? []);

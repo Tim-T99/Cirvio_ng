@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 export interface AdminUser {
   id: string;
@@ -48,7 +49,7 @@ export class AdminsComponent implements OnInit {
   fetchAdmins(): void {
     this.loading.set(true);
     this.error.set('');
-    this.http.get<AdminUser[]>('/api/admin/admins').subscribe({
+    this.http.get<AdminUser[]>(`${environment.apiUrl}/api/admin/admins`).subscribe({
       next: (data) => {
         this.admins.set(data ?? []);
         this.loading.set(false);
@@ -82,7 +83,7 @@ export class AdminsComponent implements OnInit {
     }
     this.saveError.set('');
     this.saving.set(true);
-    this.http.post<AdminUser>('/api/admin/admins', f).subscribe({
+    this.http.post<AdminUser>(`${environment.apiUrl}/api/admin/admins`, f).subscribe({
       next: () => {
         this.saving.set(false);
         this.closeModal();
@@ -97,7 +98,7 @@ export class AdminsComponent implements OnInit {
 
   toggleActive(admin: AdminUser): void {
     const newStatus = !admin.isActive;
-    this.http.patch(`/api/admin/admins/${admin.id}/status`, { isActive: newStatus }).subscribe({
+    this.http.patch(`${environment.apiUrl}/api/admin/admins/${admin.id}/status`, { isActive: newStatus }).subscribe({
       next: () => this.fetchAdmins(),
       error: () => this.error.set(`Failed to update status for ${admin.name}.`),
     });
