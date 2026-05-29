@@ -17,7 +17,7 @@ interface Tenant {
   email: string;
   plan: string;
   status: string;
-  employeeCount: number;
+  employeeCount: number | null;
   createdAt: string;
 }
 

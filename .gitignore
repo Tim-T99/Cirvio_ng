@@ -42,3 +42,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# One-time seed scripts (may contain credentials)
+backend/prisma/seed-admin.ts

@@ -8,8 +8,8 @@ export interface Tenant {
   email: string;
   plan: string;
   status: string;
-  employeeCount: number;
-  userCount: number;
+  employeeCount: number | null;
+  userCount: number | null;
   trialEndsAt: string | null;
   createdAt: string;
 }
