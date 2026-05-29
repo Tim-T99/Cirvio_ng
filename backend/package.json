@@ -6,7 +6,7 @@
   "scripts": {
     "server": "nodemon --exec tsx server.ts",
     "build": "prisma generate && tsc",
-    "start": "npx prisma db push --skip-generate && node dist/server.js",
+    "start": "npx prisma db push && node dist/server.js",
     "generate": "prisma generate",
     "postinstall": "prisma generate",
     "vercel-build": "prisma generate",
