@@ -19,6 +19,7 @@ router.post('/login', adminCtrl.login)
 router.use(requireAdmin)
 
 router.post('/logout', adminCtrl.logout)
+router.get('/me', adminCtrl.getMe)
 
 // ── Admin Management (SuperAdmin only) ──
 router.post('/admins', requireAdminRole('SUPER_ADMIN'), adminCtrl.createAdmin)

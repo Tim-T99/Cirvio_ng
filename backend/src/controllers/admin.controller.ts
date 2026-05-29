@@ -34,6 +34,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 }
 
+export const getMe = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const admin = await adminService.getAdminById(req.admin!.adminId)
+    res.status(200).json(admin)
+  } catch {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
 export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
     const token = req.headers.authorization?.split(' ')[1]

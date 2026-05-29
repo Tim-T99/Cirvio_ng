@@ -21,6 +21,18 @@ export class AdminAuthService {
   readonly token = this._token.asReadonly();
   readonly isLoggedIn = computed(() => !!this._token());
 
+  constructor() {
+    if (this._token() && !this._adminEmail()) {
+      this.http.get<{ email: string }>(`${environment.apiUrl}/api/admin/me`).subscribe({
+        next: (res) => {
+          this._adminEmail.set(res.email);
+          this.setCookie('cirvio_admin_email', res.email);
+        },
+        error: () => {},
+      });
+    }
+  }
+
   private readCookie(name: string): string | null {
     if (!isPlatformBrowser(this.platformId)) return null;
     const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));

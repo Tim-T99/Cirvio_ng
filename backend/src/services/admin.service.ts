@@ -63,6 +63,13 @@ export const loginAdmin = async (
   }
 }
 
+export const getAdminById = async (id: string) => {
+  return prisma.admin.findUniqueOrThrow({
+    where: { id },
+    select: { id: true, email: true, name: true, role: true },
+  })
+}
+
 export const logoutAdmin = async (token: string) => {
   await prisma.adminSession.deleteMany({
     where: { token },
