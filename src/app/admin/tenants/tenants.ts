@@ -41,6 +41,7 @@ export class TenantsComponent implements OnInit {
   readonly search = signal('');
   readonly statusFilter = signal('ALL');
   readonly openMenuId = signal<string | null>(null);
+  readonly menuPos = signal<{ top: number; right: number } | null>(null);
 
   readonly statusTabs = ['ALL', 'ACTIVE', 'TRIAL', 'SUSPENDED', 'CANCELLED'];
   readonly limit = 15;
@@ -52,7 +53,7 @@ export class TenantsComponent implements OnInit {
   fetchTenants(): void {
     this.loading.set(true);
     this.error.set('');
-    const status = this.statusFilter() === 'ALL' ? '' : `&status=${this.statusFilter().toLowerCase()}`;
+    const status = this.statusFilter() === 'ALL' ? '' : `&status=${this.statusFilter()}`;
     const search = this.search() ? `&search=${encodeURIComponent(this.search())}` : '';
     this.http
       .get<TenantsResponse>(`${environment.apiUrl}/api/admin/tenants?page=${this.page()}&limit=${this.limit}${search}${status}`)
@@ -88,12 +89,21 @@ export class TenantsComponent implements OnInit {
     this.fetchTenants();
   }
 
-  toggleMenu(id: string): void {
-    this.openMenuId.update(cur => (cur === id ? null : id));
+  toggleMenu(id: string, event: MouseEvent): void {
+    if (this.openMenuId() === id) {
+      this.openMenuId.set(null);
+      this.menuPos.set(null);
+    } else {
+      const btn = event.currentTarget as HTMLElement;
+      const rect = btn.getBoundingClientRect();
+      this.openMenuId.set(id);
+      this.menuPos.set({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+    }
   }
 
   closeMenu(): void {
     this.openMenuId.set(null);
+    this.menuPos.set(null);
   }
 
   updateStatus(tenant: Tenant, newStatus: string): void {

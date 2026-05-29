@@ -100,9 +100,9 @@
                 <td style="padding: 14px 16px; font-size: 13px; color: var(--fg-2); white-space: nowrap;">{{ tenant.createdAt | date:'d MMM y' }}</td>
 
                 <!-- Action menu -->
-                <td style="padding: 14px 24px 14px 16px; position: relative;" (click)="$event.stopPropagation()">
+                <td style="padding: 14px 24px 14px 16px;" (click)="$event.stopPropagation()">
                   <button
-                    (click)="toggleMenu(tenant.id)"
+                    (click)="toggleMenu(tenant.id, $event)"
                     style="
                       display: flex; align-items: center; justify-content: center;
                       width: 30px; height: 30px;
@@ -120,9 +120,9 @@
                     </svg>
                   </button>
 
-                  @if (openMenuId() === tenant.id) {
-                    <div style="
-                      position: absolute; right: 24px; top: 100%; z-index: 50;
+                  @if (openMenuId() === tenant.id && menuPos()) {
+                    <div [style.top.px]="menuPos()!.top" [style.right.px]="menuPos()!.right" style="
+                      position: fixed; z-index: 1000;
                       background: var(--neutral-0); border: 1px solid var(--border);
                       border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
                       padding: 6px; min-width: 160px;
