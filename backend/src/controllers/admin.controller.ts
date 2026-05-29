@@ -120,12 +120,32 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
 
 export const listTenants = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { status, search } = req.query
-    const tenants = await adminService.listAllTenants({
+    const { status, search, page = '1', limit = '15' } = req.query
+    const pageNum = Math.max(1, parseInt(page as string) || 1)
+    const limitNum = Math.max(1, parseInt(limit as string) || 15)
+
+    const raw = await adminService.listAllTenants({
       status: status as any,
       search: search as string,
     })
-    res.status(200).json(tenants)
+
+    const mapped = raw.map(t => ({
+      id: t.id,
+      companyName: (t as any).name,
+      email: t.email,
+      plan: t.plan?.name ?? 'N/A',
+      status: t.status,
+      employeeCount: (t as any)._count?.employees ?? null,
+      userCount: (t as any)._count?.users ?? null,
+      trialEndsAt: (t as any).trialEndsAt ?? null,
+      createdAt: t.createdAt,
+    }))
+
+    const total = mapped.length
+    const totalPages = Math.max(1, Math.ceil(total / limitNum))
+    const paginated = mapped.slice((pageNum - 1) * limitNum, pageNum * limitNum)
+
+    res.status(200).json({ tenants: paginated, total, page: pageNum, totalPages })
   } catch {
     res.status(500).json({ error: 'Internal server error' })
   }
@@ -239,14 +259,31 @@ export const updatePlan = async (req: Request, res: Response): Promise<void> => 
 
 export const getAuditLogs = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { adminId, targetType, targetId, limit } = req.query
+    const { adminId, targetType, targetId, page = '1', limit = '20' } = req.query
+    const pageNum = Math.max(1, parseInt(page as string) || 1)
+    const limitNum = Math.max(1, parseInt(limit as string) || 20)
+
     const logs = await adminService.getAuditLogs({
       adminId: adminId as string,
       targetType: targetType as string,
       targetId: targetId as string,
-      limit: limit ? parseInt(limit as string) : undefined,
     })
-    res.status(200).json(logs)
+
+    const mapped = logs.map(l => ({
+      id: l.id,
+      action: l.action,
+      actorEmail: (l as any).admin?.email ?? 'system',
+      targetType: l.targetType ?? '',
+      targetId: l.targetId ?? '',
+      meta: l.meta as Record<string, unknown> | null,
+      createdAt: l.createdAt,
+    }))
+
+    const total = mapped.length
+    const totalPages = Math.max(1, Math.ceil(total / limitNum))
+    const paginated = mapped.slice((pageNum - 1) * limitNum, pageNum * limitNum)
+
+    res.status(200).json({ entries: paginated, total, page: pageNum, totalPages })
   } catch {
     res.status(500).json({ error: 'Internal server error' })
   }

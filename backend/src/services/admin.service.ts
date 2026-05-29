@@ -355,23 +355,19 @@ export const getAuditLogs = async (filters?: {
 export const getPlatformStats = async () => {
   const [
     totalTenants,
-    activeTenants,
-    trialTenants,
+    active,
+    trial,
+    suspended,
     totalEmployees,
-    totalUsers,
+    platformAdmins,
   ] = await Promise.all([
     prisma.tenant.count(),
     prisma.tenant.count({ where: { status: 'ACTIVE' } }),
     prisma.tenant.count({ where: { status: 'TRIAL' } }),
+    prisma.tenant.count({ where: { status: 'SUSPENDED' } }),
     prisma.employee.count(),
-    prisma.user.count(),
+    prisma.admin.count({ where: { isActive: true } }),
   ])
 
-  return {
-    totalTenants,
-    activeTenants,
-    trialTenants,
-    totalEmployees,
-    totalUsers,
-  }
+  return { totalTenants, active, trial, suspended, totalEmployees, platformAdmins }
 }
