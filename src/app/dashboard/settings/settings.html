@@ -1,4 +1,4 @@
-<div style="padding:28px 32px;max-width:680px;">
+<div class="dash-page" style="padding:28px 32px;max-width:680px;">
 
   <div style="margin-bottom:28px;">
     <h1 style="font-size:20px;font-weight:600;color:var(--fg-1);margin:0 0 4px;">Settings</h1>
@@ -25,7 +25,7 @@
       }
 
       <div style="display:flex;flex-direction:column;gap:16px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="dash-settings-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
             <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">First name</label>
             <input type="text" class="field" [value]="firstName()" (input)="firstName.set($any($event.target).value)" placeholder="First name" />
@@ -66,6 +66,61 @@
         </div>
       </div>
     </div>
+
+    <!-- Organisation profile (TENANT_ADMIN only) -->
+    @if (isTenantAdmin) {
+      <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;">
+        <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0 0 6px;">Organisation profile</h2>
+        <p style="font-size:13px;color:var(--fg-3);margin:0 0 20px;">Visible to your team and used for compliance reporting.</p>
+
+        @if (orgError()) {
+          <div style="background:var(--danger-bg);border:1px solid rgba(184,69,69,0.20);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--danger);margin-bottom:16px;">{{ orgError() }}</div>
+        }
+        @if (orgSuccess()) {
+          <div style="background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--success);margin-bottom:16px;">Organisation profile updated.</div>
+        }
+
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Organisation name</label>
+            <input type="text" class="field" [value]="orgName()" (input)="orgName.set($any($event.target).value)" placeholder="Your company name" />
+          </div>
+
+          <div class="dash-settings-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Phone</label>
+              <input type="tel" class="field" [value]="orgPhone()" (input)="orgPhone.set($any($event.target).value)" placeholder="+971 50 000 0000" />
+            </div>
+            <div>
+              <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Industry</label>
+              <input type="text" class="field" [value]="orgIndustry()" (input)="orgIndustry.set($any($event.target).value)" placeholder="e.g. Logistics, Construction" />
+            </div>
+          </div>
+
+          @if (isUae) {
+            <div style="padding-top:4px;border-top:1px solid var(--border-soft);">
+              <p style="font-size:12px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--fg-3);margin:0 0 14px;">UAE compliance</p>
+              <div class="dash-settings-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                  <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Trade licence no.</label>
+                  <input type="text" class="field" [value]="orgTradelicenseNo()" (input)="orgTradelicenseNo.set($any($event.target).value)" placeholder="e.g. CN-1234567" />
+                </div>
+                <div>
+                  <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Licence expiry</label>
+                  <input type="date" class="field" [value]="orgTradelicenseExpiry()" (input)="orgTradelicenseExpiry.set($any($event.target).value)" />
+                </div>
+              </div>
+            </div>
+          }
+
+          <div style="display:flex;justify-content:flex-end;">
+            <button class="btn-primary" (click)="saveOrgProfile()" [disabled]="orgSaving()" style="padding:9px 22px;">
+              {{ orgSaving() ? 'Saving…' : 'Save organisation' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
 
     <!-- Password section -->
     <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;">

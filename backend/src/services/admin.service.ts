@@ -6,7 +6,7 @@
 // ─────────────────────────────────────────────
 
 import { prisma } from '../prisma/client'
-import { AdminRole, TenantStatus } from '@prisma/client'
+import { AdminRole, TenantStatus, Emirate } from '@prisma/client'
 import { hashPassword, comparePassword, hashToken } from '../../utils/hash'
 import { signToken } from '../../utils/jwt'
 
@@ -232,6 +232,32 @@ export const getTenantById = async (tenantId: string) => {
 
   if (!tenant) throw new Error('Tenant not found')
   return tenant
+}
+
+export const updateTenantDetails = async (
+  tenantId: string,
+  data: Partial<{
+    name: string
+    email: string
+    phone: string | null
+    industry: string | null
+    emirate: Emirate | null
+    tradelicenseNo: string | null
+    tradelicenseExpiry: Date | null
+    trialEndsAt: Date | null
+    subscriptionEndsAt: Date | null
+  }>
+) => {
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { id: true } })
+  if (!tenant) throw new Error('Tenant not found')
+  return prisma.tenant.update({
+    where: { id: tenantId },
+    data,
+    include: {
+      plan: true,
+      _count: { select: { employees: true, users: true, visaRecords: true, wpsRecords: true } },
+    },
+  })
 }
 
 export const updateTenantStatus = async (

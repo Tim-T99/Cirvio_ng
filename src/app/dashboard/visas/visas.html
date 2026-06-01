@@ -1,0 +1,275 @@
+<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;">
+
+  <!-- Header -->
+  <div style="padding:20px 28px 0;flex-shrink:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <div>
+        <h1 style="font-size:20px;font-weight:700;color:var(--fg-1);margin:0 0 4px;letter-spacing:-0.01em;">Visa Records</h1>
+        <p style="font-size:13px;color:var(--fg-3);margin:0;">{{ total() }} total records</p>
+      </div>
+      <button (click)="openCreate()" class="btn-primary" style="padding:8px 18px;font-size:13px;display:flex;align-items:center;gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add visa record
+      </button>
+    </div>
+
+    <!-- Stat cards -->
+    @if (dashboard()) {
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+        @for (card of [
+          {label:'Active',      value: dashboard()!.active,           color:'var(--success)'},
+          {label:'Expiring',    value: dashboard()!.expiringSoon,     color:'var(--warning)'},
+          {label:'Expired',     value: dashboard()!.expired,          color:'var(--danger)' },
+          {label:'In renewal',  value: dashboard()!.renewalInProgress,color:'var(--info)'   }
+        ]; track card.label) {
+          <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow-sm);">
+            <p style="font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);margin:0 0 6px;">{{ card.label }}</p>
+            <p [style.color]="card.color" style="font-size:28px;font-weight:700;margin:0;letter-spacing:-0.02em;">{{ card.value }}</p>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Pending alerts -->
+    @if (alerts().length > 0) {
+      <div style="margin-bottom:16px;background:var(--warning-bg);border:1px solid var(--warning);border-radius:var(--radius-sm);padding:12px 16px;">
+        <p style="font-size:13px;font-weight:600;color:var(--warning);margin:0 0 8px;">{{ alerts().length }} pending visa alert{{ alerts().length===1?'':'s' }}</p>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          @for (alert of alerts().slice(0,3); track alert.id) {
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <p style="font-size:13px;color:var(--fg-1);margin:0;">
+                <strong>{{ alert.employee.firstName }} {{ alert.employee.lastName }}</strong> —
+                {{ typeLabel(alert.visaRecord.visaType) }} visa expires {{ alert.visaRecord.expiryDate | date:'d MMM y' }}
+                ({{ alert.daysRemaining }} days)
+              </p>
+              <button (click)="dismissAlert(alert.id)" style="padding:3px 10px;border:1px solid var(--warning);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--warning);cursor:pointer;font-family:inherit;white-space:nowrap;">Dismiss</button>
+            </div>
+          }
+          @if (alerts().length > 3) {
+            <p style="font-size:12px;color:var(--warning);margin:0;">+ {{ alerts().length - 3 }} more alerts</p>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Filters -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <select class="field" [value]="statusFilter()" (change)="statusFilter.set($any($event.target).value); applyFilter()" style="width:auto;font-size:13px;padding:8px 12px;">
+        <option value="">All statuses</option>
+        @for (s of VISA_STATUSES; track s) { <option [value]="s">{{ s.replace('_',' ') }}</option> }
+      </select>
+      <select class="field" [value]="typeFilter()" (change)="typeFilter.set($any($event.target).value); applyFilter()" style="width:auto;font-size:13px;padding:8px 12px;">
+        <option value="">All types</option>
+        @for (t of VISA_TYPES; track t) { <option [value]="t">{{ typeLabel(t) }}</option> }
+      </select>
+      <select class="field" [value]="empFilter()" (change)="empFilter.set($any($event.target).value); applyFilter()" style="width:auto;font-size:13px;padding:8px 12px;max-width:200px;">
+        <option value="">All employees</option>
+        @for (e of employees(); track e.id) { <option [value]="e.id">{{ e.firstName }} {{ e.lastName }}</option> }
+      </select>
+      @if (statusFilter() || typeFilter() || empFilter()) {
+        <button (click)="statusFilter.set(''); typeFilter.set(''); empFilter.set(''); applyFilter()" class="btn-ghost" style="padding:7px 12px;font-size:13px;">Clear</button>
+      }
+    </div>
+  </div>
+
+  @if (error()) {
+    <div style="margin:0 28px 12px;background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--danger);">{{ error() }}</div>
+  }
+
+  <!-- Table -->
+  <div style="flex:1;overflow-y:auto;padding:0 28px 28px;">
+    <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;">
+      @if (loading()) {
+        <div style="padding:60px;text-align:center;font-size:14px;color:var(--fg-3);">Loading visa records…</div>
+      } @else if (records().length === 0) {
+        <div style="padding:60px;text-align:center;">
+          <p style="font-size:15px;font-weight:500;color:var(--fg-2);margin:0 0 8px;">No visa records found</p>
+          <p style="font-size:13px;color:var(--fg-3);margin:0 0 20px;">Add visa records for your employees to track compliance.</p>
+          <button (click)="openCreate()" class="btn-primary">Add visa record</button>
+        </div>
+      } @else {
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;min-width:700px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border-soft);">
+                <th style="text-align:left;padding:11px 20px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Employee</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Visa type</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Expiry</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Days left</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Status</th>
+                <th style="padding:11px 20px 11px 14px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of records(); track r.id) {
+                <tr style="border-bottom:1px solid var(--border-soft);"
+                  onmouseenter="this.style.background='var(--neutral-25)'" onmouseleave="this.style.background=''">
+                  <td style="padding:13px 20px;">
+                    <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;">{{ r.employee.firstName }} {{ r.employee.lastName }}</p>
+                    <p style="font-size:12px;color:var(--fg-3);margin:0;">{{ r.employee.jobTitle || '—' }} @if (r.employee.department) { · {{ r.employee.department.name }} }</p>
+                  </td>
+                  <td style="padding:13px 14px;font-size:13px;color:var(--fg-2);">{{ typeLabel(r.visaType) }}</td>
+                  <td style="padding:13px 14px;font-size:13px;color:var(--fg-2);">{{ r.expiryDate | date:'d MMM y' }}</td>
+                  <td style="padding:13px 14px;font-size:13px;">
+                    @if (r.status === 'ACTIVE' || r.status === 'EXPIRING_SOON') {
+                      @let days = daysUntil(r.expiryDate);
+                      <span [style.color]="days < 30 ? 'var(--danger)' : days < 60 ? 'var(--warning)' : 'var(--fg-2)'">
+                        {{ days < 0 ? 'Expired' : days + 'd' }}
+                      </span>
+                    } @else {
+                      <span style="color:var(--fg-3);">—</span>
+                    }
+                  </td>
+                  <td style="padding:13px 14px;">
+                    <span [style.background]="statusStyle(r.status).bg" [style.color]="statusStyle(r.status).color"
+                      style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 9px;border-radius:var(--radius-pill);white-space:nowrap;">{{ r.status.replace('_',' ') }}</span>
+                  </td>
+                  <td style="padding:13px 20px 13px 14px;">
+                    <div style="display:flex;gap:6px;">
+                      <button (click)="openEdit(r)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                        onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">Edit</button>
+                      <button (click)="openStatusUpdate(r)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                        onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">Status</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    @if (totalPages() > 1) {
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:10px;">
+        <p style="font-size:13px;color:var(--fg-2);margin:0;">Page {{ page() }} of {{ totalPages() }}</p>
+        <div style="display:flex;gap:4px;">
+          <button (click)="goPage(page()-1)" [disabled]="page()===1" class="btn-ghost" style="padding:5px 12px;font-size:13px;">← Prev</button>
+          @for (p of pages(); track $index) {
+            @if (p === '...') { <span style="padding:5px 8px;font-size:13px;color:var(--fg-3);">…</span> }
+            @else { <button (click)="goPage(+p)" [style.background]="page()===p?'var(--cirvio-hunter)':'transparent'" [style.color]="page()===p?'white':'var(--fg-1)'"
+              style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);font-size:13px;font-family:inherit;cursor:pointer;min-width:32px;">{{ p }}</button> }
+          }
+          <button (click)="goPage(page()+1)" [disabled]="page()===totalPages()" class="btn-ghost" style="padding:5px 12px;font-size:13px;">Next →</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create/Edit Panel -->
+@if (showPanel()) {
+  <div style="position:fixed;inset:0;z-index:200;display:flex;">
+    <div style="flex:1;background:rgba(0,0,0,0.35);" (click)="showPanel.set(false)"></div>
+    <div style="width:480px;max-width:100vw;background:var(--neutral-0);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-xl);">
+      <div style="padding:18px 24px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <h2 style="font-size:16px;font-weight:700;color:var(--fg-1);margin:0;">{{ editingId() ? 'Edit visa record' : 'Add visa record' }}</h2>
+        <button (click)="showPanel.set(false)" style="width:28px;height:28px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--fg-2);">
+          <svg width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M2 2L16 16M16 2L2 16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      @if (saveError()) {
+        <div style="margin:12px 16px 0;background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--danger);">{{ saveError() }}</div>
+      }
+      <div style="flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;">
+        @if (!editingId()) {
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Employee *</label>
+            <select class="field" [value]="form().employeeId" (change)="setField('employeeId',$any($event.target).value)" style="font-size:13px;">
+              <option value="">— Select employee —</option>
+              @for (e of employees(); track e.id) { <option [value]="e.id">{{ e.firstName }} {{ e.lastName }}</option> }
+            </select>
+          </div>
+        }
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Visa type *</label>
+            <select class="field" [value]="form().visaType" (change)="setField('visaType',$any($event.target).value)" style="font-size:13px;">
+              @for (t of VISA_TYPES; track t) { <option [value]="t">{{ typeLabel(t) }}</option> }
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Expiry date *</label>
+            <input type="date" class="field" [value]="form().expiryDate" (input)="setField('expiryDate',$any($event.target).value)" style="font-size:13px;" />
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Issue date</label>
+            <input type="date" class="field" [value]="form().issueDate" (input)="setField('issueDate',$any($event.target).value)" style="font-size:13px;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Visa number</label>
+            <input type="text" class="field" [value]="form().visaNumber" (input)="setField('visaNumber',$any($event.target).value)" style="font-size:13px;" />
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Sponsor name</label>
+            <input type="text" class="field" [value]="form().sponsorName" (input)="setField('sponsorName',$any($event.target).value)" style="font-size:13px;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Emirate</label>
+            <select class="field" [value]="form().emirate" (change)="setField('emirate',$any($event.target).value)" style="font-size:13px;">
+              <option value="">— Select —</option>
+              @for (em of EMIRATES; track em.value) { <option [value]="em.value">{{ em.label }}</option> }
+            </select>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Entry permit no.</label>
+            <input type="text" class="field" [value]="form().entryPermitNo" (input)="setField('entryPermitNo',$any($event.target).value)" style="font-size:13px;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Entry permit expiry</label>
+            <input type="date" class="field" [value]="form().entryPermitExpiry" (input)="setField('entryPermitExpiry',$any($event.target).value)" style="font-size:13px;" />
+          </div>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Residence visa no.</label>
+          <input type="text" class="field" [value]="form().residenceVisaNo" (input)="setField('residenceVisaNo',$any($event.target).value)" style="font-size:13px;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Grace period (days)</label>
+          <input type="number" class="field" [value]="form().gracePeriodDays" (input)="setField('gracePeriodDays',+$any($event.target).value)" min="0" style="font-size:13px;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Notes</label>
+          <textarea class="field" [value]="form().notes" (input)="setField('notes',$any($event.target).value)" rows="3" style="resize:vertical;font-size:13px;"></textarea>
+        </div>
+      </div>
+      <div style="padding:16px 24px;border-top:1px solid var(--border-soft);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;">
+        <button (click)="showPanel.set(false)" class="btn-ghost" style="padding:9px 20px;font-size:13px;">Cancel</button>
+        <button (click)="save()" class="btn-primary" [disabled]="saving()" style="padding:9px 22px;font-size:13px;">{{ saving() ? 'Saving…' : 'Save' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Status Update Modal -->
+@if (statusPanel()) {
+  <div style="position:fixed;inset:0;z-index:300;background:rgba(14,14,12,0.55);display:flex;align-items:center;justify-content:center;padding:24px;" (click)="statusPanel.set(null)">
+    <div style="background:var(--neutral-0);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);padding:28px;width:100%;max-width:400px;" (click)="$event.stopPropagation()">
+      <h2 style="font-size:17px;font-weight:700;color:var(--fg-1);margin:0 0 20px;">Update visa status</h2>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">New status</label>
+          <select class="field" [value]="newStatus()" (change)="newStatus.set($any($event.target).value)">
+            @for (s of VISA_STATUSES; track s) { <option [value]="s">{{ s.replace('_',' ') }}</option> }
+          </select>
+        </div>
+        @if (newStatus() === 'RENEWAL_IN_PROGRESS') {
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Renewal initiated date</label>
+            <input type="date" class="field" [value]="renewalDate()" (input)="renewalDate.set($any($event.target).value)" />
+          </div>
+        }
+      </div>
+      <div style="display:flex;gap:12px;margin-top:20px;">
+        <button (click)="statusPanel.set(null)" class="btn-ghost" style="flex:1;padding:9px;">Cancel</button>
+        <button (click)="saveStatus()" class="btn-primary" [disabled]="updatingStatus()" style="flex:1;padding:9px;">{{ updatingStatus() ? 'Saving…' : 'Update' }}</button>
+      </div>
+    </div>
+  </div>
+}

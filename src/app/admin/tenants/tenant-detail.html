@@ -1,0 +1,247 @@
+<div class="admin-page" style="padding: 32px 36px; max-width: 900px;">
+
+  <!-- Back + header -->
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;">
+    <button
+      (click)="back()"
+      style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+      onmouseenter="this.style.background='var(--neutral-50)'"
+      onmouseleave="this.style.background='transparent'"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Tenants
+    </button>
+
+    @if (tenant()) {
+      <h1 style="font-size: 20px; font-weight: 700; color: var(--fg-1); margin: 0; letter-spacing: -0.01em; flex: 1;">{{ tenant()!.name }}</h1>
+      <span
+        [style.background]="statusStyle(tenant()!.status).background"
+        [style.color]="statusStyle(tenant()!.status).color"
+        style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:3px 10px;border-radius:var(--radius-pill);"
+      >{{ tenant()!.status }}</span>
+
+      @if (!editing()) {
+        <button
+          (click)="startEdit()"
+          style="display:flex;align-items:center;gap:6px;padding:7px 16px;border:none;border-radius:var(--radius-sm);background:var(--cirvio-hunter);font-size:13px;font-weight:500;color:#fff;cursor:pointer;font-family:inherit;"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Edit
+        </button>
+      } @else {
+        <div style="display:flex;gap:8px;">
+          <button
+            (click)="cancelEdit()"
+            [disabled]="saving()"
+            style="padding:7px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+          >Cancel</button>
+          <button
+            (click)="save()"
+            [disabled]="saving()"
+            style="display:flex;align-items:center;gap:6px;padding:7px 16px;border:none;border-radius:var(--radius-sm);background:var(--cirvio-hunter);font-size:13px;font-weight:500;color:#fff;cursor:pointer;font-family:inherit;opacity:1;"
+            [style.opacity]="saving() ? '0.6' : '1'"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {{ saving() ? 'Saving…' : 'Save changes' }}
+          </button>
+        </div>
+      }
+    }
+  </div>
+
+  @if (error()) {
+    <div style="background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:12px 16px;font-size:14px;color:var(--danger);margin-bottom:20px;">{{ error() }}</div>
+  }
+
+  @if (saveError()) {
+    <div style="background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:12px 16px;font-size:14px;color:var(--danger);margin-bottom:20px;">{{ saveError() }}</div>
+  }
+
+  @if (loading()) {
+    <div style="text-align:center;padding:60px;font-size:14px;color:var(--fg-3);">Loading…</div>
+  }
+
+  @if (!loading() && tenant(); as t) {
+    <div class="admin-2col-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+      <!-- Organisation -->
+      <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;">
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Organisation</h2>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Name</p>
+            @if (editing()) {
+              <input type="text" class="field" [value]="editName()" (input)="editName.set($any($event.target).value)" placeholder="Organisation name" style="font-size:13px;" />
+            } @else {
+              <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;">{{ t.name }}</p>
+            }
+          </div>
+
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Slug</p>
+            <p style="font-size:13px;color:var(--fg-2);margin:0;font-family:monospace;">{{ t.slug }}</p>
+          </div>
+
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Email</p>
+            @if (editing()) {
+              <input type="email" class="field" [value]="editEmail()" (input)="editEmail.set($any($event.target).value)" placeholder="contact@company.com" style="font-size:13px;" />
+            } @else {
+              <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ t.email }}</p>
+            }
+          </div>
+
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Phone</p>
+            @if (editing()) {
+              <input type="tel" class="field" [value]="editPhone()" (input)="editPhone.set($any($event.target).value)" placeholder="+971 50 000 0000" style="font-size:13px;" />
+            } @else {
+              <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ t.phone || '—' }}</p>
+            }
+          </div>
+
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Industry</p>
+            @if (editing()) {
+              <input type="text" class="field" [value]="editIndustry()" (input)="editIndustry.set($any($event.target).value)" placeholder="e.g. Logistics, Construction" style="font-size:13px;" />
+            } @else {
+              <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ t.industry || '—' }}</p>
+            }
+          </div>
+
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Country</p>
+            <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ t.country }}</p>
+            @if (editing()) {
+              <p style="font-size:11px;color:var(--fg-3);margin:4px 0 0;">Country cannot be changed here — contact platform engineering.</p>
+            }
+          </div>
+
+          @if (isUae) {
+            <div>
+              <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Emirate</p>
+              @if (editing()) {
+                <select class="field" style="font-size:13px;" (change)="editEmirate.set($any($event.target).value)">
+                  <option value="" [selected]="!editEmirate()">— Select —</option>
+                  @for (em of EMIRATES; track em.value) {
+                    <option [value]="em.value" [selected]="editEmirate() === em.value">{{ em.label }}</option>
+                  }
+                </select>
+              } @else {
+                <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ emirateLabel(t.emirate) }}</p>
+              }
+            </div>
+          }
+
+        </div>
+      </div>
+
+      <!-- Subscription -->
+      <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;">
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Subscription</h2>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Plan</p>
+            @if (editing()) {
+              <select class="field" style="font-size:13px;" (change)="editPlanId.set($any($event.target).value || null)">
+                <option value="" [selected]="!editPlanId()">— No plan —</option>
+                @for (p of plans(); track p.id) {
+                  <option [value]="p.id" [selected]="editPlanId() === p.id">
+                    {{ p.name }} — AED {{ p.priceAed }} / {{ p.billingCycleMonths }}mo
+                  </option>
+                }
+              </select>
+            } @else {
+              <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;">{{ t.plan?.name || '—' }}</p>
+            }
+          </div>
+
+          @if (t.plan && !editing()) {
+            <div>
+              <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Price</p>
+              <p style="font-size:13px;color:var(--fg-2);margin:0;">AED {{ t.plan.priceAed }} / {{ t.plan.billingCycleMonths }} month(s)</p>
+            </div>
+            <div>
+              <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Limits</p>
+              <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ t.plan.maxEmployees }} employees · {{ t.plan.maxAdmins }} admins</p>
+            </div>
+          }
+
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Trial ends</p>
+            @if (editing()) {
+              <input type="date" class="field" [value]="editTrialEndsAt()" (input)="editTrialEndsAt.set($any($event.target).value)" style="font-size:13px;" />
+            } @else {
+              <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ t.trialEndsAt ? (t.trialEndsAt | date:'d MMM y') : '—' }}</p>
+            }
+          </div>
+
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Subscription ends</p>
+            @if (editing()) {
+              <input type="date" class="field" [value]="editSubscriptionEndsAt()" (input)="editSubscriptionEndsAt.set($any($event.target).value)" style="font-size:13px;" />
+            } @else {
+              <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ t.subscriptionEndsAt ? (t.subscriptionEndsAt | date:'d MMM y') : '—' }}</p>
+            }
+          </div>
+
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Joined</p>
+            <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ t.createdAt | date:'d MMM y, h:mm a' }}</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Usage -->
+      <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;">
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Usage</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          @for (stat of [
+            { label: 'Employees', value: t._count.employees },
+            { label: 'Users', value: t._count.users },
+            { label: 'Visa records', value: t._count.visaRecords },
+            { label: 'WPS records', value: t._count.wpsRecords }
+          ]; track stat.label) {
+            <div style="background:var(--bg-sunken);border-radius:var(--radius-sm);padding:14px 16px;">
+              <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">{{ stat.label }}</p>
+              <p style="font-size:22px;font-weight:700;color:var(--fg-1);margin:0;">{{ stat.value }}</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- UAE Compliance -->
+      @if (isUae) {
+        <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;">
+          <h2 style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">UAE Compliance</h2>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <div>
+              <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Trade licence no.</p>
+              @if (editing()) {
+                <input type="text" class="field" [value]="editTradelicenseNo()" (input)="editTradelicenseNo.set($any($event.target).value)" placeholder="e.g. CN-1234567" style="font-size:13px;" />
+              } @else {
+                <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;">{{ t.tradelicenseNo || '—' }}</p>
+              }
+            </div>
+
+            <div>
+              <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Trade licence expiry</p>
+              @if (editing()) {
+                <input type="date" class="field" [value]="editTradelicenseExpiry()" (input)="editTradelicenseExpiry.set($any($event.target).value)" style="font-size:13px;" />
+              } @else {
+                <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ t.tradelicenseExpiry ? (t.tradelicenseExpiry | date:'d MMM y') : '—' }}</p>
+              }
+            </div>
+
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+
+</div>

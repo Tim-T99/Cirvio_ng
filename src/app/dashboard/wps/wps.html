@@ -1,0 +1,304 @@
+<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;">
+
+  <!-- Header -->
+  <div style="padding:20px 28px 0;flex-shrink:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <div>
+        <h1 style="font-size:20px;font-weight:700;color:var(--fg-1);margin:0 0 4px;letter-spacing:-0.01em;">WPS — Payroll</h1>
+        <p style="font-size:13px;color:var(--fg-3);margin:0;">Wages Protection System compliance &amp; salary records</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <!-- Period selector -->
+        <select class="field" [value]="selectedMonth()" (change)="selectedMonth.set(+$any($event.target).value); changePeriod()" style="width:auto;font-size:13px;padding:7px 12px;">
+          @for (m of MONTHS; track $index) { <option [value]="$index+1">{{ m }}</option> }
+        </select>
+        <select class="field" [value]="selectedYear()" (change)="selectedYear.set(+$any($event.target).value); changePeriod()" style="width:auto;font-size:13px;padding:7px 12px;">
+          @for (y of YEARS; track y) { <option [value]="y">{{ y }}</option> }
+        </select>
+        <button (click)="bulkCreate()" [disabled]="bulkLoading()"
+          style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+          onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><polyline points="12 9 12 17"/><polyline points="8 13 12 17 16 13"/></svg>
+          {{ bulkLoading() ? 'Creating…' : 'Bulk create' }}
+        </button>
+        <button (click)="openCreate()" class="btn-primary" style="padding:8px 18px;font-size:13px;display:flex;align-items:center;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add record
+        </button>
+      </div>
+    </div>
+
+    <!-- Dashboard stats -->
+    @if (dashboard()) {
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;">
+        @for (card of [
+          {label:'Total',      value:dashboard()!.totalRecords, color:'var(--fg-1)'},
+          {label:'Confirmed',  value:dashboard()!.confirmed,    color:'var(--success)'},
+          {label:'Pending',    value:dashboard()!.pending,      color:'var(--fg-3)'},
+          {label:'Late',       value:dashboard()!.late,         color:'var(--warning)'},
+          {label:'Violations', value:dashboard()!.violations,   color:'var(--danger)'}
+        ]; track card.label) {
+          <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow-sm);">
+            <p style="font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);margin:0 0 6px;">{{ card.label }}</p>
+            <p [style.color]="card.color" style="font-size:26px;font-weight:700;margin:0;letter-spacing:-0.02em;">{{ card.value }}</p>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- SIF file panel -->
+    <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div>
+        <p style="font-size:13px;font-weight:600;color:var(--fg-1);margin:0 0 3px;">SIF File — {{ monthName(selectedMonth()) }} {{ selectedYear() }}</p>
+        @if (sifFile()) {
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span [style.background]="sifStatusStyle(sifFile()!.status).bg" [style.color]="sifStatusStyle(sifFile()!.status).color"
+              style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 8px;border-radius:var(--radius-pill);">{{ sifFile()!.status }}</span>
+            <p style="font-size:12px;color:var(--fg-3);margin:0;">{{ sifFile()!.employeeCount }} employees · AED {{ sifFile()!.totalAmountAed.toLocaleString() }}</p>
+          </div>
+        } @else {
+          <p style="font-size:12px;color:var(--fg-3);margin:0;">No SIF generated for this period</p>
+        }
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        @if (!sifFile() || sifFile()!.status === 'DRAFT') {
+          <button (click)="generateSif()" [disabled]="sifLoading()"
+            style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+            onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
+            {{ sifLoading() ? 'Generating…' : '⚡ Generate SIF' }}
+          </button>
+        }
+        @if (sifFile() && sifContent()) {
+          <button (click)="downloadSif()"
+            style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+            onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
+            ↓ Download
+          </button>
+        }
+        @if (sifFile()?.status === 'READY') {
+          <button (click)="submitSif()" [disabled]="sifLoading()"
+            style="padding:7px 14px;border:none;border-radius:var(--radius-sm);background:var(--info);color:white;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">
+            {{ sifLoading() ? 'Submitting…' : 'Submit SIF' }}
+          </button>
+        }
+        @if (sifFile()?.status === 'SUBMITTED') {
+          <button (click)="confirmSif()" [disabled]="sifLoading()"
+            style="padding:7px 14px;border:none;border-radius:var(--radius-sm);background:var(--success);color:white;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">
+            {{ sifLoading() ? 'Confirming…' : '✓ Confirm SIF' }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (error()) {
+      <div style="margin-bottom:12px;background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--danger);">{{ error() }}</div>
+    }
+
+    <!-- Filters -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <select class="field" [value]="statusFilter()" (change)="statusFilter.set($any($event.target).value); applyFilter()" style="width:auto;font-size:13px;padding:8px 12px;">
+        <option value="">All statuses</option>
+        @for (s of WPS_STATUSES; track s) { <option [value]="s">{{ s }}</option> }
+      </select>
+      @if (statusFilter()) {
+        <button (click)="statusFilter.set(''); applyFilter()" class="btn-ghost" style="padding:7px 12px;font-size:13px;">Clear</button>
+      }
+      <p style="font-size:13px;color:var(--fg-3);margin:0 0 0 auto;">{{ total() }} records for {{ monthName(selectedMonth()) }} {{ selectedYear() }}</p>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div style="flex:1;overflow-y:auto;padding:0 28px 28px;">
+    <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;">
+      @if (loading()) {
+        <div style="padding:60px;text-align:center;font-size:14px;color:var(--fg-3);">Loading WPS records…</div>
+      } @else if (records().length === 0) {
+        <div style="padding:60px;text-align:center;">
+          <p style="font-size:15px;font-weight:500;color:var(--fg-2);margin:0 0 8px;">No records for this period</p>
+          <p style="font-size:13px;color:var(--fg-3);margin:0 0 20px;">Use "Bulk create" to generate records for all active employees, or add individual records.</p>
+          <div style="display:flex;gap:10px;justify-content:center;">
+            <button (click)="bulkCreate()" class="btn-ghost" style="padding:9px 20px;font-size:13px;">Bulk create</button>
+            <button (click)="openCreate()" class="btn-primary" style="padding:9px 20px;font-size:13px;">Add record</button>
+          </div>
+        </div>
+      } @else {
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;min-width:720px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border-soft);">
+                <th style="text-align:left;padding:11px 20px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Employee</th>
+                <th style="text-align:right;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Basic</th>
+                <th style="text-align:right;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Net salary</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Payment date</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Status</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Late</th>
+                <th style="padding:11px 20px 11px 14px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of records(); track r.id) {
+                <tr style="border-bottom:1px solid var(--border-soft);"
+                  onmouseenter="this.style.background='var(--neutral-25)'" onmouseleave="this.style.background=''">
+                  <td style="padding:13px 20px;">
+                    <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;">{{ r.employee.firstName }} {{ r.employee.lastName }}</p>
+                    <p style="font-size:12px;color:var(--fg-3);margin:0;">{{ r.employee.jobTitle || '—' }} @if (r.employee.department) { · {{ r.employee.department.name }} }</p>
+                  </td>
+                  <td style="padding:13px 14px;font-size:13px;color:var(--fg-2);text-align:right;">{{ r.basicSalary.toLocaleString() }}</td>
+                  <td style="padding:13px 14px;font-size:14px;font-weight:600;color:var(--fg-1);text-align:right;">AED {{ r.netSalary.toLocaleString() }}</td>
+                  <td style="padding:13px 14px;font-size:13px;color:var(--fg-2);">{{ r.paymentDate ? (r.paymentDate | date:'d MMM y') : '—' }}</td>
+                  <td style="padding:13px 14px;">
+                    <span [style.background]="statusStyle(r.status).bg" [style.color]="statusStyle(r.status).color"
+                      style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 8px;border-radius:var(--radius-pill);">{{ r.status }}</span>
+                  </td>
+                  <td style="padding:13px 14px;font-size:13px;">
+                    @if (r.isLate) {
+                      <span style="color:var(--danger);font-weight:500;">{{ r.lateByDays }}d late</span>
+                    } @else {
+                      <span style="color:var(--success);">On time</span>
+                    }
+                    @if (r.violationRef) {
+                      <span style="display:block;font-size:11px;color:var(--danger);margin-top:2px;">Violation: {{ r.violationRef }}</span>
+                    }
+                  </td>
+                  <td style="padding:13px 20px 13px 14px;">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                      @if (r.status !== 'CONFIRMED') {
+                        <button (click)="openEdit(r)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                          onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">Edit</button>
+                      }
+                      @if (!r.violationRef) {
+                        <button (click)="openViolation(r)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--danger);cursor:pointer;font-family:inherit;"
+                          onmouseenter="this.style.background='var(--danger-bg)'" onmouseleave="this.style.background='transparent'">Violation</button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    @if (totalPages() > 1) {
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:10px;">
+        <p style="font-size:13px;color:var(--fg-2);margin:0;">Page {{ page() }} of {{ totalPages() }}</p>
+        <div style="display:flex;gap:4px;">
+          <button (click)="goPage(page()-1)" [disabled]="page()===1" class="btn-ghost" style="padding:5px 12px;font-size:13px;">← Prev</button>
+          @for (p of pages(); track $index) {
+            @if (p === '...') { <span style="padding:5px 8px;font-size:13px;color:var(--fg-3);">…</span> }
+            @else { <button (click)="goPage(+p)" [style.background]="page()===p?'var(--cirvio-hunter)':'transparent'" [style.color]="page()===p?'white':'var(--fg-1)'"
+              style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);font-size:13px;font-family:inherit;cursor:pointer;min-width:32px;">{{ p }}</button> }
+          }
+          <button (click)="goPage(page()+1)" [disabled]="page()===totalPages()" class="btn-ghost" style="padding:5px 12px;font-size:13px;">Next →</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create/Edit Panel -->
+@if (showPanel()) {
+  <div style="position:fixed;inset:0;z-index:200;display:flex;">
+    <div style="flex:1;background:rgba(0,0,0,0.35);" (click)="showPanel.set(false)"></div>
+    <div style="width:440px;max-width:100vw;background:var(--neutral-0);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-xl);">
+      <div style="padding:18px 24px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <h2 style="font-size:16px;font-weight:700;color:var(--fg-1);margin:0;">{{ editingId() ? 'Edit WPS record' : 'Add WPS record' }}</h2>
+        <button (click)="showPanel.set(false)" style="width:28px;height:28px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--fg-2);">
+          <svg width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M2 2L16 16M16 2L2 16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      @if (saveError()) {
+        <div style="margin:12px 16px 0;background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--danger);">{{ saveError() }}</div>
+      }
+      <div style="flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;">
+        @if (!editingId()) {
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Employee *</label>
+            <select class="field" [value]="form().employeeId" (change)="setField('employeeId',$any($event.target).value)" style="font-size:13px;">
+              <option value="">— Select employee —</option>
+              @for (e of employees(); track e.id) { <option [value]="e.id">{{ e.firstName }} {{ e.lastName }}</option> }
+            </select>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Month</label>
+              <select class="field" [value]="form().month" (change)="setField('month',+$any($event.target).value)" style="font-size:13px;">
+                @for (m of MONTHS; track $index) { <option [value]="$index+1">{{ m }}</option> }
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Year</label>
+              <select class="field" [value]="form().year" (change)="setField('year',+$any($event.target).value)" style="font-size:13px;">
+                @for (y of YEARS; track y) { <option [value]="y">{{ y }}</option> }
+              </select>
+            </div>
+          </div>
+        }
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Basic salary (AED) *</label>
+          <input type="number" class="field" [value]="form().basicSalary" (input)="setField('basicSalary',+$any($event.target).value||'')" placeholder="0.00" style="font-size:13px;" />
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Housing allowance</label>
+            <input type="number" class="field" [value]="form().housingAllowance" (input)="setField('housingAllowance',+$any($event.target).value||'')" placeholder="0" style="font-size:13px;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Transport allowance</label>
+            <input type="number" class="field" [value]="form().transportAllowance" (input)="setField('transportAllowance',+$any($event.target).value||'')" placeholder="0" style="font-size:13px;" />
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Other allowances</label>
+            <input type="number" class="field" [value]="form().otherAllowances" (input)="setField('otherAllowances',+$any($event.target).value||'')" placeholder="0" style="font-size:13px;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Deductions</label>
+            <input type="number" class="field" [value]="form().deductions" (input)="setField('deductions',+$any($event.target).value||'')" placeholder="0" style="font-size:13px;" />
+          </div>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Payment date</label>
+          <input type="date" class="field" [value]="form().paymentDate" (input)="setField('paymentDate',$any($event.target).value)" style="font-size:13px;" />
+          <p style="font-size:11px;color:var(--fg-3);margin:4px 0 0;">UAE deadline: 10th of the following month. Lateness is computed automatically.</p>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Notes</label>
+          <textarea class="field" [value]="form().notes" (input)="setField('notes',$any($event.target).value)" rows="2" style="resize:vertical;font-size:13px;"></textarea>
+        </div>
+      </div>
+      <div style="padding:16px 24px;border-top:1px solid var(--border-soft);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;">
+        <button (click)="showPanel.set(false)" class="btn-ghost" style="padding:9px 20px;font-size:13px;">Cancel</button>
+        <button (click)="save()" class="btn-primary" [disabled]="saving()" style="padding:9px 22px;font-size:13px;">{{ saving() ? 'Saving…' : 'Save' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Violation modal -->
+@if (violationRecord()) {
+  <div style="position:fixed;inset:0;z-index:300;background:rgba(14,14,12,0.55);display:flex;align-items:center;justify-content:center;padding:24px;" (click)="violationRecord.set(null)">
+    <div style="background:var(--neutral-0);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);padding:28px;width:100%;max-width:400px;" (click)="$event.stopPropagation()">
+      <h2 style="font-size:17px;font-weight:700;color:var(--fg-1);margin:0 0 6px;">Record MOHRE violation</h2>
+      <p style="font-size:13px;color:var(--fg-3);margin:0 0 20px;">
+        {{ violationRecord()!.employee.firstName }} {{ violationRecord()!.employee.lastName }} —
+        {{ monthName(violationRecord()!.month) }} {{ violationRecord()!.year }}
+      </p>
+      <div>
+        <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">MOHRE violation reference *</label>
+        <input type="text" class="field" [value]="violationRef()" (input)="violationRef.set($any($event.target).value)" placeholder="e.g. VIO-2024-001234" />
+        <p style="font-size:11px;color:var(--fg-3);margin:6px 0 0;">This is append-only and cannot be changed once saved.</p>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:20px;">
+        <button (click)="violationRecord.set(null)" class="btn-ghost" style="flex:1;padding:9px;">Cancel</button>
+        <button (click)="saveViolation()" [disabled]="addingViolation() || !violationRef().trim()"
+          style="flex:1;padding:9px;border:none;border-radius:var(--radius-md);background:var(--danger);color:white;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;"
+          [style.opacity]="addingViolation()||!violationRef().trim()?'0.5':'1'">
+          {{ addingViolation() ? 'Saving…' : 'Record violation' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

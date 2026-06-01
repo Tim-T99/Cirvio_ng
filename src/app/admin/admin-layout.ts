@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AdminSidenavComponent } from './admin-sidenav/admin-sidenav';
 
@@ -8,4 +8,6 @@ import { AdminSidenavComponent } from './admin-sidenav/admin-sidenav';
   imports: [RouterOutlet, AdminSidenavComponent],
   templateUrl: './admin-layout.html',
 })
-export class AdminLayoutComponent {}
+export class AdminLayoutComponent {
+  readonly mobileNavOpen = signal(false);
+}

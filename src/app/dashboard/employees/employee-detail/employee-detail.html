@@ -1,0 +1,431 @@
+<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;">
+
+  @if (loading()) {
+    <div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:14px;color:var(--fg-3);">Loading…</div>
+  } @else if (error() && !employee()) {
+    <div style="padding:40px;text-align:center;">
+      <p style="font-size:14px;color:var(--danger);">{{ error() }}</p>
+      <button (click)="back()" class="btn-ghost" style="margin-top:16px;">← Back to employees</button>
+    </div>
+  } @else if (employee(); as emp) {
+
+    <!-- Header -->
+    <div style="padding:20px 28px;border-bottom:1px solid var(--border-soft);flex-shrink:0;background:var(--bg-elev-1);">
+      <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+        <button (click)="back()" style="padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px;flex-shrink:0;margin-top:4px;"
+          onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Employees
+        </button>
+        <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--cirvio-mint-50);border:1px solid var(--cirvio-mint-300);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--cirvio-hunter);flex-shrink:0;">
+            {{ (emp.firstName[0]+emp.lastName[0]).toUpperCase() }}
+          </div>
+          <div style="min-width:0;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <h1 style="font-size:20px;font-weight:700;color:var(--fg-1);margin:0;">{{ emp.firstName }} {{ emp.lastName }}</h1>
+              <span [style.background]="statusStyle(emp.status).bg" [style.color]="statusStyle(emp.status).color"
+                style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 9px;border-radius:var(--radius-pill);">{{ emp.status }}</span>
+            </div>
+            <p style="font-size:13px;color:var(--fg-3);margin:2px 0 0;">{{ emp.jobTitle || '—' }} @if (emp.department) { · {{ emp.department.name }} } @if (emp.employeeNo) { · #{{ emp.employeeNo }} }</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          @if (!editing()) {
+            <button (click)="startEdit()" style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+              onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit
+            </button>
+            @if (emp.status !== 'TERMINATED') {
+              <button (click)="openTerminate()"
+                style="padding:7px 14px;border:1px solid var(--danger);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--danger);cursor:pointer;font-family:inherit;"
+                onmouseenter="this.style.background='var(--danger-bg)'" onmouseleave="this.style.background='transparent'">
+                Terminate
+              </button>
+            }
+          } @else {
+            <button (click)="editing.set(false)" class="btn-ghost" style="padding:7px 16px;font-size:13px;">Cancel</button>
+            <button (click)="saveEdit()" class="btn-primary" [disabled]="saving()" style="padding:7px 18px;font-size:13px;">{{ saving() ? 'Saving…' : 'Save changes' }}</button>
+          }
+        </div>
+      </div>
+      @if (saveError()) {
+        <div style="margin-top:12px;background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:8px 14px;font-size:13px;color:var(--danger);">{{ saveError() }}</div>
+      }
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border-soft);flex-shrink:0;padding:0 28px;background:var(--bg-elev-1);overflow-x:auto;">
+      @for (tab of [
+        {id:'overview',label:'Overview'},
+        {id:'visas',   label:'Visa Records (' + emp._count.visaRecords + ')'},
+        {id:'wps',     label:'WPS Records (' + emp._count.wpsRecords + ')'},
+        {id:'docs',    label:'Documents (' + emp._count.documents + ')'}
+      ]; track tab.id) {
+        <button (click)="activeTab.set($any(tab.id))"
+          [style.borderBottom]="activeTab()===tab.id?'2px solid var(--cirvio-hunter)':'2px solid transparent'"
+          [style.color]="activeTab()===tab.id?'var(--fg-1)':'var(--fg-3)'"
+          style="padding:12px 16px;border:none;background:transparent;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;">
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    <!-- Tab content -->
+    <div style="flex:1;overflow-y:auto;padding:24px 28px;">
+
+      <!-- ── Overview tab ── -->
+      @if (activeTab() === 'overview') {
+        @if (!editing()) {
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <!-- Personal -->
+            <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+              <h2 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Personal</h2>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                @for (row of [
+                  {label:'Full name',  value: emp.firstName+' '+(emp.middleName?emp.middleName+' ':'')+emp.lastName},
+                  {label:'Gender',     value: emp.gender},
+                  {label:'Date of birth', value: emp.dateOfBirth},
+                  {label:'Nationality',   value: emp.nationality}
+                ]; track row.label) {
+                  <div>
+                    <p style="font-size:11px;color:var(--fg-3);margin:0 0 2px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
+                    <p style="font-size:14px;color:var(--fg-1);margin:0;">{{ row.value || '—' }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Contact -->
+            <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+              <h2 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Contact</h2>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                @for (row of [
+                  {label:'Work email',    value: emp.workEmail},
+                  {label:'Personal email',value: emp.personalEmail},
+                  {label:'Phone',         value: emp.phone}
+                ]; track row.label) {
+                  <div>
+                    <p style="font-size:11px;color:var(--fg-3);margin:0 0 2px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
+                    <p style="font-size:14px;color:var(--fg-1);margin:0;">{{ row.value || '—' }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Employment -->
+            <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+              <h2 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Employment</h2>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                @for (row of [
+                  {label:'Job title',       value: emp.jobTitle},
+                  {label:'Department',      value: emp.department?.name},
+                  {label:'Type',            value: emp.employmentType?.replace('_',' ')},
+                  {label:'Employee no.',    value: emp.employeeNo},
+                  {label:'Start date',      value: emp.startDate ? (emp.startDate | date:'d MMM y') : null},
+                  {label:'End date',        value: emp.endDate   ? (emp.endDate   | date:'d MMM y') : null}
+                ]; track row.label) {
+                  <div>
+                    <p style="font-size:11px;color:var(--fg-3);margin:0 0 2px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
+                    <p style="font-size:14px;color:var(--fg-1);margin:0;">{{ row.value || '—' }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Identity & Salary -->
+            <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+              <h2 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Identity & Salary</h2>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                @for (row of [
+                  {label:'Emirates ID',     value: emp.eidNumber},
+                  {label:'EID expiry',      value: emp.eidExpiry      ? (emp.eidExpiry | date:'d MMM y')      : null},
+                  {label:'Passport no.',    value: emp.passportNumber},
+                  {label:'Passport expiry', value: emp.passportExpiry ? (emp.passportExpiry | date:'d MMM y') : null},
+                  {label:'Labour card',     value: emp.labourCardNo},
+                  {label:'Basic salary',    value: emp.basicSalaryAed != null ? 'AED ' + emp.basicSalaryAed : null},
+                  {label:'Allowances',      value: emp.allowancesAed  != null ? 'AED ' + emp.allowancesAed  : null}
+                ]; track row.label) {
+                  <div>
+                    <p style="font-size:11px;color:var(--fg-3);margin:0 0 2px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
+                    <p style="font-size:14px;color:var(--fg-1);margin:0;font-family:{{ row.label.includes('ID')||row.label.includes('no.')||row.label.includes('card')?'monospace':'inherit' }};">{{ row.value || '—' }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        } @else {
+          <!-- Edit form inline -->
+          <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;max-width:700px;">
+            <h2 style="font-size:14px;font-weight:600;color:var(--fg-1);margin:0 0 20px;">Edit employee details</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">First name *</label>
+                <input type="text" class="field" [value]="editForm()['firstName']" (input)="setEdit('firstName',$any($event.target).value)" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Last name *</label>
+                <input type="text" class="field" [value]="editForm()['lastName']" (input)="setEdit('lastName',$any($event.target).value)" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Job title</label>
+                <input type="text" class="field" [value]="editForm()['jobTitle']" (input)="setEdit('jobTitle',$any($event.target).value)" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Department</label>
+                <select class="field" [value]="editForm()['departmentId']" (change)="setEdit('departmentId',$any($event.target).value)" style="font-size:13px;">
+                  <option value="">— None —</option>
+                  @for (d of depts(); track d.id) { <option [value]="d.id">{{ d.name }}</option> }
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Work email</label>
+                <input type="email" class="field" [value]="editForm()['workEmail']" (input)="setEdit('workEmail',$any($event.target).value)" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Phone</label>
+                <input type="tel" class="field" [value]="editForm()['phone']" (input)="setEdit('phone',$any($event.target).value)" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Basic salary (AED)</label>
+                <input type="number" class="field" [value]="editForm()['basicSalaryAed']" (input)="setEdit('basicSalaryAed',+$any($event.target).value||'')" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Allowances (AED)</label>
+                <input type="number" class="field" [value]="editForm()['allowancesAed']" (input)="setEdit('allowancesAed',+$any($event.target).value||'')" style="font-size:13px;" />
+              </div>
+            </div>
+          </div>
+        }
+      }
+
+      <!-- ── Visas tab ── -->
+      @if (activeTab() === 'visas') {
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0;">Visa Records</h2>
+          <button (click)="openAddVisa()" class="btn-primary" style="padding:7px 16px;font-size:13px;display:flex;align-items:center;gap:6px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add visa record
+          </button>
+        </div>
+        @if (visas().length === 0) {
+          <div style="padding:40px;text-align:center;background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);">
+            <p style="font-size:14px;color:var(--fg-3);margin:0;">No visa records. Add the first one above.</p>
+          </div>
+        } @else {
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            @for (visa of visas(); track visa.id) {
+              <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                  <div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
+                      <p style="font-size:14px;font-weight:600;color:var(--fg-1);margin:0;">{{ typeLabel(visa.visaType) }}</p>
+                      <span [style.background]="statusStyle(visa.status).bg" [style.color]="statusStyle(visa.status).color"
+                        style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 8px;border-radius:var(--radius-pill);">{{ visa.status.replace('_',' ') }}</span>
+                    </div>
+                    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+                      @if (visa.visaNumber) { <p style="font-size:12px;color:var(--fg-3);margin:0;">No: {{ visa.visaNumber }}</p> }
+                      <p style="font-size:12px;color:var(--fg-3);margin:0;">Expires: {{ visa.expiryDate | date:'d MMM y' }}</p>
+                      @if (visa.emirate) { <p style="font-size:12px;color:var(--fg-3);margin:0;">{{ visa.emirate.replace('_',' ') }}</p> }
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <button (click)="openAddVisa(visa)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                      onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">Edit</button>
+                    @if (visa.status !== 'CANCELLED') {
+                      <button (click)="updateVisaStatus(visa.id,'RENEWAL_IN_PROGRESS')" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--warning);cursor:pointer;font-family:inherit;"
+                        onmouseenter="this.style.background='var(--warning-bg)'" onmouseleave="this.style.background='transparent'">Renew</button>
+                      <button (click)="updateVisaStatus(visa.id,'CANCELLED')" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--danger);cursor:pointer;font-family:inherit;"
+                        onmouseenter="this.style.background='var(--danger-bg)'" onmouseleave="this.style.background='transparent'">Cancel</button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- ── WPS tab ── -->
+      @if (activeTab() === 'wps') {
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0;">WPS Records</h2>
+        </div>
+        @if (wpsRecords().length === 0) {
+          <div style="padding:40px;text-align:center;background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);">
+            <p style="font-size:14px;color:var(--fg-3);margin:0;">No WPS records. Use the WPS module to create monthly payroll records.</p>
+          </div>
+        } @else {
+          <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+            <div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;min-width:480px;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--border-soft);">
+                    <th style="text-align:left;padding:10px 16px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Period</th>
+                    <th style="text-align:left;padding:10px 16px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Net salary</th>
+                    <th style="text-align:left;padding:10px 16px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Status</th>
+                    <th style="text-align:left;padding:10px 16px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Late</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (w of wpsRecords(); track w.id) {
+                    <tr style="border-bottom:1px solid var(--border-soft);">
+                      <td style="padding:12px 16px;font-size:13px;color:var(--fg-1);">{{ monthName(w.month) }} {{ w.year }}</td>
+                      <td style="padding:12px 16px;font-size:13px;color:var(--fg-1);font-weight:500;">AED {{ w.netSalary.toLocaleString() }}</td>
+                      <td style="padding:12px 16px;">
+                        <span [style.background]="statusStyle(w.status).bg" [style.color]="statusStyle(w.status).color"
+                          style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 8px;border-radius:var(--radius-pill);">{{ w.status }}</span>
+                      </td>
+                      <td style="padding:12px 16px;font-size:13px;">
+                        @if (w.isLate) {
+                          <span style="color:var(--danger);font-weight:500;">Late {{ w.lateByDays }}d</span>
+                        } @else {
+                          <span style="color:var(--fg-3);">—</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      }
+
+      <!-- ── Documents tab ── -->
+      @if (activeTab() === 'docs') {
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0;">Documents</h2>
+          <label style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:var(--cirvio-hunter);color:white;border-radius:var(--radius-md);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;"
+            [style.opacity]="uploading()?'0.6':'1'">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            {{ uploading() ? 'Uploading…' : 'Upload document' }}
+            <input type="file" style="display:none;" (change)="onDocUpload($event)" [disabled]="uploading()" accept=".pdf,.jpg,.jpeg,.png,.webp" />
+          </label>
+        </div>
+        @if (uploadError()) {
+          <div style="margin-bottom:12px;background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--danger);">{{ uploadError() }}</div>
+        }
+        @if (documents().length === 0) {
+          <div style="padding:40px;text-align:center;background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);">
+            <p style="font-size:14px;color:var(--fg-3);margin:0;">No documents attached. Upload the first one above.</p>
+          </div>
+        } @else {
+          <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+            @for (doc of documents(); track doc.id) {
+              <div style="display:flex;align-items:center;gap:12px;padding:13px 20px;border-bottom:1px solid var(--border-soft);"
+                onmouseenter="this.style.background='var(--neutral-25)'" onmouseleave="this.style.background=''">
+                <div style="width:36px;height:36px;border-radius:var(--radius-sm);background:var(--cirvio-mint-50);border:1px solid var(--cirvio-mint-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cirvio-sage)" stroke-width="1.75" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ doc.fileName }}</p>
+                  <p style="font-size:11px;color:var(--fg-3);margin:0;">{{ typeLabel(doc.documentType) }} · {{ fileSizeLabel(doc.fileSizeKb) }} @if (doc.expiryDate) { · Expires {{ doc.expiryDate | date:'d MMM y' }} }</p>
+                </div>
+                <div style="display:flex;gap:6px;">
+                  <button (click)="downloadDoc(doc)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                    onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">Download</button>
+                  <button (click)="deleteDoc(doc)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--danger);cursor:pointer;font-family:inherit;"
+                    onmouseenter="this.style.background='var(--danger-bg)'" onmouseleave="this.style.background='transparent'">Delete</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+    </div>
+  }
+</div>
+
+<!-- Add/Edit Visa Panel -->
+@if (showVisaPanel()) {
+  <div style="position:fixed;inset:0;z-index:200;display:flex;">
+    <div style="flex:1;background:rgba(0,0,0,0.35);" (click)="showVisaPanel.set(false)"></div>
+    <div style="width:440px;max-width:100vw;background:var(--neutral-0);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-xl);">
+      <div style="padding:18px 24px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <h2 style="font-size:16px;font-weight:700;color:var(--fg-1);margin:0;">{{ editingVisaId() ? 'Edit visa record' : 'Add visa record' }}</h2>
+        <button (click)="showVisaPanel.set(false)" style="width:28px;height:28px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--fg-2);">
+          <svg width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M2 2L16 16M16 2L2 16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      @if (visaError()) {
+        <div style="margin:12px 16px 0;background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--danger);">{{ visaError() }}</div>
+      }
+      <div style="flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Visa type *</label>
+          <select class="field" [value]="visaForm().visaType" (change)="visaForm.update(f=>({...f,visaType:$any($event.target).value}))" style="font-size:13px;">
+            @for (t of VISA_TYPES; track t) { <option [value]="t">{{ typeLabel(t) }}</option> }
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Expiry date *</label>
+            <input type="date" class="field" [value]="visaForm().expiryDate" (input)="visaForm.update(f=>({...f,expiryDate:$any($event.target).value}))" style="font-size:13px;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Issue date</label>
+            <input type="date" class="field" [value]="visaForm().issueDate" (input)="visaForm.update(f=>({...f,issueDate:$any($event.target).value}))" style="font-size:13px;" />
+          </div>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Visa number</label>
+          <input type="text" class="field" [value]="visaForm().visaNumber" (input)="visaForm.update(f=>({...f,visaNumber:$any($event.target).value}))" placeholder="Visa number" style="font-size:13px;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Sponsor name</label>
+          <input type="text" class="field" [value]="visaForm().sponsorName" (input)="visaForm.update(f=>({...f,sponsorName:$any($event.target).value}))" placeholder="Employer / sponsor" style="font-size:13px;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Entry permit no.</label>
+          <input type="text" class="field" [value]="visaForm().entryPermitNo" (input)="visaForm.update(f=>({...f,entryPermitNo:$any($event.target).value}))" placeholder="Entry permit number" style="font-size:13px;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Emirate</label>
+          <select class="field" [value]="visaForm().emirate" (change)="visaForm.update(f=>({...f,emirate:$any($event.target).value}))" style="font-size:13px;">
+            <option value="">— Select —</option>
+            @for (em of EMIRATES; track em) { <option [value]="em">{{ em.replace(/_/g,' ') }}</option> }
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Notes</label>
+          <textarea class="field" [value]="visaForm().notes" (input)="visaForm.update(f=>({...f,notes:$any($event.target).value}))" rows="3" style="resize:vertical;font-size:13px;"></textarea>
+        </div>
+      </div>
+      <div style="padding:16px 24px;border-top:1px solid var(--border-soft);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;">
+        <button (click)="showVisaPanel.set(false)" class="btn-ghost" style="padding:9px 20px;font-size:13px;">Cancel</button>
+        <button (click)="saveVisa()" class="btn-primary" [disabled]="visaSaving()" style="padding:9px 22px;font-size:13px;">{{ visaSaving() ? 'Saving…' : 'Save' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Terminate Modal -->
+@if (showTerminate()) {
+  <div style="position:fixed;inset:0;z-index:300;background:rgba(14,14,12,0.55);display:flex;align-items:center;justify-content:center;padding:24px;" (click)="showTerminate.set(false)">
+    <div style="background:var(--neutral-0);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);padding:32px;width:100%;max-width:420px;" (click)="$event.stopPropagation()">
+      <h2 style="font-size:18px;font-weight:700;color:var(--fg-1);margin:0 0 8px;">Terminate employee</h2>
+      <p style="font-size:13px;color:var(--fg-3);margin:0 0 20px;">This action cannot be undone. Records are retained per UAE labour law.</p>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">End date *</label>
+          <input type="date" class="field" [value]="terminateDate()" (input)="terminateDate.set($any($event.target).value)" />
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Reason (optional)</label>
+          <textarea class="field" [value]="terminateReason()" (input)="terminateReason.set($any($event.target).value)" rows="3" style="resize:vertical;"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:24px;">
+        <button (click)="showTerminate.set(false)" class="btn-ghost" style="flex:1;padding:10px;">Cancel</button>
+        <button (click)="confirmTerminate()" [disabled]="terminating()||!terminateDate()"
+          style="flex:1;padding:10px;border:none;border-radius:var(--radius-md);background:var(--danger);color:white;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;"
+          [style.opacity]="terminating()||!terminateDate()?'0.5':'1'">
+          {{ terminating() ? 'Terminating…' : 'Confirm' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

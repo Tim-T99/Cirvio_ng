@@ -1,100 +1,177 @@
-<div style="padding:28px 32px;">
+<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;">
 
   <!-- Header -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-    <div>
-      <h1 style="font-size:20px;font-weight:600;color:var(--fg-1);margin:0 0 4px;">Documents</h1>
-      <p style="font-size:13px;color:var(--fg-3);margin:0;">Manage compliance documents, contracts, and certifications.</p>
-    </div>
-    <label class="btn-upload" style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:9px 18px;background:var(--cirvio-hunter);color:white;border-radius:var(--radius-md);font-size:14px;font-weight:500;transition:opacity var(--dur-fast) var(--ease-out);"
-      [style.opacity]="uploading() ? '0.6' : '1'">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-      {{ uploading() ? 'Uploading…' : 'Upload' }}
-      <input type="file" style="display:none;" [disabled]="uploading()" (change)="onFileChange($event)" />
-    </label>
-  </div>
-
-  @if (error()) {
-    <div style="background:var(--danger-bg);border:1px solid rgba(184,69,69,0.20);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--danger);margin-bottom:20px;">
-      {{ error() }}
-    </div>
-  }
-
-  <!-- Search -->
-  <div style="position:relative;max-width:320px;margin-bottom:20px;">
-    <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--fg-3);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
-    <input type="text" placeholder="Search documents…" class="field"
-      [value]="search()" (input)="search.set($any($event.target).value)"
-      style="padding-left:36px;" />
-  </div>
-
-  <!-- Content -->
-  @if (loading()) {
-    <div style="text-align:center;padding:60px 0;color:var(--fg-3);font-size:14px;">Loading documents…</div>
-  } @else if (filtered.length === 0) {
-    <div style="text-align:center;padding:60px 0;">
-      <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-sunken);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--fg-3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
+  <div style="padding:20px 28px 0;flex-shrink:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <div>
+        <h1 style="font-size:20px;font-weight:700;color:var(--fg-1);margin:0 0 4px;letter-spacing:-0.01em;">Documents</h1>
+        <p style="font-size:13px;color:var(--fg-3);margin:0;">{{ total() }} total · compliance files, contracts &amp; certifications</p>
+      </div>
+      <label style="display:inline-flex;align-items:center;gap:8px;padding:8px 18px;background:var(--cirvio-hunter);color:white;border-radius:var(--radius-md);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity var(--dur-fast);"
+        [style.opacity]="uploading() ? '0.6' : '1'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
-      </div>
-      <p style="font-size:15px;font-weight:500;color:var(--fg-2);margin:0 0 6px;">No documents found</p>
-      <p style="font-size:13px;color:var(--fg-3);margin:0;">Upload your first compliance document to get started.</p>
+        {{ uploading() ? 'Uploading…' : 'Upload document' }}
+        <input type="file" style="display:none;" [disabled]="uploading()" (change)="onFileChange($event)" accept=".pdf,.jpg,.jpeg,.png,.webp" />
+      </label>
     </div>
-  } @else {
-    <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
-      <!-- Table header -->
-      <div style="display:grid;grid-template-columns:1fr 120px 120px 100px 80px;gap:16px;padding:11px 20px;background:var(--bg-sunken);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.05em;">
-        <span>Name</span>
-        <span>Type</span>
-        <span>Uploaded</span>
-        <span>Status</span>
-        <span></span>
+
+    @if (error()) {
+      <div style="background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--danger);margin-bottom:16px;">{{ error() }}</div>
+    }
+
+    <!-- Filters -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="position:relative;flex:1;min-width:180px;max-width:280px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--fg-3);pointer-events:none;" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="field" placeholder="Search filename…" [value]="search()" (input)="search.set($any($event.target).value); applyFilter()" style="padding-left:34px;font-size:13px;" />
       </div>
-      @for (doc of filtered; track doc.id) {
-        <div style="display:grid;grid-template-columns:1fr 120px 120px 100px 80px;gap:16px;padding:14px 20px;border-bottom:1px solid var(--border-soft);align-items:center;"
-             onmouseenter="this.style.background='var(--bg-sunken)'"
-             onmouseleave="this.style.background=''">
-          <div style="display:flex;align-items:center;gap:10px;min-width:0;">
-            <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:var(--cirvio-mint-50);border:1px solid var(--cirvio-mint-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cirvio-sage)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-              </svg>
-            </div>
-            <div style="min-width:0;">
-              <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ doc.name }}</p>
-              <p style="font-size:12px;color:var(--fg-3);margin:0;">{{ formatSize(doc.size) }}</p>
-            </div>
+      <select class="field" [value]="typeFilter()" (change)="typeFilter.set($any($event.target).value); applyFilter()" style="width:auto;font-size:13px;padding:8px 12px;">
+        <option value="">All types</option>
+        @for (t of DOC_TYPES; track t) { <option [value]="t">{{ typeLabel(t) }}</option> }
+      </select>
+      <select class="field" [value]="empFilter()" (change)="empFilter.set($any($event.target).value); applyFilter()" style="width:auto;font-size:13px;padding:8px 12px;max-width:200px;">
+        <option value="">All employees</option>
+        @for (e of employees(); track e.id) { <option [value]="e.id">{{ e.firstName }} {{ e.lastName }}</option> }
+      </select>
+      @if (search() || typeFilter() || empFilter()) {
+        <button (click)="search.set(''); typeFilter.set(''); empFilter.set(''); applyFilter()" class="btn-ghost" style="padding:7px 12px;font-size:13px;">Clear</button>
+      }
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div style="flex:1;overflow-y:auto;padding:0 28px 28px;">
+    <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;">
+      @if (loading()) {
+        <div style="padding:60px;text-align:center;font-size:14px;color:var(--fg-3);">Loading documents…</div>
+      } @else if (documents().length === 0) {
+        <div style="padding:60px;text-align:center;">
+          <div style="width:48px;height:48px;border-radius:50%;background:var(--bg-sunken);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--fg-3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
           </div>
-          <span style="font-size:13px;color:var(--fg-2);">{{ doc.type }}</span>
-          <span style="font-size:13px;color:var(--fg-2);">{{ formatDate(doc.uploadedAt) }}</span>
-          <span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:var(--radius-pill);font-size:12px;font-weight:500;"
-                [style.color]="statusColor(doc.status)"
-                [style.background]="statusBg(doc.status)">
-            {{ doc.status }}
-          </span>
-          <div style="display:flex;justify-content:flex-end;">
-            <button (click)="deleteDocument(doc.id)"
-              style="background:none;border:none;cursor:pointer;padding:6px;border-radius:var(--radius-sm);color:var(--fg-3);display:flex;transition:color var(--dur-fast) var(--ease-out);"
-              onmouseenter="this.style.color='var(--danger)'"
-              onmouseleave="this.style.color='var(--fg-3)'"
-              title="Delete">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-              </svg>
-            </button>
-          </div>
+          <p style="font-size:15px;font-weight:500;color:var(--fg-2);margin:0 0 6px;">No documents found</p>
+          <p style="font-size:13px;color:var(--fg-3);margin:0;">{{ search() || typeFilter() || empFilter() ? 'Try adjusting your filters.' : 'Upload your first compliance document to get started.' }}</p>
+        </div>
+      } @else {
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;min-width:620px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border-soft);">
+                <th style="text-align:left;padding:11px 20px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">File</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Type</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Employee</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Uploaded</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Expires</th>
+                <th style="padding:11px 20px 11px 14px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (doc of documents(); track doc.id) {
+                <tr style="border-bottom:1px solid var(--border-soft);"
+                  onmouseenter="this.style.background='var(--neutral-25)'" onmouseleave="this.style.background=''">
+                  <td style="padding:13px 20px;">
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                      <div style="width:32px;height:32px;border-radius:var(--radius-sm);background:var(--cirvio-mint-50);border:1px solid var(--cirvio-mint-100);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cirvio-sage)" stroke-width="1.75" stroke-linecap="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                      </div>
+                      <div style="min-width:0;">
+                        <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">{{ doc.fileName }}</p>
+                        <p style="font-size:11px;color:var(--fg-3);margin:0;">{{ formatSize(doc.fileSizeKb) }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="padding:13px 14px;font-size:13px;color:var(--fg-2);">{{ typeLabel(doc.documentType) }}</td>
+                  <td style="padding:13px 14px;font-size:13px;color:var(--fg-2);">
+                    {{ doc.employee ? doc.employee.firstName + ' ' + doc.employee.lastName : '—' }}
+                  </td>
+                  <td style="padding:13px 14px;font-size:13px;color:var(--fg-2);">{{ doc.createdAt | date:'d MMM y' }}</td>
+                  <td style="padding:13px 14px;font-size:13px;">
+                    @if (doc.expiryDate) {
+                      <span [style.color]="(doc.expiryDate | date:'yyyy-MM-dd')! < ('' + ('' | date:'yyyy-MM-dd')) ? 'var(--danger)' : 'var(--fg-2)'">
+                        {{ doc.expiryDate | date:'d MMM y' }}
+                      </span>
+                    } @else {
+                      <span style="color:var(--fg-3);">—</span>
+                    }
+                  </td>
+                  <td style="padding:13px 20px 13px 14px;">
+                    <div style="display:flex;gap:6px;">
+                      <button (click)="download(doc)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                        onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">Download</button>
+                      <button (click)="openEdit(doc)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                        onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">Edit</button>
+                      <button (click)="deleteDoc(doc)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--danger);cursor:pointer;font-family:inherit;"
+                        onmouseenter="this.style.background='var(--danger-bg)'" onmouseleave="this.style.background='transparent'">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       }
     </div>
-  }
 
+    @if (totalPages() > 1) {
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:10px;">
+        <p style="font-size:13px;color:var(--fg-2);margin:0;">Page {{ page() }} of {{ totalPages() }} · {{ total() }} documents</p>
+        <div style="display:flex;gap:4px;">
+          <button (click)="goPage(page()-1)" [disabled]="page()===1" class="btn-ghost" style="padding:5px 12px;font-size:13px;">← Prev</button>
+          @for (p of pages(); track $index) {
+            @if (p === '...') { <span style="padding:5px 8px;font-size:13px;color:var(--fg-3);">…</span> }
+            @else { <button (click)="goPage(+p)" [style.background]="page()===p?'var(--cirvio-hunter)':'transparent'" [style.color]="page()===p?'white':'var(--fg-1)'"
+              style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);font-size:13px;font-family:inherit;cursor:pointer;min-width:32px;">{{ p }}</button> }
+          }
+          <button (click)="goPage(page()+1)" [disabled]="page()===totalPages()" class="btn-ghost" style="padding:5px 12px;font-size:13px;">Next →</button>
+        </div>
+      </div>
+    }
+  </div>
 </div>
+
+<!-- Edit metadata panel -->
+@if (editingDoc()) {
+  <div style="position:fixed;inset:0;z-index:200;display:flex;">
+    <div style="flex:1;background:rgba(0,0,0,0.35);" (click)="editingDoc.set(null)"></div>
+    <div style="width:380px;max-width:100vw;background:var(--neutral-0);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-xl);">
+      <div style="padding:18px 24px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <h2 style="font-size:16px;font-weight:700;color:var(--fg-1);margin:0;">Edit document</h2>
+        <button (click)="editingDoc.set(null)" style="width:28px;height:28px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--fg-2);">
+          <svg width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M2 2L16 16M16 2L2 16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div style="flex:1;padding:20px 24px;display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <p style="font-size:12px;color:var(--fg-3);margin:0 0 4px;">File</p>
+          <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">{{ editingDoc()!.fileName }}</p>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Document type</label>
+          <select class="field" [value]="editType()" (change)="editType.set($any($event.target).value)" style="font-size:13px;">
+            @for (t of DOC_TYPES; track t) { <option [value]="t">{{ typeLabel(t) }}</option> }
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Expiry date</label>
+          <input type="date" class="field" [value]="editExpiry()" (input)="editExpiry.set($any($event.target).value)" style="font-size:13px;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Notes</label>
+          <textarea class="field" [value]="editNotes()" (input)="editNotes.set($any($event.target).value)" rows="3" style="resize:vertical;font-size:13px;"></textarea>
+        </div>
+      </div>
+      <div style="padding:16px 24px;border-top:1px solid var(--border-soft);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0;">
+        <button (click)="editingDoc.set(null)" class="btn-ghost" style="padding:9px 20px;font-size:13px;">Cancel</button>
+        <button (click)="saveEdit()" class="btn-primary" [disabled]="editSaving()" style="padding:9px 22px;font-size:13px;">{{ editSaving() ? 'Saving…' : 'Save' }}</button>
+      </div>
+    </div>
+  </div>
+}

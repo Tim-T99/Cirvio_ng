@@ -7,6 +7,7 @@
 
 import { Request, Response } from 'express'
 import * as adminService from '../services/admin.service'
+import { Emirate } from '@prisma/client'
 
 
 // ─────────────────────────────────────────────
@@ -170,6 +171,28 @@ export const getTenant = async (req: Request, res: Response): Promise<void> => {
       res.status(404).json({ error: message })
       return
     }
+    res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+export const updateTenantDetails = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { name, email, phone, industry, emirate, tradelicenseNo, tradelicenseExpiry, trialEndsAt, subscriptionEndsAt } = req.body
+    const updated = await adminService.updateTenantDetails(req.params.tenantId as string, {
+      ...(name !== undefined && { name }),
+      ...(email !== undefined && { email }),
+      ...(phone !== undefined && { phone: phone || null }),
+      ...(industry !== undefined && { industry: industry || null }),
+      ...(emirate !== undefined && { emirate: emirate ? emirate as Emirate : null }),
+      ...(tradelicenseNo !== undefined && { tradelicenseNo: tradelicenseNo || null }),
+      ...(tradelicenseExpiry !== undefined && { tradelicenseExpiry: tradelicenseExpiry ? new Date(tradelicenseExpiry) : null }),
+      ...(trialEndsAt !== undefined && { trialEndsAt: trialEndsAt ? new Date(trialEndsAt) : null }),
+      ...(subscriptionEndsAt !== undefined && { subscriptionEndsAt: subscriptionEndsAt ? new Date(subscriptionEndsAt) : null }),
+    })
+    res.status(200).json(updated)
+  } catch (err) {
+    const message = (err as Error).message
+    if (message.includes('not found')) { res.status(404).json({ error: message }); return }
     res.status(500).json({ error: 'Internal server error' })
   }
 }

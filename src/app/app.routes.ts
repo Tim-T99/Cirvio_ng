@@ -28,9 +28,15 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./dashboard/dashboard').then(m => m.DashboardComponent),
     children: [
-      { path: '', loadComponent: () => import('./dashboard/chat/chat').then(m => m.ChatComponent) },
-      { path: 'documents', loadComponent: () => import('./dashboard/documents/documents').then(m => m.DocumentsComponent) },
-      { path: 'settings',  loadComponent: () => import('./dashboard/settings/settings').then(m => m.SettingsComponent) },
+      { path: '',                loadComponent: () => import('./dashboard/home/home').then(m => m.HomeComponent) },
+      { path: 'employees',       loadComponent: () => import('./dashboard/employees/employees').then(m => m.EmployeesComponent) },
+      { path: 'employees/:id',   loadComponent: () => import('./dashboard/employees/employee-detail/employee-detail').then(m => m.EmployeeDetailComponent) },
+      { path: 'visas',           loadComponent: () => import('./dashboard/visas/visas').then(m => m.VisasComponent) },
+      { path: 'wps',             loadComponent: () => import('./dashboard/wps/wps').then(m => m.WpsComponent) },
+      { path: 'org',             loadComponent: () => import('./dashboard/org-chart/org-chart').then(m => m.OrgChartComponent) },
+      { path: 'chat',            loadComponent: () => import('./dashboard/chat/chat').then(m => m.ChatComponent) },
+      { path: 'documents',       loadComponent: () => import('./dashboard/documents/documents').then(m => m.DocumentsComponent) },
+      { path: 'settings',        loadComponent: () => import('./dashboard/settings/settings').then(m => m.SettingsComponent) },
     ],
   },
 
@@ -42,6 +48,7 @@ export const routes: Routes = [
     children: [
       { path: '', loadComponent: () => import('./admin/overview/overview').then(m => m.OverviewComponent) },
       { path: 'tenants', loadComponent: () => import('./admin/tenants/tenants').then(m => m.TenantsComponent) },
+      { path: 'tenants/:tenantId', loadComponent: () => import('./admin/tenants/tenant-detail').then(m => m.TenantDetailComponent) },
       { path: 'plans',   loadComponent: () => import('./admin/plans/plans').then(m => m.PlansComponent) },
       { path: 'admins',  loadComponent: () => import('./admin/admins/admins').then(m => m.AdminsComponent) },
       { path: 'audit',   loadComponent: () => import('./admin/audit/audit').then(m => m.AuditComponent) },

@@ -30,6 +30,7 @@ router.patch('/password', adminCtrl.changePassword)
 // ── Tenant Oversight ──
 router.get('/tenants', adminCtrl.listTenants)
 router.get('/tenants/:tenantId', adminCtrl.getTenant)
+router.patch('/tenants/:tenantId', requireAdminRole('SUPER_ADMIN'), adminCtrl.updateTenantDetails)
 router.patch('/tenants/:tenantId/status', requireAdminRole('SUPER_ADMIN'), adminCtrl.updateTenantStatus)
 router.patch('/tenants/:tenantId/plan', requireAdminRole('SUPER_ADMIN'), adminCtrl.changeTenantPlan)
 

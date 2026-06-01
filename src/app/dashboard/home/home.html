@@ -1,0 +1,245 @@
+<div style="padding: 32px 36px; max-width: 1200px; flex: 1;">
+
+  @if (loading()) {
+    <div style="display: flex; align-items: center; justify-content: center; height: 300px; color: var(--fg-3); font-size: 14px;">
+      Loading…
+    </div>
+  } @else {
+
+    <!-- Company header -->
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 32px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div style="
+          width: 52px; height: 52px; border-radius: var(--radius-sm);
+          background: var(--cirvio-hunter); display: flex; align-items: center;
+          justify-content: center; font-size: 22px; font-weight: 700; color: var(--cirvio-mint);
+          flex-shrink: 0;
+        ">{{ (profile()?.name ?? '?')[0].toUpperCase() }}</div>
+        <div>
+          <h1 style="font-size: 22px; font-weight: 700; color: var(--fg-1); margin: 0 0 4px; letter-spacing: -0.01em;">{{ profile()?.name }}</h1>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            @if (profile()?.plan) {
+              <span style="font-size: 12px; font-weight: 600; background: var(--cirvio-mint-50); color: var(--cirvio-hunter); border: 1px solid var(--cirvio-mint-300); padding: 2px 10px; border-radius: var(--radius-pill);">
+                {{ profile()!.plan!.name }}
+              </span>
+            }
+            <span style="font-size: 13px; color: var(--fg-3);">{{ profile()?.country }}</span>
+            @if (profile()?.industry) {
+              <span style="font-size: 13px; color: var(--fg-3);">· {{ profile()?.industry }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      @if (trialDaysLeft !== null) {
+        <div style="
+          background: var(--warning-bg); border: 1px solid var(--warning);
+          border-radius: var(--radius-sm); padding: 10px 16px;
+          font-size: 13px; color: var(--warning); font-weight: 500;
+        ">
+          ⚡ Trial ends in {{ trialDaysLeft }} day{{ trialDaysLeft === 1 ? '' : 's' }}
+        </div>
+      }
+    </div>
+
+    <!-- Alert banners -->
+    @if ((stats()?.expiringVisas ?? 0) > 0 || (stats()?.expiredVisas ?? 0) > 0 || (stats()?.pendingWps ?? 0) > 0) {
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px;">
+        @if ((stats()?.expiredVisas ?? 0) > 0) {
+          <div style="display: flex; align-items: center; gap: 12px; background: var(--danger-bg); border: 1px solid var(--danger); border-radius: var(--radius-sm); padding: 12px 16px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;color:var(--danger)">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.75"/>
+              <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+              <circle cx="12" cy="16" r="1" fill="currentColor"/>
+            </svg>
+            <p style="margin:0;font-size:13px;color:var(--danger);font-weight:500;">
+              {{ stats()!.expiredVisas }} visa record{{ stats()!.expiredVisas === 1 ? '' : 's' }} have expired — action required
+            </p>
+          </div>
+        }
+        @if ((stats()?.expiringVisas ?? 0) > 0) {
+          <div style="display: flex; align-items: center; gap: 12px; background: var(--warning-bg); border: 1px solid var(--warning); border-radius: var(--radius-sm); padding: 12px 16px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;color:var(--warning)">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+              <circle cx="12" cy="17" r="1" fill="currentColor"/>
+            </svg>
+            <p style="margin:0;font-size:13px;color:var(--warning);font-weight:500;">
+              {{ stats()!.expiringVisas }} visa record{{ stats()!.expiringVisas === 1 ? '' : 's' }} expiring soon
+            </p>
+          </div>
+        }
+        @if ((stats()?.pendingWps ?? 0) > 0) {
+          <div style="display: flex; align-items: center; gap: 12px; background: var(--info-bg); border: 1px solid var(--info); border-radius: var(--radius-sm); padding: 12px 16px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;color:var(--info)">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.75"/>
+              <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+              <circle cx="12" cy="16" r="1" fill="currentColor"/>
+            </svg>
+            <p style="margin:0;font-size:13px;color:var(--info);font-weight:500;">
+              {{ stats()!.pendingWps }} WPS record{{ stats()!.pendingWps === 1 ? '' : 's' }} pending submission
+            </p>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Stats row -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px;">
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+        <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 8px;">Total Employees</p>
+        <p style="font-size: 32px; font-weight: 700; color: var(--fg-1); margin: 0; letter-spacing: -0.02em;">{{ stats()?.totalEmployees ?? 0 }}</p>
+        @if (profile()?.plan) {
+          <div style="margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--fg-3); margin-bottom: 4px;">
+              <span>{{ stats()?.totalEmployees }} / {{ profile()!.plan!.maxEmployees }}</span>
+              <span>{{ utilizationPct }}%</span>
+            </div>
+            <div style="height: 4px; background: var(--neutral-100); border-radius: 2px; overflow: hidden;">
+              <div [style.width.%]="utilizationPct" style="height: 100%; border-radius: 2px; transition: width 0.4s ease;"
+                [style.background]="utilizationPct > 90 ? 'var(--danger)' : utilizationPct > 75 ? 'var(--warning)' : 'var(--success)'">
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+        <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 8px;">Active Employees</p>
+        <p style="font-size: 32px; font-weight: 700; color: var(--success); margin: 0; letter-spacing: -0.02em;">{{ stats()?.activeEmployees ?? 0 }}</p>
+        @if ((stats()?.totalEmployees ?? 0) > 0) {
+          <p style="font-size: 12px; color: var(--fg-3); margin: 8px 0 0;">
+            {{ ((stats()!.activeEmployees / stats()!.totalEmployees) * 100).toFixed(0) }}% of workforce active
+          </p>
+        }
+      </div>
+
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+        <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 8px;">Platform Users</p>
+        <p style="font-size: 32px; font-weight: 700; color: var(--fg-1); margin: 0; letter-spacing: -0.02em;">{{ stats()?.totalUsers ?? 0 }}</p>
+        @if (profile()?.plan) {
+          <p style="font-size: 12px; color: var(--fg-3); margin: 8px 0 0;">
+            / {{ profile()!.plan!.maxAdmins }} admin seats
+          </p>
+        }
+      </div>
+    </div>
+
+    <!-- Compliance stats -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0;">Expiring Visas</p>
+          <span style="font-size: 11px; font-weight: 600; background: var(--warning-bg); color: var(--warning); padding: 2px 8px; border-radius: var(--radius-pill);">⚠ Soon</span>
+        </div>
+        <p style="font-size: 32px; font-weight: 700; color: var(--warning); margin: 0; letter-spacing: -0.02em;">{{ stats()?.expiringVisas ?? 0 }}</p>
+      </div>
+
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0;">Expired Visas</p>
+          @if ((stats()?.expiredVisas ?? 0) > 0) {
+            <span style="font-size: 11px; font-weight: 600; background: var(--danger-bg); color: var(--danger); padding: 2px 8px; border-radius: var(--radius-pill);">Action needed</span>
+          }
+        </div>
+        <p style="font-size: 32px; font-weight: 700; color: var(--danger); margin: 0; letter-spacing: -0.02em;">{{ stats()?.expiredVisas ?? 0 }}</p>
+      </div>
+
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0;">Pending WPS</p>
+          @if ((stats()?.pendingWps ?? 0) > 0) {
+            <span style="font-size: 11px; font-weight: 600; background: var(--info-bg); color: var(--info); padding: 2px 8px; border-radius: var(--radius-pill);">Pending</span>
+          }
+        </div>
+        <p style="font-size: 32px; font-weight: 700; color: var(--info); margin: 0; letter-spacing: -0.02em;">{{ stats()?.pendingWps ?? 0 }}</p>
+      </div>
+    </div>
+
+    <!-- Quick actions + Recent employees -->
+    <div style="display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start;">
+
+      <!-- Quick actions -->
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+        <h2 style="font-size: 13px; font-weight: 600; color: var(--fg-1); margin: 0 0 16px;">Quick actions</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button (click)="goToOrgChart()" style="display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-family:inherit;text-align:left;transition:background var(--dur-fast) var(--ease-out);"
+            onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
+            <div style="width:32px;height:32px;border-radius:var(--radius-xs);background:var(--cirvio-mint-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cirvio-sage)" stroke-width="1.75" stroke-linecap="round">
+                <circle cx="12" cy="5" r="3"/><path d="M12 8v8M8 14l4 4 4-4M5 17h2M17 17h2"/>
+              </svg>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">Org Chart</p>
+              <p style="font-size:11px;color:var(--fg-3);margin:0;">View company structure</p>
+            </div>
+          </button>
+
+          <button (click)="goToChat()" style="display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-family:inherit;text-align:left;transition:background var(--dur-fast) var(--ease-out);"
+            onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
+            <div style="width:32px;height:32px;border-radius:var(--radius-xs);background:var(--cirvio-mint-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cirvio-sage)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">Compliance Chat</p>
+              <p style="font-size:11px;color:var(--fg-3);margin:0;">Ask HR & compliance questions</p>
+            </div>
+          </button>
+
+          <button (click)="goToDocs()" style="display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-family:inherit;text-align:left;transition:background var(--dur-fast) var(--ease-out);"
+            onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
+            <div style="width:32px;height:32px;border-radius:var(--radius-xs);background:var(--cirvio-mint-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cirvio-sage)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div>
+              <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">Documents</p>
+              <p style="font-size:11px;color:var(--fg-3);margin:0;">Manage compliance files</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent employees -->
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: space-between;">
+          <h2 style="font-size: 13px; font-weight: 600; color: var(--fg-1); margin: 0;">Recent employees</h2>
+        </div>
+
+        @if (loadingEmployees()) {
+          <div style="padding: 40px; text-align: center; font-size: 14px; color: var(--fg-3);">Loading…</div>
+        } @else if (recentEmployees().length === 0) {
+          <div style="padding: 40px; text-align: center;">
+            <p style="font-size: 14px; color: var(--fg-3); margin: 0;">No employees yet.</p>
+          </div>
+        } @else {
+          @for (emp of recentEmployees(); track emp.id) {
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border-soft);"
+              onmouseenter="this.style.background='var(--neutral-25)'" onmouseleave="this.style.background=''">
+              <div [style.background]="'var(--cirvio-mint-50)'"
+                style="width:36px;height:36px;border-radius:50%;border:1px solid var(--cirvio-mint-300);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--cirvio-hunter);flex-shrink:0;">
+                {{ initials(emp) }}
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ emp.firstName }} {{ emp.lastName }}</p>
+                <p style="font-size:12px;color:var(--fg-3);margin:0;">{{ emp.jobTitle || '—' }} @if (emp.department) { · {{ emp.department.name }} }</p>
+              </div>
+              <span
+                [style.background]="statusColor(emp.status).bg"
+                [style.color]="statusColor(emp.status).color"
+                style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 8px;border-radius:var(--radius-pill);white-space:nowrap;flex-shrink:0;"
+              >{{ emp.status }}</span>
+            </div>
+          }
+        }
+      </div>
+
+    </div>
+
+  }
+</div>

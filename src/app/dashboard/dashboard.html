@@ -1,6 +1,25 @@
-<div style="display:flex;height:100vh;overflow:hidden;background:var(--bg);">
-  <app-sidenav />
-  <main style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+<div class="dash-layout" style="display:flex;height:100vh;overflow:hidden;background:var(--bg);">
+
+  <!-- Mobile top bar (hidden on desktop via styles.css) -->
+  <header class="dash-topbar">
+    <button class="dash-hamburger" (click)="mobileNavOpen.set(true)" aria-label="Open navigation">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <svg width="90" height="24" viewBox="0 0 110 30" fill="none" style="flex-shrink:0;">
+      <text x="0" y="22" font-family="ui-sans-serif,system-ui,sans-serif" font-size="20" font-weight="700" fill="var(--cirvio-hunter)">Cirvio</text>
+    </svg>
+  </header>
+
+  <!-- Backdrop (mobile only) -->
+  @if (mobileNavOpen()) {
+    <div class="dash-nav-backdrop" (click)="mobileNavOpen.set(false)"></div>
+  }
+
+  <app-sidenav [mobileOpen]="mobileNavOpen()" (navClose)="mobileNavOpen.set(false)" />
+
+  <main class="dash-main" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
     <router-outlet />
   </main>
 </div>

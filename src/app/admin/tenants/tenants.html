@@ -1,4 +1,4 @@
-<div style="padding: 32px 36px; max-width: 1300px;" (click)="closeMenu()">
+<div class="admin-page" style="padding: 32px 36px; max-width: 1300px;" (click)="closeMenu()">
 
   <!-- Header -->
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;">
@@ -128,16 +128,18 @@
                       padding: 6px; min-width: 160px;
                     ">
                       <button
-                        (click)="$event.stopPropagation()"
-                        style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:transparent;border-radius:var(--radius-xs);font-size:13px;color:var(--fg-1);cursor:default;font-family:inherit;"
+                        (click)="viewDetails(tenant)"
+                        style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:transparent;border-radius:var(--radius-xs);font-size:13px;color:var(--fg-1);cursor:pointer;font-family:inherit;"
+                        onmouseenter="this.style.background='var(--neutral-50)'"
+                        onmouseleave="this.style.background='transparent'"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="1.75"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
                         View details
                       </button>
                       <div style="height:1px;background:var(--border-soft);margin:4px 0;"></div>
-                      @if (tenant.status !== 'active') {
+                      @if (tenant.status !== 'ACTIVE') {
                         <button
-                          (click)="updateStatus(tenant, 'active')"
+                          (click)="updateStatus(tenant, 'ACTIVE')"
                           style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:transparent;border-radius:var(--radius-xs);font-size:13px;color:var(--success);cursor:pointer;font-family:inherit;"
                           onmouseenter="this.style.background='var(--success-bg)'"
                           onmouseleave="this.style.background='transparent'"
@@ -146,9 +148,9 @@
                           Activate
                         </button>
                       }
-                      @if (tenant.status !== 'suspended') {
+                      @if (tenant.status !== 'SUSPENDED') {
                         <button
-                          (click)="updateStatus(tenant, 'suspended')"
+                          (click)="updateStatus(tenant, 'SUSPENDED')"
                           style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:transparent;border-radius:var(--radius-xs);font-size:13px;color:var(--warning);cursor:pointer;font-family:inherit;"
                           onmouseenter="this.style.background='var(--warning-bg)'"
                           onmouseleave="this.style.background='transparent'"
@@ -157,9 +159,9 @@
                           Suspend
                         </button>
                       }
-                      @if (tenant.status !== 'cancelled') {
+                      @if (tenant.status !== 'CANCELLED') {
                         <button
-                          (click)="updateStatus(tenant, 'cancelled')"
+                          (click)="updateStatus(tenant, 'CANCELLED')"
                           style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:transparent;border-radius:var(--radius-xs);font-size:13px;color:var(--danger);cursor:pointer;font-family:inherit;"
                           onmouseenter="this.style.background='var(--danger-bg)'"
                           onmouseleave="this.style.background='transparent'"

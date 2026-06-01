@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SidenavComponent } from './ui/sidenav/sidenav';
 
@@ -8,4 +8,6 @@ import { SidenavComponent } from './ui/sidenav/sidenav';
   imports: [RouterOutlet, SidenavComponent],
   templateUrl: './dashboard.html',
 })
-export class DashboardComponent {}
+export class DashboardComponent {
+  readonly mobileNavOpen = signal(false);
+}

@@ -12,6 +12,15 @@ interface UserProfile {
   tenant?: { id: string; name: string; country: string };
 }
 
+interface OrgProfile {
+  name: string;
+  phone: string | null;
+  industry: string | null;
+  tradelicenseNo: string | null;
+  tradelicenseExpiry: string | null;
+  emirate: string | null;
+}
+
 const COUNTRY_NAMES: Record<string, string> = {
   AE: 'United Arab Emirates',
   SA: 'Saudi Arabia',
@@ -45,6 +54,19 @@ export class SettingsComponent implements OnInit {
     return COUNTRY_NAMES[code] ?? code;
   }
 
+  orgName = signal('');
+  orgPhone = signal('');
+  orgIndustry = signal('');
+  orgTradelicenseNo = signal('');
+  orgTradelicenseExpiry = signal('');
+  orgEmirate = signal('');
+  orgSaving = signal(false);
+  orgSuccess = signal(false);
+  orgError = signal('');
+
+  get isUae(): boolean { return this.profile()?.tenant?.country === 'AE'; }
+  get isTenantAdmin(): boolean { return this.profile()?.role === 'TENANT_ADMIN'; }
+
   currentPassword = signal('');
   newPassword = signal('');
   confirmPassword = signal('');
@@ -59,8 +81,47 @@ export class SettingsComponent implements OnInit {
         this.firstName.set(u.firstName ?? '');
         this.lastName.set(u.lastName ?? '');
         this.loading.set(false);
+        if (u.role === 'TENANT_ADMIN') this.loadOrgProfile();
       },
       error: () => { this.error.set('Failed to load profile.'); this.loading.set(false); },
+    });
+  }
+
+  private loadOrgProfile() {
+    this.http.get<OrgProfile>(`${environment.apiUrl}/api/tenant/profile`).subscribe({
+      next: (o) => {
+        this.orgName.set(o.name ?? '');
+        this.orgPhone.set(o.phone ?? '');
+        this.orgIndustry.set(o.industry ?? '');
+        this.orgTradelicenseNo.set(o.tradelicenseNo ?? '');
+        this.orgTradelicenseExpiry.set(o.tradelicenseExpiry ? o.tradelicenseExpiry.substring(0, 10) : '');
+        this.orgEmirate.set(o.emirate ?? '');
+      },
+      error: () => {},
+    });
+  }
+
+  saveOrgProfile() {
+    this.orgSaving.set(true);
+    this.orgSuccess.set(false);
+    this.orgError.set('');
+    const body: Record<string, unknown> = {
+      name: this.orgName(),
+      phone: this.orgPhone() || null,
+      industry: this.orgIndustry() || null,
+      tradelicenseNo: this.orgTradelicenseNo() || null,
+      tradelicenseExpiry: this.orgTradelicenseExpiry() ? new Date(this.orgTradelicenseExpiry()) : null,
+    };
+    this.http.patch(`${environment.apiUrl}/api/tenant/profile`, body).subscribe({
+      next: () => {
+        this.orgSuccess.set(true);
+        this.orgSaving.set(false);
+        setTimeout(() => this.orgSuccess.set(false), 3000);
+      },
+      error: (err) => {
+        this.orgError.set(err.error?.error ?? 'Failed to save organisation profile.');
+        this.orgSaving.set(false);
+      },
     });
   }
 

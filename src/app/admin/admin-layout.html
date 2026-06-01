@@ -1,5 +1,22 @@
-<div style="display: flex; min-height: 100vh; background: var(--bg);">
-  <app-admin-sidenav />
+<div class="admin-layout" style="display: flex; min-height: 100vh; background: var(--bg);">
+
+  <!-- Mobile top bar (hidden on desktop via styles.css) -->
+  <header class="admin-topbar">
+    <button class="admin-hamburger" (click)="mobileNavOpen.set(true)" aria-label="Open navigation">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <span style="font-size: 15px; font-weight: 700; color: var(--cirvio-mint); letter-spacing: -0.01em;">Admin Console</span>
+  </header>
+
+  <!-- Backdrop (mobile only, when nav open) -->
+  @if (mobileNavOpen()) {
+    <div class="admin-nav-backdrop" (click)="mobileNavOpen.set(false)"></div>
+  }
+
+  <app-admin-sidenav [mobileOpen]="mobileNavOpen()" (navClose)="mobileNavOpen.set(false)" />
+
   <main style="flex: 1; overflow: auto;">
     <router-outlet />
   </main>

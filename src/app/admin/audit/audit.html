@@ -1,4 +1,4 @@
-<div style="padding: 32px 36px; max-width: 1200px;">
+<div class="admin-page" style="padding: 32px 36px; max-width: 1200px;">
 
   <!-- Header -->
   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;">
@@ -42,7 +42,8 @@
         <p style="font-size:14px;color:var(--fg-3);margin:0;">Try adjusting your search.</p>
       </div>
     } @else {
-      <table style="width:100%;border-collapse:collapse;">
+      <div style="overflow-x: auto;">
+      <table style="width:100%;border-collapse:collapse;min-width:580px;">
         <thead>
           <tr style="border-bottom:1px solid var(--border-soft);">
             <th style="text-align:left;padding:12px 24px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);white-space:nowrap;">Timestamp</th>
@@ -126,6 +127,7 @@
           }
         </tbody>
       </table>
+      </div>
     }
   </div>
 

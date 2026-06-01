@@ -171,11 +171,11 @@ export const updateTenantProfile = async (
   tenantId: string,
   data: Partial<{
     name: string
-    phone: string
-    logoUrl: string
-    industry: string
-    tradelicenseNo: string
-    tradelicenseExpiry: Date
+    phone: string | null
+    logoUrl: string | null
+    industry: string | null
+    tradelicenseNo: string | null
+    tradelicenseExpiry: Date | null
   }>
 ) => {
   // [S2] tenantId comes from verified middleware, not request body

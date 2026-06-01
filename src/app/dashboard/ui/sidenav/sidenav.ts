@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/auth.service';
 import { HttpClient } from '@angular/common/http';
@@ -19,15 +19,23 @@ interface UserProfile {
   templateUrl: './sidenav.html',
 })
 export class SidenavComponent {
+  @Input() mobileOpen = false;
+  @Output() navClose = new EventEmitter<void>();
+
   private auth = inject(AuthService);
   private http = inject(HttpClient);
 
   profile = signal<UserProfile | null>(null);
 
   readonly navLinks = [
-    { label: 'Chat', path: '/dashboard', exact: true, icon: 'chat' },
-    { label: 'Documents', path: '/dashboard/documents', exact: false, icon: 'docs' },
-    { label: 'Settings', path: '/dashboard/settings', exact: false, icon: 'settings' },
+    { label: 'Home',       path: '/dashboard',            exact: true,  icon: 'home'      },
+    { label: 'Employees',  path: '/dashboard/employees',  exact: false, icon: 'employees' },
+    { label: 'Visas',      path: '/dashboard/visas',      exact: false, icon: 'visas'     },
+    { label: 'WPS',        path: '/dashboard/wps',        exact: false, icon: 'wps'       },
+    { label: 'Org Chart',  path: '/dashboard/org',        exact: false, icon: 'org'       },
+    { label: 'Documents',  path: '/dashboard/documents',  exact: false, icon: 'docs'      },
+    { label: 'Chat',       path: '/dashboard/chat',       exact: false, icon: 'chat'      },
+    { label: 'Settings',   path: '/dashboard/settings',   exact: false, icon: 'settings'  },
   ];
 
   constructor() {

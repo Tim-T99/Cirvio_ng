@@ -1,0 +1,446 @@
+<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;" (click)="closeMenus()">
+
+  <!-- Header -->
+  <div style="padding:20px 28px 0;flex-shrink:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <div>
+        <h1 style="font-size:20px;font-weight:700;color:var(--fg-1);margin:0 0 4px;letter-spacing:-0.01em;">Employees</h1>
+        <p style="font-size:13px;color:var(--fg-3);margin:0;">{{ total() }} total · {{ departments().length }} departments</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button (click)="showDeptPanel.set(true)" style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+          onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Departments
+        </button>
+        <button (click)="openCreate()" class="btn-primary" style="padding:8px 18px;font-size:13px;display:flex;align-items:center;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add Employee
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="position:relative;flex:1;min-width:200px;max-width:320px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--fg-3);pointer-events:none;" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="field" placeholder="Search name, email, ID…" [value]="search()" (input)="search.set($any($event.target).value); applyFilter()" style="padding-left:34px;font-size:13px;" />
+      </div>
+      <select class="field" [value]="statusFilter()" (change)="statusFilter.set($any($event.target).value); applyFilter()" style="width:auto;font-size:13px;padding:8px 12px;">
+        <option value="">All statuses</option>
+        @for (s of STATUS_OPTS; track s) { <option [value]="s">{{ s }}</option> }
+      </select>
+      <select class="field" [value]="deptFilter()" (change)="deptFilter.set($any($event.target).value); applyFilter()" style="width:auto;font-size:13px;padding:8px 12px;">
+        <option value="">All departments</option>
+        @for (d of departments(); track d.id) { <option [value]="d.id">{{ d.name }}</option> }
+      </select>
+      <select class="field" [value]="typeFilter()" (change)="typeFilter.set($any($event.target).value); applyFilter()" style="width:auto;font-size:13px;padding:8px 12px;">
+        <option value="">All types</option>
+        @for (t of EMPLOYMENT_TYPES; track t) { <option [value]="t">{{ typeLabel(t) }}</option> }
+      </select>
+      @if (search() || statusFilter() || deptFilter() || typeFilter()) {
+        <button (click)="clearFilters()" class="btn-ghost" style="padding:7px 12px;font-size:13px;">Clear</button>
+      }
+    </div>
+  </div>
+
+  <!-- Error -->
+  @if (error()) {
+    <div style="margin:0 28px 12px;background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--danger);">{{ error() }}</div>
+  }
+
+  <!-- Table -->
+  <div style="flex:1;overflow-y:auto;padding:0 28px 28px;">
+    <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;">
+      @if (loading()) {
+        <div style="padding:60px;text-align:center;font-size:14px;color:var(--fg-3);">Loading employees…</div>
+      } @else if (employees().length === 0) {
+        <div style="padding:60px;text-align:center;">
+          <p style="font-size:15px;font-weight:500;color:var(--fg-2);margin:0 0 8px;">No employees found</p>
+          <p style="font-size:13px;color:var(--fg-3);margin:0 0 20px;">{{ search() || statusFilter() || deptFilter() ? 'Try adjusting your filters.' : 'Add your first employee to get started.' }}</p>
+          @if (!search() && !statusFilter() && !deptFilter()) {
+            <button (click)="openCreate()" class="btn-primary">Add employee</button>
+          }
+        </div>
+      } @else {
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;min-width:700px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border-soft);">
+                <th style="text-align:left;padding:11px 20px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Employee</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Department</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Type</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Started</th>
+                <th style="text-align:left;padding:11px 14px;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);">Status</th>
+                <th style="padding:11px 20px 11px 14px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (emp of employees(); track emp.id) {
+                <tr style="border-bottom:1px solid var(--border-soft);cursor:pointer;"
+                  onmouseenter="this.style.background='var(--neutral-25)'" onmouseleave="this.style.background=''"
+                  (click)="viewDetail(emp)">
+                  <td style="padding:13px 20px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div style="width:34px;height:34px;border-radius:50%;background:var(--cirvio-mint-50);border:1px solid var(--cirvio-mint-300);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--cirvio-hunter);flex-shrink:0;">{{ initials(emp) }}</div>
+                      <div>
+                        <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;">{{ emp.firstName }} {{ emp.lastName }}</p>
+                        <p style="font-size:12px;color:var(--fg-3);margin:0;">{{ emp.jobTitle || '—' }} @if (emp.employeeNo) { · #{{ emp.employeeNo }} }</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="padding:13px 14px;font-size:13px;color:var(--fg-2);">{{ emp.department?.name || '—' }}</td>
+                  <td style="padding:13px 14px;font-size:13px;color:var(--fg-2);">{{ typeLabel(emp.employmentType) }}</td>
+                  <td style="padding:13px 14px;font-size:13px;color:var(--fg-2);">{{ emp.startDate ? (emp.startDate | date:'d MMM y') : '—' }}</td>
+                  <td style="padding:13px 14px;">
+                    <span [style.background]="statusStyle(emp.status).bg" [style.color]="statusStyle(emp.status).color"
+                      style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 9px;border-radius:var(--radius-pill);">{{ emp.status }}</span>
+                  </td>
+                  <td style="padding:13px 20px 13px 14px;" (click)="$event.stopPropagation()">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                      <button (click)="openEdit(emp)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                        onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">Edit</button>
+                      <div style="position:relative;">
+                        <button (click)="toggleStatusMenu(emp.id, $event)" style="padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                          onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+                        </button>
+                        @if (statusMenuId() === emp.id) {
+                          <div style="position:absolute;right:0;top:calc(100% + 4px);background:var(--neutral-0);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);padding:6px;min-width:160px;z-index:100;">
+                            @if (emp.status !== 'TERMINATED') {
+                              @for (s of ['ACTIVE','ON_LEAVE','SUSPENDED']; track s) {
+                                @if (s !== emp.status) {
+                                  <button (click)="updateStatus(emp, s)" style="display:flex;align-items:center;width:100%;padding:7px 12px;border:none;background:transparent;border-radius:var(--radius-xs);font-size:13px;color:var(--fg-1);cursor:pointer;font-family:inherit;text-align:left;"
+                                    onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
+                                    Set {{ s.replace('_',' ') }}
+                                  </button>
+                                }
+                              }
+                              <div style="height:1px;background:var(--border-soft);margin:4px 0;"></div>
+                              <button (click)="openTerminate(emp); statusMenuId.set(null)" style="display:flex;align-items:center;width:100%;padding:7px 12px;border:none;background:transparent;border-radius:var(--radius-xs);font-size:13px;color:var(--danger);cursor:pointer;font-family:inherit;text-align:left;"
+                                onmouseenter="this.style.background='var(--danger-bg)'" onmouseleave="this.style.background='transparent'">
+                                Terminate
+                              </button>
+                            }
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:10px;">
+        <p style="font-size:13px;color:var(--fg-2);margin:0;">Page {{ page() }} of {{ totalPages() }} · {{ total() }} employees</p>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <button (click)="goPage(page()-1)" [disabled]="page()===1" class="btn-ghost" style="padding:5px 12px;font-size:13px;">← Prev</button>
+          @for (p of pages(); track $index) {
+            @if (p === '...') { <span style="padding:5px 8px;font-size:13px;color:var(--fg-3);">…</span> }
+            @else {
+              <button (click)="goPage(+p)" [style.background]="page()===p?'var(--cirvio-hunter)':'transparent'" [style.color]="page()===p?'white':'var(--fg-1)'"
+                style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);font-size:13px;font-family:inherit;cursor:pointer;min-width:32px;">{{ p }}</button>
+            }
+          }
+          <button (click)="goPage(page()+1)" [disabled]="page()===totalPages()" class="btn-ghost" style="padding:5px 12px;font-size:13px;">Next →</button>
+        </div>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Create / Edit Employee Panel                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (showPanel()) {
+  <div style="position:fixed;inset:0;z-index:200;display:flex;">
+    <div style="flex:1;background:rgba(0,0,0,0.35);" (click)="closePanel()"></div>
+    <div style="width:520px;max-width:100vw;background:var(--neutral-0);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-xl);">
+      <!-- Panel header -->
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <h2 style="font-size:16px;font-weight:700;color:var(--fg-1);margin:0;">{{ editingId() ? 'Edit Employee' : 'Add Employee' }}</h2>
+        <button (click)="closePanel()" style="width:30px;height:30px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--fg-2);">
+          <svg width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M2 2L16 16M16 2L2 16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <!-- Section tabs -->
+      <div style="display:flex;gap:0;border-bottom:1px solid var(--border-soft);flex-shrink:0;overflow-x:auto;">
+        @for (sec of [
+          {id:'basic',label:'Personal'},
+          {id:'contact',label:'Contact'},
+          {id:'employment',label:'Employment'},
+          {id:'identity',label:'Identity'},
+          {id:'salary',label:'Salary & WPS'}
+        ]; track sec.id) {
+          <button (click)="formSection.set($any(sec.id))"
+            [style.borderBottom]="formSection()===sec.id ? '2px solid var(--cirvio-hunter)' : '2px solid transparent'"
+            [style.color]="formSection()===sec.id ? 'var(--fg-1)' : 'var(--fg-3)'"
+            style="padding:10px 16px;border:none;background:transparent;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;">
+            {{ sec.label }}
+          </button>
+        }
+      </div>
+
+      <!-- Save error -->
+      @if (saveError()) {
+        <div style="margin:12px 24px 0;background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--danger);">{{ saveError() }}</div>
+      }
+
+      <!-- Form body -->
+      <div style="flex:1;overflow-y:auto;padding:20px 24px;">
+
+        @if (formSection() === 'basic') {
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">First name *</label>
+                <input type="text" class="field" [value]="form().firstName" (input)="setField('firstName',$any($event.target).value)" placeholder="First name" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Last name *</label>
+                <input type="text" class="field" [value]="form().lastName" (input)="setField('lastName',$any($event.target).value)" placeholder="Last name" style="font-size:13px;" />
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Middle name</label>
+              <input type="text" class="field" [value]="form().middleName" (input)="setField('middleName',$any($event.target).value)" placeholder="Middle name" style="font-size:13px;" />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Gender</label>
+                <select class="field" [value]="form().gender" (change)="setField('gender',$any($event.target).value)" style="font-size:13px;">
+                  <option value="">— Select —</option>
+                  @for (g of GENDERS; track g) { <option [value]="g">{{ g }}</option> }
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Date of birth</label>
+                <input type="date" class="field" [value]="form().dateOfBirth" (input)="setField('dateOfBirth',$any($event.target).value)" style="font-size:13px;" />
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Nationality (ISO-2, e.g. IN, PK, PH)</label>
+              <input type="text" class="field" [value]="form().nationality" (input)="setField('nationality',$any($event.target).value)" placeholder="AE" maxlength="2" style="font-size:13px;text-transform:uppercase;" />
+            </div>
+          </div>
+        }
+
+        @if (formSection() === 'contact') {
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Work email</label>
+              <input type="email" class="field" [value]="form().workEmail" (input)="setField('workEmail',$any($event.target).value)" placeholder="john@company.com" style="font-size:13px;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Personal email</label>
+              <input type="email" class="field" [value]="form().personalEmail" (input)="setField('personalEmail',$any($event.target).value)" placeholder="john@gmail.com" style="font-size:13px;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Phone</label>
+              <input type="tel" class="field" [value]="form().phone" (input)="setField('phone',$any($event.target).value)" placeholder="+971 50 000 0000" style="font-size:13px;" />
+            </div>
+          </div>
+        }
+
+        @if (formSection() === 'employment') {
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Job title</label>
+              <input type="text" class="field" [value]="form().jobTitle" (input)="setField('jobTitle',$any($event.target).value)" placeholder="Software Engineer" style="font-size:13px;" />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Department</label>
+                <select class="field" [value]="form().departmentId" (change)="setField('departmentId',$any($event.target).value)" style="font-size:13px;">
+                  <option value="">— None —</option>
+                  @for (d of departments(); track d.id) { <option [value]="d.id">{{ d.name }}</option> }
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Employment type</label>
+                <select class="field" [value]="form().employmentType" (change)="setField('employmentType',$any($event.target).value)" style="font-size:13px;">
+                  @for (t of EMPLOYMENT_TYPES; track t) { <option [value]="t">{{ typeLabel(t) }}</option> }
+                </select>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Start date</label>
+                <input type="date" class="field" [value]="form().startDate" (input)="setField('startDate',$any($event.target).value)" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Employee no.</label>
+                <input type="text" class="field" [value]="form().employeeNo" (input)="setField('employeeNo',$any($event.target).value)" placeholder="EMP-001" style="font-size:13px;" />
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (formSection() === 'identity') {
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Emirates ID no.</label>
+                <input type="text" class="field" [value]="form().eidNumber" (input)="setField('eidNumber',$any($event.target).value)" placeholder="784-XXXX-XXXXXXX-X" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">EID expiry</label>
+                <input type="date" class="field" [value]="form().eidExpiry" (input)="setField('eidExpiry',$any($event.target).value)" style="font-size:13px;" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Passport no.</label>
+                <input type="text" class="field" [value]="form().passportNumber" (input)="setField('passportNumber',$any($event.target).value)" placeholder="A12345678" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Passport expiry</label>
+                <input type="date" class="field" [value]="form().passportExpiry" (input)="setField('passportExpiry',$any($event.target).value)" style="font-size:13px;" />
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Labour card no.</label>
+              <input type="text" class="field" [value]="form().labourCardNo" (input)="setField('labourCardNo',$any($event.target).value)" placeholder="LC-XXXXXXXX" style="font-size:13px;" />
+            </div>
+          </div>
+        }
+
+        @if (formSection() === 'salary') {
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <p style="font-size:12px;color:var(--fg-3);margin:0;padding:10px 12px;background:var(--neutral-50);border-radius:var(--radius-sm);">Salary figures are used to compute net pay in WPS records. WPS Person ID and Bank Code are required for SIF generation.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Basic salary (AED)</label>
+                <input type="number" class="field" [value]="form().basicSalaryAed" (input)="setField('basicSalaryAed',+$any($event.target).value||'')" placeholder="0.00" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Allowances (AED)</label>
+                <input type="number" class="field" [value]="form().allowancesAed" (input)="setField('allowancesAed',+$any($event.target).value||'')" placeholder="0.00" style="font-size:13px;" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">WPS Person ID</label>
+                <input type="text" class="field" [value]="form().wpsPersonId" (input)="setField('wpsPersonId',$any($event.target).value)" placeholder="MOHRE person ID" style="font-size:13px;" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">WPS Bank code</label>
+                <input type="text" class="field" [value]="form().wpsBankCode" (input)="setField('wpsBankCode',$any($event.target).value)" placeholder="Bank routing code" style="font-size:13px;" />
+              </div>
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <!-- Panel footer -->
+      <div style="padding:16px 24px;border-top:1px solid var(--border-soft);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;">
+        <button (click)="closePanel()" class="btn-ghost" style="padding:9px 20px;font-size:13px;">Cancel</button>
+        <button (click)="save()" class="btn-primary" [disabled]="saving()" style="padding:9px 24px;font-size:13px;">
+          {{ saving() ? 'Saving…' : (editingId() ? 'Save changes' : 'Add employee') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Terminate Modal                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (terminatingId()) {
+  <div style="position:fixed;inset:0;z-index:300;background:rgba(14,14,12,0.55);display:flex;align-items:center;justify-content:center;padding:24px;" (click)="terminatingId.set(null)">
+    <div style="background:var(--neutral-0);border:1px solid var(--border);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);padding:32px;width:100%;max-width:420px;" (click)="$event.stopPropagation()">
+      <h2 style="font-size:18px;font-weight:700;color:var(--fg-1);margin:0 0 8px;">Terminate employee</h2>
+      <p style="font-size:13px;color:var(--fg-3);margin:0 0 24px;">This is a soft termination. Records are retained for UAE labour law compliance.</p>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">End date *</label>
+          <input type="date" class="field" [value]="terminateDate()" (input)="terminateDate.set($any($event.target).value)" />
+        </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Reason (optional)</label>
+          <textarea class="field" [value]="terminateReason()" (input)="terminateReason.set($any($event.target).value)" rows="3" placeholder="e.g. End of contract, resignation…" style="resize:vertical;"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:24px;">
+        <button (click)="terminatingId.set(null)" class="btn-ghost" style="flex:1;padding:10px;">Cancel</button>
+        <button (click)="confirmTerminate()" [disabled]="terminating() || !terminateDate()"
+          style="flex:1;padding:10px;border:none;border-radius:var(--radius-md);background:var(--danger);color:white;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;opacity:1;"
+          [style.opacity]="terminating()||!terminateDate()?'0.5':'1'">
+          {{ terminating() ? 'Terminating…' : 'Confirm termination' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Departments Panel                                                -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+@if (showDeptPanel()) {
+  <div style="position:fixed;inset:0;z-index:200;display:flex;">
+    <div style="flex:1;background:rgba(0,0,0,0.35);" (click)="showDeptPanel.set(false);deptError.set('')"></div>
+    <div style="width:420px;max-width:100vw;background:var(--neutral-0);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-xl);">
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <h2 style="font-size:16px;font-weight:700;color:var(--fg-1);margin:0;">Departments</h2>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button (click)="openDeptCreate()" class="btn-primary" style="padding:6px 14px;font-size:12px;">+ New</button>
+          <button (click)="showDeptPanel.set(false);deptError.set('')" style="width:28px;height:28px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--fg-2);">
+            <svg width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M2 2L16 16M16 2L2 16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+
+      @if (deptError()) {
+        <div style="margin:12px 16px 0;background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--danger);">{{ deptError() }}</div>
+      }
+
+      <!-- Edit / create form -->
+      @if (deptEditId() !== null || (showDeptPanel() && departments().length === 0)) {
+        <div style="padding:16px;border-bottom:1px solid var(--border-soft);">
+          <p style="font-size:12px;font-weight:600;color:var(--fg-3);text-transform:uppercase;letter-spacing:0.06em;margin:0 0 12px;">{{ deptEditId() ? 'Edit department' : 'New department' }}</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <input type="text" class="field" [value]="deptForm().name" (input)="deptForm.update(f=>({...f,name:$any($event.target).value}))" placeholder="Department name" style="font-size:13px;" />
+            <input type="text" class="field" [value]="deptForm().description" (input)="deptForm.update(f=>({...f,description:$any($event.target).value}))" placeholder="Description (optional)" style="font-size:13px;" />
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button (click)="deptEditId.set(null);deptError.set('')" class="btn-ghost" style="flex:1;padding:8px;font-size:13px;">Cancel</button>
+            <button (click)="saveDept()" class="btn-primary" [disabled]="deptSaving()" style="flex:1;padding:8px;font-size:13px;">{{ deptSaving() ? 'Saving…' : 'Save' }}</button>
+          </div>
+        </div>
+      }
+
+      <!-- Create form when clicking + New (editId is null but we just opened) -->
+      @if (deptEditId() === null && showDeptPanel() && !deptEditId() && (deptForm().name !== '' || departments().length === 0)) {
+      }
+
+      <div style="flex:1;overflow-y:auto;">
+        @if (departments().length === 0) {
+          <div style="padding:40px;text-align:center;font-size:13px;color:var(--fg-3);">No departments yet. Create one above.</div>
+        }
+        @for (dept of departments(); track dept.id) {
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border-soft);">
+            <div>
+              <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;">{{ dept.name }}</p>
+              <p style="font-size:12px;color:var(--fg-3);margin:0;">{{ dept._count.employees }} employee{{ dept._count.employees === 1 ? '' : 's' }}@if (dept.description) { · {{ dept.description }} }</p>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button (click)="openDeptEdit(dept)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">Edit</button>
+              <button (click)="deleteDept(dept)" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;font-size:12px;color:var(--danger);cursor:pointer;font-family:inherit;"
+                onmouseenter="this.style.background='var(--danger-bg)'" onmouseleave="this.style.background='transparent'">Delete</button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

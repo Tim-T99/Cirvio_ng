@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { environment } from '../../../environments/environment';
 
@@ -30,6 +31,7 @@ interface TenantsResponse {
 })
 export class TenantsComponent implements OnInit {
   private http = inject(HttpClient);
+  private router = inject(Router);
 
   readonly tenants = signal<Tenant[]>([]);
   readonly total = signal(0);
@@ -104,6 +106,11 @@ export class TenantsComponent implements OnInit {
   closeMenu(): void {
     this.openMenuId.set(null);
     this.menuPos.set(null);
+  }
+
+  viewDetails(tenant: Tenant): void {
+    this.closeMenu();
+    this.router.navigate(['/admin/dashboard/tenants', tenant.id]);
   }
 
   updateStatus(tenant: Tenant, newStatus: string): void {
