@@ -9,16 +9,22 @@ import * as userCtrl from '../controllers/user.controller'
 import { requireUser } from '../middleware/auth.middleware'
 import { requireActiveTenant, stripTenantFromBody } from '../middleware/tenant.middleware'
 import { requireRole } from '../middleware/role.middleware'
+import { authLimiter, passwordResetLimiter } from '../middleware/rateLimit.middleware'
 
 const router = Router()
 
 // ── Public ──
-router.post('/login', userCtrl.login)
-router.post('/password-reset/request', userCtrl.requestPasswordReset)
+router.post('/login', authLimiter, userCtrl.login)
+router.post('/password-reset/request', passwordResetLimiter, userCtrl.requestPasswordReset)
 router.post('/password-reset/:token', userCtrl.resetPassword)
 
 // ── All routes below require auth + active tenant ──
 router.use(requireUser)
+
+// ── Session refresh — authenticated but before tenant check
+//    so token rotation works independently of tenant status ──
+router.post('/refresh', userCtrl.refresh)
+
 router.use(requireActiveTenant)
 router.use(stripTenantFromBody)
 

@@ -45,8 +45,10 @@ if (!JWT_SECRET || JWT_SECRET.length < 32) {
   )
 }
 
-// [S2] Token lifetimes
-const SESSION_EXPIRY  = '8h'
+// [S2] Token lifetimes — short-lived for security
+// [S7] 15-minute session forces regular refresh; client shows
+//      warning at 2 min remaining and auto-extends via /refresh
+const SESSION_EXPIRY  = '15m'
 const REFRESH_EXPIRY  = '7d'
 
 // [S3] Algorithm pinned explicitly

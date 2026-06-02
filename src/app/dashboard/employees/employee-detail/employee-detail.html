@@ -121,7 +121,7 @@
                 @for (row of [
                   {label:'Job title',       value: emp.jobTitle},
                   {label:'Department',      value: emp.department?.name},
-                  {label:'Type',            value: emp.employmentType?.replace('_',' ')},
+                  {label:'Type',            value: emp.employmentType.replace('_',' ')},
                   {label:'Employee no.',    value: emp.employeeNo},
                   {label:'Start date',      value: emp.startDate ? (emp.startDate | date:'d MMM y') : null},
                   {label:'End date',        value: emp.endDate   ? (emp.endDate   | date:'d MMM y') : null}

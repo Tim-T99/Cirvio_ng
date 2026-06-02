@@ -289,6 +289,7 @@ model User {
   employee     Employee?         @relation(fields: [employeeId], references: [id], onDelete: SetNull)
   sessions     UserSession[]
   activityLogs UserActivityLog[]
+  passkeys     Passkey[]
 
   @@unique([tenantId, email])    // same email allowed across tenants, not within one
 }
@@ -598,4 +599,28 @@ model Document {
   tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   employee     Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   visaRecord   VisaRecord?  @relation(fields: [visaRecordId], references: [id], onDelete: SetNull)
+}
+
+
+// ─────────────────────────────────────────────
+// PASSKEY DOMAIN
+// WebAuthn credentials linked to a User
+// One user can have multiple passkeys (phone,
+// laptop, security key, etc.)
+// ─────────────────────────────────────────────
+
+model Passkey {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String    @db.Uuid
+  credentialId String    @unique              // base64url credential ID from authenticator
+  publicKey    Bytes                          // COSE-encoded public key
+  counter      BigInt    @default(0)          // replay-attack counter
+  deviceType   String    @default("singleDevice") // "singleDevice" | "multiDevice"
+  backedUp     Boolean   @default(false)      // whether cred is backed up to cloud
+  transports   String[]                       // e.g. ["internal", "hybrid", "usb"]
+  name         String?                        // user-friendly label, e.g. "Touch ID"
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -64,6 +64,13 @@
               <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.75"/>
             </svg>
           }
+          @if (link.icon === 'monitoring') {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.75"/>
+              <path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+              <path d="M6 12l3-4 3 3 3-5 3 3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          }
           @if (link.icon === 'tenants') {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M3 21h18M3 21V7l9-4 9 4v14M9 21v-6h6v6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>

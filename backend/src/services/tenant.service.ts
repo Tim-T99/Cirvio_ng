@@ -42,6 +42,7 @@ export const registerTenant = async (data: {
   email: string
   password: string
   country?: string
+  industry?: string
 }) => {
   // Check email uniqueness across all users
   const existingUser = await prisma.user.findFirst({ where: { email: data.email } })
@@ -71,6 +72,7 @@ export const registerTenant = async (data: {
         slug,
         email: data.email,
         country: (data.country ?? 'AE').toUpperCase(),
+        industry: data.industry ?? null,
         status: 'ACTIVE',
         trialEndsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14), // 14-day trial
         ...(defaultPlan && { planId: defaultPlan.id }),

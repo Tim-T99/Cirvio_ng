@@ -9,7 +9,7 @@ import * as tenantService from '../services/tenant.service'
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { organizationName, firstName, lastName, email, password, country } = req.body
+    const { organizationName, firstName, lastName, email, password, country, industry } = req.body
     if (!organizationName || !firstName || !lastName || !email || !password) {
       res.status(400).json({ error: 'All fields are required' })
       return
@@ -22,7 +22,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       res.status(400).json({ error: 'Password must contain a number' })
       return
     }
-    const result = await tenantService.registerTenant({ organizationName, firstName, lastName, email, password, country })
+    const result = await tenantService.registerTenant({ organizationName, firstName, lastName, email, password, country, industry })
     res.status(201).json(result)
   } catch (err) {
     const message = (err as Error).message

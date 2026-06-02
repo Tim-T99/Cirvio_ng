@@ -45,6 +45,29 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
   }
 }
 
+export const refresh = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const oldToken = req.headers.authorization?.split(' ')[1]
+    if (!oldToken) { res.status(401).json({ error: 'Authentication required' }); return }
+    const result = await userService.refreshSession(
+      oldToken,
+      req.user!.userId,
+      req.user!.tenantId,
+      req.user!.role,
+      req.ip,
+      req.headers['user-agent'],
+    )
+    res.status(200).json(result)
+  } catch (err) {
+    const msg = (err as Error).message
+    if (msg.includes('not found') || msg.includes('expired')) {
+      res.status(401).json({ error: 'Session expired. Please log in again.' })
+      return
+    }
+    res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
 export const logoutAll = async (req: Request, res: Response): Promise<void> => {
   try {
     await userService.logoutAllSessions(req.user!.userId, req.user!.tenantId)

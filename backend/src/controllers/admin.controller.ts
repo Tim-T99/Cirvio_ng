@@ -7,6 +7,7 @@
 
 import { Request, Response } from 'express'
 import * as adminService from '../services/admin.service'
+import { prisma } from '../prisma/client'
 import { Emirate } from '@prisma/client'
 
 
@@ -325,6 +326,54 @@ export const getPlatformStats = async (_req: Request, res: Response): Promise<vo
   try {
     const stats = await adminService.getPlatformStats()
     res.status(200).json(stats)
+  } catch {
+    res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+export const getMonitoring = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const now   = new Date()
+    const h24   = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const h1    = new Date(now.getTime() -      60 * 60 * 1000)
+
+    const [
+      activeUserSessions, activeAdminSessions,
+      signupsToday, signupsLastHour,
+      activeEmployees, totalEmployees,
+      expiringVisas, expiredVisas, pendingWps,
+      recentAudit, tenantsByStatus,
+    ] = await Promise.all([
+      prisma.userSession.count({ where: { expiresAt: { gt: now } } }),
+      prisma.adminSession.count({ where: { expiresAt: { gt: now } } }),
+      prisma.tenant.count({ where: { createdAt: { gte: h24 } } }),
+      prisma.tenant.count({ where: { createdAt: { gte: h1  } } }),
+      prisma.employee.count({ where: { status: 'ACTIVE' } }),
+      prisma.employee.count({}),
+      prisma.visaRecord.count({ where: { status: 'EXPIRING_SOON' } }),
+      prisma.visaRecord.count({ where: { status: 'EXPIRED' } }),
+      prisma.wpsRecord.count({ where: { status: 'PENDING' } }),
+      prisma.auditLog.findMany({
+        take: 15, orderBy: { createdAt: 'desc' },
+        include: { admin: { select: { email: true } } },
+      }),
+      prisma.tenant.groupBy({ by: ['status'], _count: { _all: true } }),
+    ])
+
+    res.status(200).json({
+      timestamp: now.toISOString(),
+      sessions: { activeUsers: activeUserSessions, activeAdmins: activeAdminSessions },
+      signups: { last24h: signupsToday, lastHour: signupsLastHour },
+      workforce: { active: activeEmployees, total: totalEmployees },
+      compliance: { expiringVisas, expiredVisas, pendingWps },
+      tenantsByStatus: Object.fromEntries(tenantsByStatus.map(r => [r.status, r._count._all])),
+      recentActivity: recentAudit.map(l => ({
+        id: l.id, action: l.action,
+        actor: (l as any).admin?.email ?? 'system',
+        targetType: l.targetType, targetId: l.targetId,
+        createdAt: l.createdAt,
+      })),
+    })
   } catch {
     res.status(500).json({ error: 'Internal server error' })
   }

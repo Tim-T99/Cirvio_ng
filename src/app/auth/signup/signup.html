@@ -8,7 +8,7 @@
   <main style="flex:1;display:flex;align-items:flex-start;justify-content:center;padding:48px 24px 64px;">
     <div class="animate-fade-up-1" style="width:100%;max-width:460px;">
       <div class="cirvio-glass" style="padding:40px 36px;">
-        <div style="margin-bottom:32px;">
+        <div style="margin-bottom:28px;">
           <h1 style="font-size:26px;font-weight:600;letter-spacing:-0.015em;color:var(--fg-1);margin-bottom:8px;">Create your workspace</h1>
           <p style="font-size:15px;color:var(--fg-2);">Start your 14-day free trial. No credit card required.</p>
         </div>
@@ -19,10 +19,46 @@
           </div>
         }
 
+        <!-- Social sign-up -->
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
+          @if (hasGoogle) {
+            <div id="signup-google-btn" style="display:flex;justify-content:center;min-height:44px;"></div>
+          } @else {
+            <button (click)="serverError.set('Google Sign-Up: add your GOOGLE_CLIENT_ID to environment.ts')"
+              style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--neutral-0);font-size:14px;font-weight:500;color:var(--fg-1);cursor:pointer;font-family:inherit;"
+              onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='var(--neutral-0)'">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Sign up with Google
+            </button>
+          }
+          <button (click)="signInWithApple()"
+            style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;border:1px solid var(--border);border-radius:var(--radius-md);background:#000;font-size:14px;font-weight:500;color:#fff;cursor:pointer;font-family:inherit;"
+            onmouseenter="this.style.opacity='0.85'" onmouseleave="this.style.opacity='1'">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            Sign up with Apple
+          </button>
+        </div>
+
+        @if (googlePrefilled()) {
+          <div style="background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--success);margin-bottom:20px;">
+            ✓ Google account verified — complete your workspace setup below.
+          </div>
+        }
+
+        <!-- Divider -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+          <div style="flex:1;height:1px;background:var(--border-soft);"></div>
+          <span style="font-size:12px;color:var(--fg-3);font-weight:500;">{{ googlePrefilled() ? 'complete setup' : 'or sign up with email' }}</span>
+          <div style="flex:1;height:1px;background:var(--border-soft);"></div>
+        </div>
+
         <form (submit)="handleSubmit($event)" style="display:flex;flex-direction:column;gap:16px;">
-          <!-- Organization -->
+
+          <!-- Organization name -->
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Organization name</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">
+              Organization name <span style="color:var(--danger);">*</span>
+            </label>
             <input name="organizationName" type="text" placeholder="Acme Corp"
               [value]="organizationName()" (input)="organizationName.set($any($event.target).value)"
               required autocomplete="organization"
@@ -32,10 +68,29 @@
             }
           </div>
 
+          <!-- Industry (structured dropdown) -->
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">
+              Industry <span style="color:var(--danger);">*</span>
+            </label>
+            <select name="industry" [class]="'field' + (errors()['industry'] ? ' error' : '')"
+              [value]="industry()" (change)="industry.set($any($event.target).value)" required>
+              <option value="" disabled selected>Select your industry…</option>
+              @for (ind of INDUSTRIES; track ind) {
+                <option [value]="ind">{{ ind }}</option>
+              }
+            </select>
+            @if (errors()['industry']) {
+              <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ errors()['industry'] }}</p>
+            }
+          </div>
+
           <!-- Country -->
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Country</label>
-            <select name="country" class="field" style="appearance:none;cursor:pointer;"
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">
+              Country <span style="color:var(--danger);">*</span>
+            </label>
+            <select name="country" [class]="'field' + (errors()['country'] ? ' error' : '')"
               [value]="country()" (change)="country.set($any($event.target).value)" required>
               @for (c of countries; track c.code) {
                 <option [value]="c.code">{{ c.name }}</option>
@@ -43,8 +98,7 @@
             </select>
             @if (country() !== 'AE') {
               <p style="font-size:12px;color:var(--fg-3);margin-top:6px;line-height:1.45;">
-                Full compliance modules (visa tracking, WPS, Emirates ID) are currently UAE-only.
-                You'll get core HR features and early access as we ship modules for your region.
+                Full compliance modules (visa tracking, WPS) are currently UAE-only. Core HR features are available for all regions.
               </p>
             }
           </div>
@@ -52,7 +106,9 @@
           <!-- Name row -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div>
-              <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">First name</label>
+              <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">
+                First name <span style="color:var(--danger);">*</span>
+              </label>
               <input name="firstName" type="text" placeholder="Jane"
                 [value]="firstName()" (input)="firstName.set($any($event.target).value)"
                 required autocomplete="given-name"
@@ -62,7 +118,9 @@
               }
             </div>
             <div>
-              <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Last name</label>
+              <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">
+                Last name <span style="color:var(--danger);">*</span>
+              </label>
               <input name="lastName" type="text" placeholder="Doe"
                 [value]="lastName()" (input)="lastName.set($any($event.target).value)"
                 required autocomplete="family-name"
@@ -75,56 +133,63 @@
 
           <!-- Email -->
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Work email</label>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">
+              Work email <span style="color:var(--danger);">*</span>
+            </label>
             <input name="email" type="email" placeholder="jane@company.com"
               [value]="email()" (input)="email.set($any($event.target).value)" (blur)="handleEmailBlur()"
               required autocomplete="email"
-              [class]="'field' + (errors()['email'] ? ' error' : '')" />
+              [class]="'field' + (errors()['email'] ? ' error' : '')"
+              [attr.readonly]="googlePrefilled() ? true : null" />
             @if (emailTouched() && errors()['email']) {
               <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ errors()['email'] }}</p>
             }
           </div>
 
-          <!-- Password -->
-          <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Password</label>
-            <div style="position:relative;">
-              <input name="password" [type]="showPassword() ? 'text' : 'password'" placeholder="Password"
-                [value]="password()" (input)="password.set($any($event.target).value)"
-                (focus)="passwordFocused.set(true)" (blur)="passwordFocused.set(false)"
-                required autocomplete="new-password"
-                [class]="'field' + (errors()['password'] ? ' error' : '')"
-                style="padding-right:44px;" />
-              <button type="button" (click)="showPassword.set(!showPassword())" tabindex="-1"
-                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--fg-3);padding:0;display:flex;">
-                @if (showPassword()) {
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                } @else {
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                }
-              </button>
-            </div>
-            @if (passwordFocused() || password()) {
-              <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;padding:8px 10px;background:var(--bg-sunken);border-radius:var(--radius-sm);border:1px solid var(--border-soft);">
-                <app-password-rule [met]="passwordRules().length"    label="8+ characters" />
-                <app-password-rule [met]="passwordRules().uppercase" label="Uppercase letter" />
-                <app-password-rule [met]="passwordRules().number"    label="Contains a number" />
-                <app-password-rule [met]="passwordRules().special"   label="Special character" />
+          <!-- Password fields — hidden when authenticated via Google -->
+          @if (!googlePrefilled()) {
+            <div>
+              <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">
+                Password <span style="color:var(--danger);">*</span>
+              </label>
+              <div style="position:relative;">
+                <input name="password" [type]="showPassword() ? 'text' : 'password'" placeholder="Password"
+                  [value]="password()" (input)="password.set($any($event.target).value)"
+                  (focus)="passwordFocused.set(true)" (blur)="passwordFocused.set(false)"
+                  required autocomplete="new-password"
+                  [class]="'field' + (errors()['password'] ? ' error' : '')" style="padding-right:44px;" />
+                <button type="button" (click)="showPassword.set(!showPassword())" tabindex="-1"
+                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--fg-3);padding:0;display:flex;">
+                  @if (showPassword()) {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  } @else {
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
               </div>
-            }
-          </div>
+              @if (passwordFocused() || password()) {
+                <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;padding:8px 10px;background:var(--bg-sunken);border-radius:var(--radius-sm);border:1px solid var(--border-soft);">
+                  <app-password-rule [met]="passwordRules().length"    label="8+ characters" />
+                  <app-password-rule [met]="passwordRules().uppercase" label="Uppercase letter" />
+                  <app-password-rule [met]="passwordRules().number"    label="Contains a number" />
+                  <app-password-rule [met]="passwordRules().special"   label="Special character" />
+                </div>
+              }
+            </div>
 
-          <!-- Confirm password -->
-          <div>
-            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Confirm password</label>
-            <input name="confirmPassword" [type]="showPassword() ? 'text' : 'password'" placeholder="Confirm password"
-              [value]="confirmPassword()" (input)="confirmPassword.set($any($event.target).value)"
-              required autocomplete="new-password"
-              [class]="'field' + (errors()['confirmPassword'] ? ' error' : '')" />
-            @if (errors()['confirmPassword']) {
-              <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ errors()['confirmPassword'] }}</p>
-            }
-          </div>
+            <div>
+              <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">
+                Confirm password <span style="color:var(--danger);">*</span>
+              </label>
+              <input name="confirmPassword" [type]="showPassword() ? 'text' : 'password'" placeholder="Confirm password"
+                [value]="confirmPassword()" (input)="confirmPassword.set($any($event.target).value)"
+                required autocomplete="new-password"
+                [class]="'field' + (errors()['confirmPassword'] ? ' error' : '')" />
+              @if (errors()['confirmPassword']) {
+                <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ errors()['confirmPassword'] }}</p>
+              }
+            </div>
+          }
 
           <button type="submit" class="btn-primary"
             [disabled]="!isFormReady() || loading()"

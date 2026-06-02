@@ -16,11 +16,12 @@ export class AdminSidenavComponent {
   readonly auth = inject(AdminAuthService);
 
   readonly navLinks = [
-    { label: 'Overview',  path: '/admin/dashboard',           exact: true,  icon: 'overview' },
-    { label: 'Tenants',   path: '/admin/dashboard/tenants',   exact: false, icon: 'tenants'  },
-    { label: 'Plans',     path: '/admin/dashboard/plans',     exact: false, icon: 'plans'    },
-    { label: 'Admins',    path: '/admin/dashboard/admins',    exact: false, icon: 'admins'   },
-    { label: 'Audit Log', path: '/admin/dashboard/audit',     exact: false, icon: 'audit'    },
+    { label: 'Overview',   path: '/admin/dashboard',                exact: true,  icon: 'overview'    },
+    { label: 'Monitoring', path: '/admin/dashboard/monitoring',     exact: false, icon: 'monitoring'  },
+    { label: 'Tenants',    path: '/admin/dashboard/tenants',        exact: false, icon: 'tenants'     },
+    { label: 'Plans',      path: '/admin/dashboard/plans',          exact: false, icon: 'plans'       },
+    { label: 'Admins',     path: '/admin/dashboard/admins',         exact: false, icon: 'admins'      },
+    { label: 'Audit Log',  path: '/admin/dashboard/audit',          exact: false, icon: 'audit'       },
   ];
 
   logout(): void {

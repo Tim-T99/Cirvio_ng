@@ -51,7 +51,8 @@ export const routes: Routes = [
       { path: 'tenants/:tenantId', loadComponent: () => import('./admin/tenants/tenant-detail').then(m => m.TenantDetailComponent) },
       { path: 'plans',   loadComponent: () => import('./admin/plans/plans').then(m => m.PlansComponent) },
       { path: 'admins',  loadComponent: () => import('./admin/admins/admins').then(m => m.AdminsComponent) },
-      { path: 'audit',   loadComponent: () => import('./admin/audit/audit').then(m => m.AuditComponent) },
+      { path: 'audit',      loadComponent: () => import('./admin/audit/audit').then(m => m.AuditComponent) },
+      { path: 'monitoring', loadComponent: () => import('./admin/monitoring/monitoring').then(m => m.MonitoringComponent) },
     ],
   },
 

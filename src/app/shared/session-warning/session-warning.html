@@ -1,0 +1,68 @@
+@if (visible()) {
+  <div style="
+    position:fixed;inset:0;z-index:9000;
+    background:rgba(14,14,12,0.6);
+    display:flex;align-items:center;justify-content:center;
+    padding:24px;
+  ">
+    <div style="
+      background:var(--neutral-0);
+      border:1px solid var(--border);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow-xl);
+      padding:36px;
+      width:100%;max-width:400px;
+      text-align:center;
+    ">
+      <!-- Clock icon -->
+      <div style="
+        width:56px;height:56px;border-radius:50%;
+        background:var(--warning-bg);border:2px solid var(--warning);
+        display:flex;align-items:center;justify-content:center;
+        margin:0 auto 20px;
+      ">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+
+      <h2 style="font-size:19px;font-weight:700;color:var(--fg-1);margin:0 0 8px;">Session expiring soon</h2>
+      <p style="font-size:14px;color:var(--fg-2);margin:0 0 24px;line-height:1.6;">
+        Your session will expire in
+        <strong style="color:var(--warning);">{{ minutesLeft }}:{{ secsRemainder }}</strong>.
+        Extend your session or you will be logged out automatically.
+      </p>
+
+      <!-- Countdown bar -->
+      <div style="height:4px;background:var(--neutral-100);border-radius:2px;margin-bottom:24px;overflow:hidden;">
+        <div
+          [style.width.%]="(secondsLeft() / 120) * 100"
+          style="height:100%;background:var(--warning);border-radius:2px;transition:width 1s linear;">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;">
+        <button
+          (click)="logout()"
+          class="btn-ghost"
+          style="flex:1;padding:10px;font-size:14px;">
+          Log out
+        </button>
+        <button
+          (click)="extend()"
+          [disabled]="extending()"
+          style="
+            flex:1;padding:10px;
+            border:none;border-radius:var(--radius-md);
+            background:var(--cirvio-hunter);color:white;
+            font-size:14px;font-weight:500;
+            cursor:pointer;font-family:inherit;
+          "
+          [style.opacity]="extending() ? '0.6' : '1'">
+          {{ extending() ? 'Extending…' : 'Extend session' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -9,6 +9,7 @@ import * as docCtrl from '../controllers/document.controller'
 import { requireUser } from '../middleware/auth.middleware'
 import { requireActiveTenant, stripTenantFromBody } from '../middleware/tenant.middleware'
 import { requireRole } from '../middleware/role.middleware'
+import { uploadLimiter } from '../middleware/rateLimit.middleware'
 
 const router = Router()
 
@@ -23,7 +24,7 @@ router.get('/:documentId/download-url', docCtrl.getDownloadUrl)
 router.get('/employee/:employeeId/summary', docCtrl.getEmployeeSummary)
 
 // ── Mutate (HR_MANAGER+) ──
-router.post('/upload-url', requireRole('TENANT_ADMIN', 'HR_MANAGER'), docCtrl.getUploadUrl)
+router.post('/upload-url', uploadLimiter, requireRole('TENANT_ADMIN', 'HR_MANAGER'), docCtrl.getUploadUrl)
 router.post('/', requireRole('TENANT_ADMIN', 'HR_MANAGER'), docCtrl.create)
 router.patch('/:documentId', requireRole('TENANT_ADMIN', 'HR_MANAGER'), docCtrl.update)
 router.delete('/:documentId', requireRole('TENANT_ADMIN'), docCtrl.remove)

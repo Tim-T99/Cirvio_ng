@@ -113,7 +113,7 @@ export const loginUser = async (
     data: {
       userId: user.id,
       token: hashedToken,
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 8), // 8 hours
+      expiresAt: new Date(Date.now() + 1000 * 60 * 15), // 15 minutes
       ipAddress,
       userAgent,
     },
@@ -140,6 +140,52 @@ export const logoutUser = async (token: string) => {
   await prisma.userSession.deleteMany({
     where: { token: hashedToken },
   })
+}
+
+// ─────────────────────────────────────────────
+// REFRESH SESSION
+// Called by client at ~2 min remaining
+// Rotates the session token (old invalidated)
+// Returns a fresh 15-minute token
+// ─────────────────────────────────────────────
+
+export const refreshSession = async (
+  oldToken: string,
+  userId: string,
+  tenantId: string,
+  role: 'TENANT_ADMIN' | 'HR_MANAGER' | 'VIEWER',
+  ipAddress?: string,
+  userAgent?: string
+) => {
+  const oldHash = hashToken(oldToken)
+
+  // Verify old session still exists (not already revoked)
+  const existing = await prisma.userSession.findFirst({
+    where: { token: oldHash, userId, expiresAt: { gt: new Date() } },
+    select: { id: true },
+  })
+
+  if (!existing) throw new Error('Session not found or already expired')
+
+  // Issue new token
+  const newToken = signToken({ userId, tenantId, role })
+  const newHash  = hashToken(newToken)
+
+  // Atomic swap: delete old session, create new one
+  await prisma.$transaction([
+    prisma.userSession.deleteMany({ where: { token: oldHash } }),
+    prisma.userSession.create({
+      data: {
+        userId,
+        token: newHash,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 15), // 15 minutes
+        ipAddress,
+        userAgent,
+      },
+    }),
+  ])
+
+  return { token: newToken }
 }
 
 export const logoutAllSessions = async (

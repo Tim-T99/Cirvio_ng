@@ -122,6 +122,60 @@
       </div>
     }
 
+    <!-- Passkeys section -->
+    <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;">
+      <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0 0 4px;">Passkeys</h2>
+      <p style="font-size:13px;color:var(--fg-3);margin:0 0 20px;">Sign in with Face ID, Touch ID, or a hardware security key instead of a password.</p>
+
+      @if (passkeyError()) {
+        <div style="background:var(--danger-bg);border:1px solid rgba(184,69,69,0.20);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--danger);margin-bottom:16px;">{{ passkeyError() }}</div>
+      }
+      @if (passkeySuccess()) {
+        <div style="background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--success);margin-bottom:16px;">{{ passkeySuccess() }}</div>
+      }
+
+      @if (!passkeySupported) {
+        <p style="font-size:13px;color:var(--fg-3);">Passkeys are not supported in this browser.</p>
+      } @else {
+
+        <!-- Existing passkeys -->
+        @if (passkeys().length > 0) {
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+            @for (p of passkeys(); track p.id) {
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--fg-3)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                  </svg>
+                  <div>
+                    <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">{{ p.name || 'Passkey' }}</p>
+                    <p style="font-size:11px;color:var(--fg-3);margin:0;">{{ passkeyDeviceLabel(p) }} · Added {{ p.createdAt | date:'d MMM y' }}</p>
+                  </div>
+                </div>
+                <button (click)="removePasskey(p.id)"
+                  style="padding:5px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:12px;color:var(--danger);cursor:pointer;font-family:inherit;"
+                  onmouseenter="this.style.background='var(--danger-bg)'" onmouseleave="this.style.background='transparent'">
+                  Remove
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Add passkey -->
+        <div style="display:flex;gap:10px;align-items:flex-end;">
+          <div style="flex:1;">
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Label (optional)</label>
+            <input type="text" class="field" [value]="passkeyName()" (input)="passkeyName.set($any($event.target).value)"
+              placeholder='e.g. "MacBook Touch ID"' />
+          </div>
+          <button class="btn-primary" (click)="addPasskey()" [disabled]="passkeyLoading()" style="padding:9px 18px;white-space:nowrap;">
+            {{ passkeyLoading() ? 'Registering…' : '+ Add Passkey' }}
+          </button>
+        </div>
+      }
+    </div>
+
     <!-- Password section -->
     <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;">
       <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0 0 20px;">Change password</h2>

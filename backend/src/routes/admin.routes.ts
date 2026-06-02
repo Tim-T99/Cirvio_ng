@@ -9,11 +9,12 @@ import { Router } from 'express'
 import * as adminCtrl from '../controllers/admin.controller'
 import { requireAdmin } from '../middleware/auth.middleware'
 import { requireAdminRole } from '../middleware/role.middleware'
+import { adminAuthLimiter } from '../middleware/rateLimit.middleware'
 
 const router = Router()
 
 // ── Public ──
-router.post('/login', adminCtrl.login)
+router.post('/login', adminAuthLimiter, adminCtrl.login)
 
 // ── All routes below require admin auth ──
 router.use(requireAdmin)
@@ -39,8 +40,9 @@ router.get('/plans', adminCtrl.listPlans)
 router.post('/plans', requireAdminRole('SUPER_ADMIN'), adminCtrl.createPlan)
 router.patch('/plans/:planId', requireAdminRole('SUPER_ADMIN'), adminCtrl.updatePlan)
 
-// ── Audit + Stats ──
-router.get('/audit-logs', adminCtrl.getAuditLogs)
-router.get('/stats', adminCtrl.getPlatformStats)
+// ── Audit + Stats + Live Monitoring ──
+router.get('/audit-logs',  adminCtrl.getAuditLogs)
+router.get('/stats',       adminCtrl.getPlatformStats)
+router.get('/monitoring',  adminCtrl.getMonitoring)
 
 export default router
