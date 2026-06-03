@@ -30,7 +30,7 @@
 
     <!-- Dashboard stats -->
     @if (dashboard()) {
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px;">
         @for (card of [
           {label:'Total',      value:dashboard()!.totalRecords, color:'var(--fg-1)'},
           {label:'Confirmed',  value:dashboard()!.confirmed,    color:'var(--success)'},
