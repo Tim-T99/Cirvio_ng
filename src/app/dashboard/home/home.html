@@ -85,8 +85,8 @@
     }
 
     <!-- Stats row -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px;">
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px;">
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); min-height: 120px; display: flex; flex-direction: column;">
         <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 8px;">Total Employees</p>
         <p style="font-size: 32px; font-weight: 700; color: var(--fg-1); margin: 0; letter-spacing: -0.02em;">{{ stats()?.totalEmployees ?? 0 }}</p>
         @if (profile()?.plan) {
@@ -104,7 +104,7 @@
         }
       </div>
 
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); min-height: 120px; display: flex; flex-direction: column;">
         <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 8px;">Active Employees</p>
         <p style="font-size: 32px; font-weight: 700; color: var(--success); margin: 0; letter-spacing: -0.02em;">{{ stats()?.activeEmployees ?? 0 }}</p>
         @if ((stats()?.totalEmployees ?? 0) > 0) {
@@ -114,7 +114,7 @@
         }
       </div>
 
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); min-height: 120px; display: flex; flex-direction: column;">
         <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 8px;">Platform Users</p>
         <p style="font-size: 32px; font-weight: 700; color: var(--fg-1); margin: 0; letter-spacing: -0.02em;">{{ stats()?.totalUsers ?? 0 }}</p>
         @if (profile()?.plan) {
@@ -126,8 +126,8 @@
     </div>
 
     <!-- Compliance stats -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px;">
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); min-height: 120px; display: flex; flex-direction: column;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
           <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0;">Expiring Visas</p>
           <span style="font-size: 11px; font-weight: 600; background: var(--warning-bg); color: var(--warning); padding: 2px 8px; border-radius: var(--radius-pill);">⚠ Soon</span>
@@ -135,7 +135,7 @@
         <p style="font-size: 32px; font-weight: 700; color: var(--warning); margin: 0; letter-spacing: -0.02em;">{{ stats()?.expiringVisas ?? 0 }}</p>
       </div>
 
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); min-height: 120px; display: flex; flex-direction: column;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
           <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0;">Expired Visas</p>
           @if ((stats()?.expiredVisas ?? 0) > 0) {
@@ -145,7 +145,7 @@
         <p style="font-size: 32px; font-weight: 700; color: var(--danger); margin: 0; letter-spacing: -0.02em;">{{ stats()?.expiredVisas ?? 0 }}</p>
       </div>
 
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);">
+      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); min-height: 120px; display: flex; flex-direction: column;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
           <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0;">Pending WPS</p>
           @if ((stats()?.pendingWps ?? 0) > 0) {
