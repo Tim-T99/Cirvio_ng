@@ -283,7 +283,7 @@ export const passkeyRegister = async (req: Request, res: Response): Promise<void
       return
     }
 
-    const { credential } = verification.registrationInfo
+    const { credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo
 
     await prisma.passkey.create({
       data: {
@@ -291,8 +291,8 @@ export const passkeyRegister = async (req: Request, res: Response): Promise<void
         credentialId: credential.id,
         publicKey:    Buffer.from(credential.publicKey),
         counter:      BigInt(credential.counter),
-        deviceType:   credential.deviceType ?? 'singleDevice',
-        backedUp:     credential.backedUp   ?? false,
+        deviceType:   credentialDeviceType ?? 'singleDevice',
+        backedUp:     credentialBackedUp   ?? false,
         transports:   credential.transports ?? [],
         name:         name ?? null,
       },
@@ -465,12 +465,13 @@ export const passkeyList = async (req: Request, res: Response): Promise<void> =>
 
 export const passkeyRemove = async (req: Request, res: Response): Promise<void> => {
   try {
+    const passkeyId = String(req.params.passkeyId)
     const passkey = await prisma.passkey.findFirst({
-      where: { id: req.params.passkeyId, userId: req.user!.userId },
+      where: { id: passkeyId, userId: req.user!.userId },
     })
     if (!passkey) { res.status(404).json({ error: 'Passkey not found.' }); return }
 
-    await prisma.passkey.delete({ where: { id: req.params.passkeyId } })
+    await prisma.passkey.delete({ where: { id: passkeyId } })
     res.json({ deleted: true })
   } catch {
     res.status(500).json({ error: 'Internal server error' })

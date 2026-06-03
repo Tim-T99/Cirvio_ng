@@ -81,9 +81,9 @@ export const authLimiter = rateLimit({
   limit:    Math.floor(15 * M),
   // Per-email keying for login: makes credential-stuffing harder
   // Falls back to IP if body can't be parsed
-  keyGenerator: async (req) => {
+  keyGenerator: (req) => {
     const email = req.body?.email as string | undefined
-    const ip = await ipKeyGenerator(req)
+    const ip = ipKeyGenerator(req.ip ?? '')
     return email ? `${ip}:${email.toLowerCase().trim()}` : ip
   },
 })
@@ -93,9 +93,9 @@ export const passwordResetLimiter = rateLimit({
   ...base,
   windowMs: 60 * 60 * 1000, // 1 hour
   limit:    Math.floor(5 * M),
-  keyGenerator: async (req) => {
+  keyGenerator: (req) => {
     const email = req.body?.email as string | undefined
-    const ip = await ipKeyGenerator(req)
+    const ip = ipKeyGenerator(req.ip ?? '')
     return email ? `${ip}:${email.toLowerCase().trim()}` : ip
   },
 })
