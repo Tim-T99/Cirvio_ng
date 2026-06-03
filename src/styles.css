@@ -470,9 +470,25 @@ html, body { overflow-x: hidden; max-width: 100vw; }
   .admin-plan-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
 }
 
-/* Very small phones: stat grid goes single column */
+/* Very small phones: keep 2 compact columns (avoids a tall single column) */
 @media (max-width: 480px) {
-  .admin-stat-grid { grid-template-columns: 1fr !important; }
+  .admin-stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* Compact clickable stat cards + responsive drill-down drawer on mobile */
+@media (max-width: 768px) {
+  .admin-stat-card { padding: 14px !important; min-height: 0 !important; }
+  .admin-stat-card .stat-value { font-size: 24px !important; }
+  .admin-stat-card .stat-label { font-size: 10px !important; }
+  .admin-stat-card .stat-hint  { display: none !important; }
+
+  /* Drill-down overlay: full-width sheet, scroll instead of clip */
+  .admin-drawer      { width: 100vw !important; }
+  .admin-drawer-head { padding: 14px 16px !important; }
+  .admin-drawer-body { overflow-x: auto; }
+  .admin-drawer-body th,
+  .admin-drawer-body td { padding-left: 14px !important; padding-right: 14px !important; }
+  .admin-drawer-body td p { overflow-wrap: anywhere; }
 }
 
 /* =====================================================================

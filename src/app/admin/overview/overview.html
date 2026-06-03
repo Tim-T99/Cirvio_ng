@@ -49,16 +49,16 @@
         { kind: 'employees', label: 'Total Employees', value: stats()?.totalEmployees ?? 0, color: 'var(--fg-1)',   title: 'Employees by tenant' },
         { kind: 'admins',    label: 'Platform Admins', value: stats()?.platformAdmins ?? 0, color: 'var(--fg-1)',   title: 'Platform admins' }
       ]; track c.kind) {
-        <button type="button" (click)="openPanel($any(c.kind), c.title)"
+        <button type="button" (click)="openPanel($any(c.kind), c.title)" class="admin-stat-card"
           style="text-align:left; width:100%; font-family:inherit; cursor:pointer; background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm); display:flex; flex-direction:column; min-height: 116px; transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);"
           onmouseenter="this.style.borderColor='var(--cirvio-sage)';this.style.boxShadow='var(--shadow-md)'"
           onmouseleave="this.style.borderColor='var(--border)';this.style.boxShadow='var(--shadow-sm)'">
           <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;">
-            <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3);">{{ c.label }}</span>
+            <span class="stat-label" style="font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3);">{{ c.label }}</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="color:var(--fg-3);flex-shrink:0;"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <span [style.color]="c.color" style="font-size: 32px; font-weight: 700; letter-spacing: -0.02em;">{{ c.value }}</span>
-          <span style="font-size:11px;color:var(--fg-3);margin-top:auto;padding-top:8px;">Click to view details</span>
+          <span class="stat-value" [style.color]="c.color" style="font-size: 32px; font-weight: 700; letter-spacing: -0.02em;">{{ c.value }}</span>
+          <span class="stat-hint" style="font-size:11px;color:var(--fg-3);margin-top:auto;padding-top:8px;">Click to view details</span>
         </button>
       }
     }
@@ -116,17 +116,17 @@
 
 <!-- Drill-down overlay -->
 @if (panel(); as p) {
-  <div style="position:fixed; inset:0; z-index:200; display:flex;">
+  <div style="position:fixed; inset:0; z-index:500; display:flex;">
     <div style="flex:1; background:rgba(0,0,0,0.35);" (click)="closePanel()"></div>
-    <div style="width:620px; max-width:100vw; background:var(--neutral-0); border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; box-shadow:var(--shadow-xl);">
-      <div style="padding:18px 24px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+    <div class="admin-drawer" style="width:620px; max-width:100vw; background:var(--neutral-0); border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; box-shadow:var(--shadow-xl);">
+      <div class="admin-drawer-head" style="padding:18px 24px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
         <h2 style="font-size:16px; font-weight:700; color:var(--fg-1); margin:0;">{{ p.title }}</h2>
         <button (click)="closePanel()" style="width:28px; height:28px; border:1px solid var(--border); border-radius:var(--radius-xs); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--fg-2);">
           <svg width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M2 2L16 16M16 2L2 16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
         </button>
       </div>
 
-      <div style="flex:1; overflow-y:auto;">
+      <div class="admin-drawer-body" style="flex:1; overflow-y:auto;">
         @if (panelLoading()) {
           <div style="padding:48px; text-align:center; font-size:14px; color:var(--fg-3);">Loading…</div>
         } @else if (p.kind === 'admins') {
