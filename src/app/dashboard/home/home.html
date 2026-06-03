@@ -159,7 +159,7 @@
     <!-- Quick actions -->
     <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 20px;">
       <h2 style="font-size: 13px; font-weight: 600; color: var(--fg-1); margin: 0 0 16px;">Quick actions</h2>
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
         <button (click)="goToOrgChart()" style="display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;cursor:pointer;font-family:inherit;text-align:left;transition:background var(--dur-fast) var(--ease-out);"
           onmouseenter="this.style.background='var(--neutral-50)'" onmouseleave="this.style.background='transparent'">
           <div style="width:32px;height:32px;border-radius:var(--radius-xs);background:var(--cirvio-mint-50);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -167,9 +167,9 @@
               <circle cx="12" cy="5" r="3"/><path d="M12 8v8M8 14l4 4 4-4M5 17h2M17 17h2"/>
             </svg>
           </div>
-          <div>
-            <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">Org Chart</p>
-            <p style="font-size:11px;color:var(--fg-3);margin:0;">View company structure</p>
+          <div style="min-width:0;">
+            <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Org Chart</p>
+            <p style="font-size:11px;color:var(--fg-3);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">View company structure</p>
           </div>
         </button>
 
@@ -180,9 +180,9 @@
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
             </svg>
           </div>
-          <div>
-            <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">Compliance Chat</p>
-            <p style="font-size:11px;color:var(--fg-3);margin:0;">Ask HR & compliance questions</p>
+          <div style="min-width:0;">
+            <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Compliance Chat</p>
+            <p style="font-size:11px;color:var(--fg-3);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ask HR & compliance questions</p>
           </div>
         </button>
 
@@ -194,9 +194,9 @@
               <polyline points="14 2 14 8 20 8"/>
             </svg>
           </div>
-          <div>
-            <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">Documents</p>
-            <p style="font-size:11px;color:var(--fg-3);margin:0;">Manage compliance files</p>
+          <div style="min-width:0;">
+            <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Documents</p>
+            <p style="font-size:11px;color:var(--fg-3);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Manage compliance files</p>
           </div>
         </button>
       </div>
