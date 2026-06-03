@@ -27,9 +27,14 @@ interface SifFile {
 
 interface WpsDashboard {
   year: number;
-  totalRecords: number; confirmed: number; pending: number;
-  late: number; violations: number;
-  monthly: { month: number; totalNetSalary: number; recordCount: number; confirmedCount: number }[];
+  totalRecords: number;
+  confirmedRecords: number;
+  pendingRecords: number;
+  lateRecords: number;
+  violationRecords: number;
+  pendingAlerts: number;
+  complianceRate: number;
+  monthlySummary: { month: number; employeeCount: number; totalDisbursedAed: number }[];
 }
 
 interface Employee { id: string; firstName: string; lastName: string; }

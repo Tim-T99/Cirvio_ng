@@ -30,15 +30,15 @@
 
     <!-- Dashboard stats -->
     @if (dashboard()) {
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px;">
+      <div class="wps-stat-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;">
         @for (card of [
-          {label:'Total',      value:dashboard()!.totalRecords, color:'var(--fg-1)'},
-          {label:'Confirmed',  value:dashboard()!.confirmed,    color:'var(--success)'},
-          {label:'Pending',    value:dashboard()!.pending,      color:'var(--fg-3)'},
-          {label:'Late',       value:dashboard()!.late,         color:'var(--warning)'},
-          {label:'Violations', value:dashboard()!.violations,   color:'var(--danger)'}
+          {label:'Total',      value:dashboard()!.totalRecords,      color:'var(--fg-1)'},
+          {label:'Confirmed',  value:dashboard()!.confirmedRecords,  color:'var(--success)'},
+          {label:'Pending',    value:dashboard()!.pendingRecords,    color:'var(--fg-3)'},
+          {label:'Late',       value:dashboard()!.lateRecords,       color:'var(--warning)'},
+          {label:'Violations', value:dashboard()!.violationRecords,  color:'var(--danger)'}
         ]; track card.label) {
-          <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow-sm);">
+          <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between;min-height:78px;">
             <p style="font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg-3);margin:0 0 6px;">{{ card.label }}</p>
             <p [style.color]="card.color" style="font-size:26px;font-weight:700;margin:0;letter-spacing:-0.02em;">{{ card.value }}</p>
           </div>
