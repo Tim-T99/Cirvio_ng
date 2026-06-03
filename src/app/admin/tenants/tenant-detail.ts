@@ -36,6 +36,33 @@ interface Plan {
   billingCycleMonths: number;
 }
 
+interface TenantUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  isActive: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+  activeSessions: number;
+  deviceCount: number;
+}
+
+interface DeviceSession {
+  id: string;
+  deviceType: string | null;
+  deviceName: string | null;
+  os: string | null;
+  browser: string | null;
+  ipAddress: string | null;
+  lastIp: string | null;
+  lastSeenAt: string | null;
+  createdAt: string;
+  expiresAt: string;
+  active: boolean;
+}
+
 @Component({
   selector: 'app-tenant-detail',
   standalone: true,
@@ -67,6 +94,15 @@ export class TenantDetailComponent implements OnInit {
   readonly editSubscriptionEndsAt = signal('');
   readonly editPlanId = signal<string | null>(null);
 
+  // Users & Devices (sessions / zero-trust access control)
+  readonly users = signal<TenantUser[]>([]);
+  readonly loadingUsers = signal(true);
+  readonly expandedUserId = signal<string | null>(null);
+  readonly userSessions = signal<DeviceSession[]>([]);
+  readonly loadingSessions = signal(false);
+  readonly accessError = signal('');
+  readonly accessBusy = signal<string | null>(null);
+
   get isUae(): boolean { return this.tenant()?.country === 'AE'; }
 
   readonly EMIRATES: { value: string; label: string }[] = [
@@ -96,6 +132,82 @@ export class TenantDetailComponent implements OnInit {
       },
       error: () => { this.error.set('Failed to load tenant.'); this.loading.set(false); },
     });
+    this.loadUsers(id);
+  }
+
+  // ── Users & Devices ───────────────────────────
+  private loadUsers(id: string): void {
+    this.loadingUsers.set(true);
+    this.http.get<{ users: TenantUser[] }>(`${environment.apiUrl}/api/admin/tenants/${id}/users`).subscribe({
+      next: (r) => { this.users.set(r.users ?? []); this.loadingUsers.set(false); },
+      error: () => { this.loadingUsers.set(false); },
+    });
+  }
+
+  toggleUser(userId: string): void {
+    if (this.expandedUserId() === userId) { this.expandedUserId.set(null); return; }
+    this.expandedUserId.set(userId);
+    this.userSessions.set([]);
+    this.accessError.set('');
+    this.loadingSessions.set(true);
+    this.http.get<{ sessions: DeviceSession[] }>(`${environment.apiUrl}/api/admin/users/${userId}/sessions`).subscribe({
+      next: (r) => { this.userSessions.set(r.sessions ?? []); this.loadingSessions.set(false); },
+      error: () => { this.loadingSessions.set(false); },
+    });
+  }
+
+  private syncCounts(userId: string): void {
+    const sessions = this.userSessions();
+    this.users.update(list => list.map(u => u.id === userId
+      ? { ...u, activeSessions: sessions.filter(s => s.active).length, deviceCount: new Set(sessions.map(s => s.deviceName ?? s.id)).size }
+      : u));
+  }
+
+  revokeSession(sessionId: string): void {
+    this.accessBusy.set(sessionId);
+    this.accessError.set('');
+    this.http.delete(`${environment.apiUrl}/api/admin/sessions/${sessionId}`).subscribe({
+      next: () => {
+        this.userSessions.update(list => list.filter(s => s.id !== sessionId));
+        const uid = this.expandedUserId();
+        if (uid) this.syncCounts(uid);
+        this.accessBusy.set(null);
+      },
+      error: (err) => { this.accessError.set(err.error?.error ?? 'Failed to revoke session.'); this.accessBusy.set(null); },
+    });
+  }
+
+  revokeAllSessions(userId: string): void {
+    this.accessBusy.set('all-' + userId);
+    this.accessError.set('');
+    this.http.post(`${environment.apiUrl}/api/admin/users/${userId}/revoke-sessions`, {}).subscribe({
+      next: () => {
+        this.userSessions.set([]);
+        this.syncCounts(userId);
+        this.accessBusy.set(null);
+      },
+      error: (err) => { this.accessError.set(err.error?.error ?? 'Failed to revoke sessions.'); this.accessBusy.set(null); },
+    });
+  }
+
+  toggleUserActive(user: TenantUser): void {
+    this.accessBusy.set('lock-' + user.id);
+    this.accessError.set('');
+    this.http.patch<{ isActive: boolean }>(`${environment.apiUrl}/api/admin/users/${user.id}/status`, { isActive: !user.isActive }).subscribe({
+      next: (r) => {
+        this.users.update(list => list.map(u => u.id === user.id
+          ? { ...u, isActive: r.isActive, activeSessions: r.isActive ? u.activeSessions : 0, deviceCount: r.isActive ? u.deviceCount : 0 }
+          : u));
+        if (!r.isActive && this.expandedUserId() === user.id) this.userSessions.set([]);
+        this.accessBusy.set(null);
+      },
+      error: (err) => { this.accessError.set(err.error?.error ?? 'Failed to update user.'); this.accessBusy.set(null); },
+    });
+  }
+
+  deviceMeta(s: DeviceSession): string {
+    const parts = [s.deviceName, s.browser && s.os ? null : (s.browser ?? s.os)].filter(Boolean);
+    return parts.join(' · ') || 'Unknown device';
   }
 
   startEdit(): void {
@@ -180,6 +292,7 @@ export class TenantDetailComponent implements OnInit {
       },
       error: () => { this.editing.set(false); this.saving.set(false); },
     });
+    this.loadUsers(id);
   }
 
   back(): void {

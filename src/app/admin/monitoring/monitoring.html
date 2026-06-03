@@ -34,11 +34,12 @@
     </div>
 
     <!-- Active sessions row -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:24px;">
       @for (card of [
         {label:'Active user sessions',   value: d.sessions.activeUsers,   color:'var(--cirvio-hunter)', sub: 'right now'},
-        {label:'Active admin sessions',  value: d.sessions.activeAdmins,  color:'var(--cirvio-sage)',   sub: 'right now'},
-        {label:'New tenants (24h)',       value: d.signups.last24h,        color:'var(--info)',          sub: d.signups.lastHour + ' in last hour'},
+        {label:'Active devices',          value: d.devices.active,         color:'var(--cirvio-sage)',   sub: 'distinct, bound'},
+        {label:'Active admin sessions',  value: d.sessions.activeAdmins,  color:'var(--info)',          sub: 'right now'},
+        {label:'New tenants (24h)',       value: d.signups.last24h,        color:'var(--fg-1)',          sub: d.signups.lastHour + ' in last hour'},
         {label:'Active employees',        value: d.workforce.active,       color:'var(--fg-1)',          sub: d.workforce.total + ' total'}
       ]; track card.label) {
         <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);">
@@ -46,6 +47,27 @@
           <p [style.color]="card.color" style="font-size:34px;font-weight:700;margin:0;letter-spacing:-0.03em;">{{ card.value }}</p>
           <p style="font-size:12px;color:var(--fg-3);margin:6px 0 0;">{{ card.sub }}</p>
         </div>
+      }
+    </div>
+
+    <!-- New-device sign-ins (zero-trust alerts) -->
+    <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:24px;">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="color:var(--warning);"><path d="M12 9v4M12 17h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h2 style="font-size:14px;font-weight:600;color:var(--fg-1);margin:0;">New-device sign-ins · last 24h</h2>
+      </div>
+      @if (d.newDevices.length === 0) {
+        <div style="padding:28px;text-align:center;font-size:13px;color:var(--fg-3);">No new-device sign-ins in the last 24 hours.</div>
+      } @else {
+        @for (nd of d.newDevices; track nd.id) {
+          <div style="display:flex;align-items:center;gap:12px;padding:11px 20px;border-bottom:1px solid var(--border-soft);">
+            <div style="flex:1;min-width:0;">
+              <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">{{ nd.user }} <span style="font-size:12px;color:var(--fg-3);">· {{ nd.tenant }}</span></p>
+              <p style="font-size:12px;color:var(--fg-3);margin:0;">{{ nd.deviceName }} · IP {{ nd.ipAddress || '—' }}</p>
+            </div>
+            <span style="font-size:12px;color:var(--fg-3);white-space:nowrap;">{{ nd.createdAt | date:'d MMM, HH:mm' }}</span>
+          </div>
+        }
       }
     </div>
 
