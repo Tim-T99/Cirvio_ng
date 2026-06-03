@@ -28,7 +28,7 @@
   }
 
   <!-- Stat cards -->
-  <div class="admin-stat-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 36px;">
+  <div class="admin-stat-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 36px;">
     @if (loadingStats()) {
       @for (n of [1,2,3,4,5,6]; track n) {
         <div style="
@@ -41,30 +41,26 @@
         </div>
       }
     } @else {
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
-        <p style="font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 10px;">Total Tenants</p>
-        <p style="font-size: 32px; font-weight: 700; color: var(--fg-1); margin: 0; letter-spacing: -0.02em;">{{ stats()?.totalTenants ?? 0 }}</p>
-      </div>
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
-        <p style="font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 10px;">Active</p>
-        <p style="font-size: 32px; font-weight: 700; color: var(--success); margin: 0; letter-spacing: -0.02em;">{{ stats()?.active ?? 0 }}</p>
-      </div>
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
-        <p style="font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 10px;">Trial</p>
-        <p style="font-size: 32px; font-weight: 700; color: var(--info); margin: 0; letter-spacing: -0.02em;">{{ stats()?.trial ?? 0 }}</p>
-      </div>
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
-        <p style="font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 10px;">Suspended</p>
-        <p style="font-size: 32px; font-weight: 700; color: var(--warning); margin: 0; letter-spacing: -0.02em;">{{ stats()?.suspended ?? 0 }}</p>
-      </div>
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
-        <p style="font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 10px;">Total Employees</p>
-        <p style="font-size: 32px; font-weight: 700; color: var(--fg-1); margin: 0; letter-spacing: -0.02em;">{{ stats()?.totalEmployees ?? 0 }}</p>
-      </div>
-      <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
-        <p style="font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 10px;">Platform Admins</p>
-        <p style="font-size: 32px; font-weight: 700; color: var(--fg-1); margin: 0; letter-spacing: -0.02em;">{{ stats()?.platformAdmins ?? 0 }}</p>
-      </div>
+      @for (c of [
+        { kind: 'total',     label: 'Total Tenants',   value: stats()?.totalTenants ?? 0,  color: 'var(--fg-1)',    title: 'All tenants' },
+        { kind: 'active',    label: 'Active',          value: stats()?.active ?? 0,        color: 'var(--success)', title: 'Active tenants' },
+        { kind: 'trial',     label: 'Trial',           value: stats()?.trial ?? 0,         color: 'var(--info)',    title: 'Trial tenants' },
+        { kind: 'suspended', label: 'Suspended',       value: stats()?.suspended ?? 0,     color: 'var(--warning)', title: 'Suspended tenants' },
+        { kind: 'employees', label: 'Total Employees', value: stats()?.totalEmployees ?? 0, color: 'var(--fg-1)',   title: 'Employees by tenant' },
+        { kind: 'admins',    label: 'Platform Admins', value: stats()?.platformAdmins ?? 0, color: 'var(--fg-1)',   title: 'Platform admins' }
+      ]; track c.kind) {
+        <button type="button" (click)="openPanel($any(c.kind), c.title)"
+          style="text-align:left; width:100%; font-family:inherit; cursor:pointer; background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm); display:flex; flex-direction:column; min-height: 116px; transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);"
+          onmouseenter="this.style.borderColor='var(--cirvio-sage)';this.style.boxShadow='var(--shadow-md)'"
+          onmouseleave="this.style.borderColor='var(--border)';this.style.boxShadow='var(--shadow-sm)'">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;">
+            <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3);">{{ c.label }}</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="color:var(--fg-3);flex-shrink:0;"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span [style.color]="c.color" style="font-size: 32px; font-weight: 700; letter-spacing: -0.02em;">{{ c.value }}</span>
+          <span style="font-size:11px;color:var(--fg-3);margin-top:auto;padding-top:8px;">Click to view details</span>
+        </button>
+      }
     }
   </div>
 
@@ -117,3 +113,83 @@
     }
   </div>
 </div>
+
+<!-- Drill-down overlay -->
+@if (panel(); as p) {
+  <div style="position:fixed; inset:0; z-index:200; display:flex;">
+    <div style="flex:1; background:rgba(0,0,0,0.35);" (click)="closePanel()"></div>
+    <div style="width:620px; max-width:100vw; background:var(--neutral-0); border-left:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; box-shadow:var(--shadow-xl);">
+      <div style="padding:18px 24px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between; flex-shrink:0;">
+        <h2 style="font-size:16px; font-weight:700; color:var(--fg-1); margin:0;">{{ p.title }}</h2>
+        <button (click)="closePanel()" style="width:28px; height:28px; border:1px solid var(--border); border-radius:var(--radius-xs); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--fg-2);">
+          <svg width="12" height="12" viewBox="0 0 18 18" fill="none"><path d="M2 2L16 16M16 2L2 16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <div style="flex:1; overflow-y:auto;">
+        @if (panelLoading()) {
+          <div style="padding:48px; text-align:center; font-size:14px; color:var(--fg-3);">Loading…</div>
+        } @else if (p.kind === 'admins') {
+          @if (panelAdmins().length === 0) {
+            <div style="padding:48px; text-align:center; font-size:14px; color:var(--fg-3);">No admins found.</div>
+          } @else {
+            <table style="width:100%; border-collapse:collapse;">
+              <thead><tr style="border-bottom:1px solid var(--border-soft);">
+                <th style="text-align:left; padding:11px 24px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-3);">Name</th>
+                <th style="text-align:left; padding:11px 16px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-3);">Role</th>
+                <th style="text-align:left; padding:11px 16px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-3);">Status</th>
+                <th style="text-align:left; padding:11px 24px 11px 16px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-3);">Last login</th>
+              </tr></thead>
+              <tbody>
+                @for (a of panelAdmins(); track a.id) {
+                  <tr style="border-bottom:1px solid var(--border-soft);">
+                    <td style="padding:13px 24px;">
+                      <p style="font-size:14px; font-weight:500; color:var(--fg-1); margin:0;">{{ a.name }}</p>
+                      <p style="font-size:12px; color:var(--fg-3); margin:0;">{{ a.email }}</p>
+                    </td>
+                    <td style="padding:13px 16px; font-size:13px; color:var(--fg-2);">{{ a.role }}</td>
+                    <td style="padding:13px 16px;">
+                      <span [style.background]="a.isActive ? 'var(--success-bg)' : 'var(--neutral-100)'" [style.color]="a.isActive ? 'var(--success)' : 'var(--fg-3)'"
+                        style="font-size:11px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:var(--radius-pill);">{{ a.isActive ? 'Active' : 'Disabled' }}</span>
+                    </td>
+                    <td style="padding:13px 24px 13px 16px; font-size:13px; color:var(--fg-2); white-space:nowrap;">{{ a.lastLoginAt ? (a.lastLoginAt | date:'d MMM y, HH:mm') : 'Never' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        } @else {
+          @if (panelTenants().length === 0) {
+            <div style="padding:48px; text-align:center; font-size:14px; color:var(--fg-3);">No tenants found.</div>
+          } @else {
+            <table style="width:100%; border-collapse:collapse;">
+              <thead><tr style="border-bottom:1px solid var(--border-soft);">
+                <th style="text-align:left; padding:11px 24px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-3);">Company</th>
+                <th style="text-align:left; padding:11px 16px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-3);">Status</th>
+                <th style="text-align:right; padding:11px 16px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-3);">Employees</th>
+                <th style="text-align:right; padding:11px 24px 11px 16px; font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--fg-3);">Users</th>
+              </tr></thead>
+              <tbody>
+                @for (t of panelTenants(); track t.id) {
+                  <tr style="border-bottom:1px solid var(--border-soft); cursor:pointer;" (click)="goToTenant(t.id)"
+                    onmouseenter="this.style.background='var(--neutral-25)'" onmouseleave="this.style.background=''">
+                    <td style="padding:13px 24px;">
+                      <p style="font-size:14px; font-weight:500; color:var(--fg-1); margin:0;">{{ t.companyName }}</p>
+                      <p style="font-size:12px; color:var(--fg-3); margin:0;">{{ t.email }} · {{ t.plan }}</p>
+                    </td>
+                    <td style="padding:13px 16px;">
+                      <span [style.background]="statusColor(t.status).bg" [style.color]="statusColor(t.status).color"
+                        style="font-size:11px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap;">{{ t.status }}</span>
+                    </td>
+                    <td style="padding:13px 16px; font-size:13px; color:var(--fg-2); text-align:right;">{{ t.employeeCount ?? 0 }}</td>
+                    <td style="padding:13px 24px 13px 16px; font-size:13px; color:var(--fg-2); text-align:right;">{{ t.userCount ?? 0 }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}

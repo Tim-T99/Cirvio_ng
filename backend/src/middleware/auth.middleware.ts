@@ -9,11 +9,15 @@
 import { Request, Response, NextFunction } from 'express'
 import { extractBearerToken, verifyAdminToken, verifyUserToken } from '../../utils/jwt'
 import { hashToken } from '../../utils/hash'
+import { fingerprintFor } from '../../utils/device'
 import { prisma } from '../prisma/client'
+
+// Throttle window for the async last-seen write (keeps the auth path lag-free)
+const LAST_SEEN_THROTTLE_MS = 5 * 60 * 1000
 
 
 // ─────────────────────────────────────────────
-// SECURITY NOTES
+// SECURITY NOTES  (zero-trust: never trust the token alone)
 // [S1] JWT verified cryptographically first —
 //      DB session check runs only if JWT is valid
 //      Prevents unnecessary DB load from forged tokens
@@ -23,12 +27,20 @@ import { prisma } from '../prisma/client'
 // [S3] Inactive users blocked at middleware —
 //      deactivated accounts cannot use valid tokens
 // [S4] Tenant status checked on every request —
-//      suspended tenants are blocked immediately
+//      suspended/cancelled tenants are blocked immediately
 //      without waiting for token expiry
 // [S5] Error messages are generic —
 //      never reveal why auth failed specifically
 // [S6] req.admin and req.user are typed —
 //      controllers never access raw JWT payload
+// [S7] Device-bound sessions (IP-flexible) —
+//      a session is bound to the device fingerprint that
+//      created it; a token replayed from another device is
+//      rejected. IP is NOT bound, so mobile/roaming users
+//      stay logged in. Legacy (null-fingerprint) sessions
+//      are exempt for backward compatibility.
+// [S8] Last-seen is updated asynchronously and throttled —
+//      continuous verification adds no request latency.
 // ─────────────────────────────────────────────
 
 
@@ -97,11 +109,19 @@ export const requireAdmin = async (
         adminId: payload.adminId,
         expiresAt: { gt: new Date() },
       },
-      select: { id: true },
+      select: { id: true, fingerprint: true, lastSeenAt: true },
     })
 
     if (!session) {
       res.status(401).json({ error: 'Authentication required' })
+      return
+    }
+
+    // [S7] Zero-trust device binding (IP-flexible)
+    const requestFingerprint = fingerprintFor(req.headers['user-agent'])
+    if (session.fingerprint && session.fingerprint !== requestFingerprint) {
+      await prisma.adminSession.deleteMany({ where: { id: session.id } })
+      res.status(401).json({ error: 'Your session was ended for security reasons. Please log in again.' })
       return
     }
 
@@ -114,6 +134,13 @@ export const requireAdmin = async (
     if (!admin || !admin.isActive) {
       res.status(401).json({ error: 'Authentication required' })
       return
+    }
+
+    // [S8] Async, throttled last-seen update
+    if (!session.lastSeenAt || Date.now() - session.lastSeenAt.getTime() > LAST_SEEN_THROTTLE_MS) {
+      void prisma.adminSession
+        .update({ where: { id: session.id }, data: { lastSeenAt: new Date(), lastIp: req.ip } })
+        .catch(() => {})
     }
 
     // [S6] Attach verified identity to request
@@ -173,7 +200,7 @@ export const requireUser = async (
         // Exclude password reset pseudo-sessions
         NOT: { userAgent: 'PASSWORD_RESET' },
       },
-      select: { id: true },
+      select: { id: true, fingerprint: true, lastSeenAt: true },
     })
 
     if (!session) {
@@ -181,15 +208,35 @@ export const requireUser = async (
       return
     }
 
-    // [S3] Verify user account is still active
+    // [S7] Zero-trust device binding (IP-flexible)
+    const requestFingerprint = fingerprintFor(req.headers['user-agent'])
+    if (session.fingerprint && session.fingerprint !== requestFingerprint) {
+      await prisma.userSession.deleteMany({ where: { id: session.id } })
+      res.status(401).json({ error: 'Your session was ended for security reasons. Please log in again.' })
+      return
+    }
+
+    // [S3] Verify user account is active AND [S4] tenant is still active
     const user = await prisma.user.findFirst({
       where: { id: payload.userId, tenantId: payload.tenantId },
-      select: { isActive: true, role: true },
+      select: { isActive: true, role: true, tenant: { select: { status: true } } },
     })
 
     if (!user || !user.isActive) {
       res.status(401).json({ error: 'Authentication required' })
       return
+    }
+
+    if (user.tenant.status === 'SUSPENDED' || user.tenant.status === 'CANCELLED') {
+      res.status(403).json({ error: 'Your organisation account is not active. Please contact support.' })
+      return
+    }
+
+    // [S8] Async, throttled last-seen update
+    if (!session.lastSeenAt || Date.now() - session.lastSeenAt.getTime() > LAST_SEEN_THROTTLE_MS) {
+      void prisma.userSession
+        .update({ where: { id: session.id }, data: { lastSeenAt: new Date(), lastIp: req.ip } })
+        .catch(() => {})
     }
 
     // [S6] Attach verified identity to request

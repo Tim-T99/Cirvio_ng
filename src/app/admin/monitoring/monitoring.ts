@@ -9,10 +9,15 @@ const POLL_MS = 30_000; // refresh every 30 s
 interface MonitoringData {
   timestamp: string;
   sessions: { activeUsers: number; activeAdmins: number };
+  devices: { active: number; byType: Record<string, number> };
   signups: { last24h: number; lastHour: number };
   workforce: { active: number; total: number };
   compliance: { expiringVisas: number; expiredVisas: number; pendingWps: number };
   tenantsByStatus: Record<string, number>;
+  newDevices: {
+    id: string; user: string; tenant: string;
+    deviceName: string; ipAddress: string | null; createdAt: string;
+  }[];
   recentActivity: {
     id: string; action: string; actor: string;
     targetType?: string; targetId?: string; createdAt: string;

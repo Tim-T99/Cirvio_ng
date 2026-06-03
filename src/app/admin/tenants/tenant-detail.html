@@ -241,6 +241,100 @@
         </div>
       }
 
+      <!-- Users & Devices -->
+      <div style="background:var(--bg-elev-1); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden; margin-top:20px;">
+        <div style="padding:16px 20px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <div>
+            <h2 style="font-size:14px; font-weight:700; color:var(--fg-1); margin:0;">Users &amp; Devices</h2>
+            <p style="font-size:12px; color:var(--fg-3); margin:2px 0 0;">Active sessions, device &amp; IP visibility, and access control</p>
+          </div>
+        </div>
+
+        @if (accessError()) {
+          <div style="margin:12px 20px 0; background:var(--danger-bg); border:1px solid var(--danger); border-radius:var(--radius-sm); padding:10px 14px; font-size:13px; color:var(--danger);">{{ accessError() }}</div>
+        }
+
+        @if (loadingUsers()) {
+          <div style="padding:40px; text-align:center; font-size:14px; color:var(--fg-3);">Loading users…</div>
+        } @else if (users().length === 0) {
+          <div style="padding:40px; text-align:center; font-size:14px; color:var(--fg-3);">No users in this tenant yet.</div>
+        } @else {
+          @for (u of users(); track u.id) {
+            <div style="border-bottom:1px solid var(--border-soft);">
+              <!-- User row -->
+              <div style="display:flex; align-items:center; gap:12px; padding:13px 20px;">
+                <button (click)="toggleUser(u.id)" style="flex:1; min-width:0; display:flex; align-items:center; gap:12px; background:transparent; border:none; cursor:pointer; font-family:inherit; text-align:left; padding:0;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" [style.transform]="expandedUserId() === u.id ? 'rotate(90deg)' : 'none'" style="color:var(--fg-3); flex-shrink:0; transition:transform var(--dur-fast) var(--ease-out);"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <div style="min-width:0;">
+                    <p style="font-size:14px; font-weight:500; color:var(--fg-1); margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ u.firstName }} {{ u.lastName }}
+                      <span style="font-size:11px; font-weight:600; color:var(--fg-3); text-transform:uppercase; margin-left:6px;">{{ u.role }}</span>
+                    </p>
+                    <p style="font-size:12px; color:var(--fg-3); margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ u.email }}</p>
+                  </div>
+                </button>
+
+                <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+                  <div style="text-align:right;">
+                    <p style="font-size:13px; font-weight:600; color:var(--fg-1); margin:0;">{{ u.deviceCount }} device{{ u.deviceCount === 1 ? '' : 's' }}</p>
+                    <p style="font-size:11px; color:var(--fg-3); margin:0;">{{ u.activeSessions }} active session{{ u.activeSessions === 1 ? '' : 's' }}</p>
+                  </div>
+                  <span [style.background]="u.isActive ? 'var(--success-bg)' : 'var(--danger-bg)'" [style.color]="u.isActive ? 'var(--success)' : 'var(--danger)'"
+                    style="font-size:11px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:var(--radius-pill); white-space:nowrap;">{{ u.isActive ? 'Active' : 'Locked' }}</span>
+                  <button (click)="toggleUserActive(u)" [disabled]="accessBusy() === 'lock-' + u.id"
+                    [style.color]="u.isActive ? 'var(--danger)' : 'var(--success)'"
+                    style="padding:5px 10px; border:1px solid var(--border); border-radius:var(--radius-xs); background:transparent; font-size:12px; cursor:pointer; font-family:inherit; white-space:nowrap;">
+                    {{ accessBusy() === 'lock-' + u.id ? '…' : (u.isActive ? 'Lock' : 'Unlock') }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Expanded: device/session list -->
+              @if (expandedUserId() === u.id) {
+                <div style="padding:0 20px 16px 46px;">
+                  @if (loadingSessions()) {
+                    <div style="padding:16px; font-size:13px; color:var(--fg-3);">Loading devices…</div>
+                  } @else if (userSessions().length === 0) {
+                    <div style="padding:16px; font-size:13px; color:var(--fg-3);">No active sessions or devices on record.</div>
+                  } @else {
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+                      <button (click)="revokeAllSessions(u.id)" [disabled]="accessBusy() === 'all-' + u.id"
+                        style="padding:5px 12px; border:1px solid var(--danger); border-radius:var(--radius-xs); background:transparent; color:var(--danger); font-size:12px; cursor:pointer; font-family:inherit;">
+                        {{ accessBusy() === 'all-' + u.id ? 'Revoking…' : 'Revoke all sessions' }}
+                      </button>
+                    </div>
+                    <div style="border:1px solid var(--border-soft); border-radius:var(--radius-sm); overflow:hidden;">
+                      @for (s of userSessions(); track s.id) {
+                        <div style="display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border-soft);">
+                          <div style="flex:1; min-width:0;">
+                            <p style="font-size:13px; font-weight:500; color:var(--fg-1); margin:0;">
+                              {{ deviceMeta(s) }}
+                              <span [style.background]="s.active ? 'var(--success-bg)' : 'var(--neutral-100)'" [style.color]="s.active ? 'var(--success)' : 'var(--fg-3)'"
+                                style="font-size:10px; font-weight:600; text-transform:uppercase; padding:1px 6px; border-radius:var(--radius-pill); margin-left:6px;">{{ s.active ? 'Active' : 'Expired' }}</span>
+                              <span style="font-size:11px; color:var(--fg-3); margin-left:6px;">{{ s.deviceType || 'unknown' }}</span>
+                            </p>
+                            <p style="font-size:12px; color:var(--fg-3); margin:2px 0 0;">
+                              IP {{ s.lastIp || s.ipAddress || '—' }} ·
+                              last seen {{ s.lastSeenAt ? (s.lastSeenAt | date:'d MMM y, HH:mm') : '—' }} ·
+                              signed in {{ s.createdAt | date:'d MMM y' }}
+                            </p>
+                          </div>
+                          @if (s.active) {
+                            <button (click)="revokeSession(s.id)" [disabled]="accessBusy() === s.id"
+                              style="padding:5px 10px; border:1px solid var(--border); border-radius:var(--radius-xs); background:transparent; color:var(--danger); font-size:12px; cursor:pointer; font-family:inherit; flex-shrink:0;">
+                              {{ accessBusy() === s.id ? '…' : 'Revoke' }}
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+
     </div>
   }
 
