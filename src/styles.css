@@ -492,6 +492,22 @@ html, body { overflow-x: hidden; max-width: 100vw; }
 }
 
 /* =====================================================================
+   Dashboard stat-card grids — keep 2–3 equal columns, never full-width
+   ===================================================================== */
+
+/* WPS summary: 5 across on desktop → 3 across on tablet/mobile (3 + 2) */
+@media (max-width: 1024px) {
+  .wps-stat-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+@media (max-width: 768px) {
+  .wps-stat-grid { gap: 8px !important; }
+
+  /* Home stat cards: 2 equal columns instead of one full-width column */
+  .dash-stat-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+  .dash-stat-grid > div { min-height: 92px !important; padding: 14px !important; }
+}
+
+/* =====================================================================
    User dashboard — mobile responsive
    ===================================================================== */
 
