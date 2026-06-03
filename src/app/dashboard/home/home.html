@@ -84,8 +84,8 @@
       </div>
     }
 
-    <!-- Stats row -->
-    <div class="dash-stat-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px;">
+    <!-- Stats row (workforce + compliance, single grid so cards stay together) -->
+    <div class="dash-stat-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px;">
       <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); min-height: 120px; display: flex; flex-direction: column;">
         <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0 0 8px;">Total Employees</p>
         <p style="font-size: 32px; font-weight: 700; color: var(--fg-1); margin: 0; letter-spacing: -0.02em;">{{ stats()?.totalEmployees ?? 0 }}</p>
@@ -123,10 +123,7 @@
           </p>
         }
       </div>
-    </div>
 
-    <!-- Compliance stats -->
-    <div class="dash-stat-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px;">
       <div style="background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); min-height: 120px; display: flex; flex-direction: column;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
           <p style="font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--fg-3); margin: 0;">Expiring Visas</p>
