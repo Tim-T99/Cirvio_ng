@@ -49,6 +49,7 @@ export const routes: Routes = [
       { path: '', loadComponent: () => import('./admin/overview/overview').then(m => m.OverviewComponent) },
       { path: 'tenants', loadComponent: () => import('./admin/tenants/tenants').then(m => m.TenantsComponent) },
       { path: 'tenants/:tenantId', loadComponent: () => import('./admin/tenants/tenant-detail').then(m => m.TenantDetailComponent) },
+      { path: 'users/:userId', loadComponent: () => import('./admin/users/user-detail').then(m => m.AdminUserDetailComponent) },
       { path: 'plans',   loadComponent: () => import('./admin/plans/plans').then(m => m.PlansComponent) },
       { path: 'admins',  loadComponent: () => import('./admin/admins/admins').then(m => m.AdminsComponent) },
       { path: 'audit',      loadComponent: () => import('./admin/audit/audit').then(m => m.AuditComponent) },

@@ -447,7 +447,7 @@ export const listTenantUsers = async (tenantId: string) => {
   const users = await prisma.user.findMany({
     where: { tenantId },
     select: {
-      id: true, email: true, firstName: true, lastName: true,
+      id: true, email: true, firstName: true, lastName: true, avatarUrl: true,
       role: true, isActive: true, lastLoginAt: true, createdAt: true,
       sessions: {
         where: { expiresAt: { gt: now }, ...REAL_SESSION },
@@ -470,7 +470,7 @@ export const listUserSessions = async (userId: string) => {
     where: { id: userId },
     select: {
       id: true, tenantId: true, email: true, firstName: true,
-      lastName: true, isActive: true, role: true,
+      lastName: true, isActive: true, role: true, avatarUrl: true,
     },
   })
   if (!user) throw new Error('User not found')
@@ -504,7 +504,7 @@ export const listActiveSessions = async (opts?: { page?: number; limit?: number 
         ipAddress: true, lastIp: true, lastSeenAt: true, createdAt: true,
         user: {
           select: {
-            id: true, email: true, firstName: true, lastName: true,
+            id: true, email: true, firstName: true, lastName: true, avatarUrl: true,
             tenant: { select: { id: true, name: true } },
           },
         },
@@ -552,6 +552,93 @@ export const setUserActive = async (userId: string, isActive: boolean) => {
     await prisma.userSession.deleteMany({ where: { userId } })
   }
   return updated
+}
+
+/** Full detail for one tenant user — profile, tenant (with plan) and device/session counts. */
+export const getUserDetail = async (userId: string) => {
+  const now = new Date()
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true, email: true, firstName: true, lastName: true, avatarUrl: true,
+      phone: true, role: true, isActive: true, lastLoginAt: true,
+      createdAt: true, updatedAt: true,
+      tenant: {
+        select: {
+          id: true, name: true, slug: true, status: true, planId: true,
+          plan: { select: { id: true, name: true } },
+        },
+      },
+      sessions: {
+        where: { expiresAt: { gt: now }, ...REAL_SESSION },
+        select: { id: true, fingerprint: true },
+      },
+    },
+  })
+  if (!user) throw new Error('User not found')
+
+  const { sessions, ...rest } = user
+  return {
+    ...rest,
+    activeSessions: sessions.length,
+    deviceCount: new Set(sessions.map(s => s.fingerprint ?? s.id)).size,
+  }
+}
+
+/** Update a tenant user's profile fields. Email is unique per tenant. */
+export const updateUserDetail = async (
+  userId: string,
+  data: Partial<{
+    firstName: string
+    lastName: string
+    email: string
+    phone: string | null
+    role: 'TENANT_ADMIN' | 'HR_MANAGER' | 'VIEWER'
+    avatarUrl: string | null
+  }>,
+) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, tenantId: true, email: true },
+  })
+  if (!user) throw new Error('User not found')
+
+  if (data.email && data.email !== user.email) {
+    const clash = await prisma.user.findFirst({
+      where: { tenantId: user.tenantId, email: data.email, id: { not: userId } },
+      select: { id: true },
+    })
+    if (clash) throw new Error('Email already in use within this tenant')
+  }
+
+  return prisma.user.update({
+    where: { id: userId },
+    data,
+    select: {
+      id: true, email: true, firstName: true, lastName: true, avatarUrl: true,
+      phone: true, role: true, isActive: true,
+    },
+  })
+}
+
+/** Permanently delete a tenant user (cascades sessions & activity logs). */
+export const deleteUser = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, tenantId: true, role: true, email: true },
+  })
+  if (!user) throw new Error('User not found')
+
+  // Guard: never remove a tenant's last admin — they'd be locked out.
+  if (user.role === 'TENANT_ADMIN') {
+    const admins = await prisma.user.count({
+      where: { tenantId: user.tenantId, role: 'TENANT_ADMIN' },
+    })
+    if (admins <= 1) throw new Error('Cannot delete the only admin of a tenant')
+  }
+
+  await prisma.user.delete({ where: { id: userId } })
+  return { deleted: true, email: user.email }
 }
 
 /** Active-session and device totals for the platform dashboard. */

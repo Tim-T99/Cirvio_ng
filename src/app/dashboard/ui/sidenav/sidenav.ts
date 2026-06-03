@@ -4,18 +4,20 @@ import { AuthService } from '../../../core/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { LogoComponent } from '../../../shared/logo/logo';
+import { AvatarComponent } from '../../../shared/avatar/avatar';
 
 interface UserProfile {
   firstName?: string;
   lastName?: string;
   email: string;
   role: string;
+  avatarUrl?: string | null;
 }
 
 @Component({
   selector: 'app-sidenav',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, LogoComponent],
+  imports: [RouterLink, RouterLinkActive, LogoComponent, AvatarComponent],
   templateUrl: './sidenav.html',
 })
 export class SidenavComponent {

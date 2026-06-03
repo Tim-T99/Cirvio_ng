@@ -3,6 +3,7 @@ import { isPlatformBrowser, DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AvatarComponent } from '../../shared/avatar/avatar';
 
 interface UserProfile {
   id: string;
@@ -10,6 +11,7 @@ interface UserProfile {
   lastName: string;
   email: string;
   role: string;
+  avatarUrl?: string | null;
   organizationName?: string;
   tenant?: { id: string; name: string; country: string };
 }
@@ -18,10 +20,14 @@ interface OrgProfile {
   name: string;
   phone: string | null;
   industry: string | null;
+  logoUrl: string | null;
   tradelicenseNo: string | null;
   tradelicenseExpiry: string | null;
   emirate: string | null;
 }
+
+const ALLOWED_IMAGE = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 const COUNTRY_NAMES: Record<string, string> = {
   AE: 'United Arab Emirates',
@@ -45,7 +51,7 @@ interface PasskeyEntry {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, AvatarComponent],
   templateUrl: './settings.html',
 })
 export class SettingsComponent implements OnInit {
@@ -60,6 +66,15 @@ export class SettingsComponent implements OnInit {
 
   firstName = signal('');
   lastName = signal('');
+
+  // Avatar (own profile photo)
+  avatarUploading = signal(false);
+  avatarError = signal('');
+
+  // Tenant logo
+  logoUrl = signal<string | null>(null);
+  logoUploading = signal(false);
+  logoError = signal('');
 
   get countryName(): string {
     const code = this.profile()?.tenant?.country ?? 'AE';
@@ -113,6 +128,7 @@ export class SettingsComponent implements OnInit {
         this.orgName.set(o.name ?? '');
         this.orgPhone.set(o.phone ?? '');
         this.orgIndustry.set(o.industry ?? '');
+        this.logoUrl.set(o.logoUrl ?? null);
         this.orgTradelicenseNo.set(o.tradelicenseNo ?? '');
         this.orgTradelicenseExpiry.set(o.tradelicenseExpiry ? o.tradelicenseExpiry.substring(0, 10) : '');
         this.orgEmirate.set(o.emirate ?? '');
@@ -163,6 +179,79 @@ export class SettingsComponent implements OnInit {
         this.error.set(err.error?.error ?? 'Failed to save changes.');
         this.saving.set(false);
       },
+    });
+  }
+
+  // ── Avatar / logo upload ─────────────────────────────────────────────────
+
+  private validateImage(file: File, setErr: (m: string) => void): boolean {
+    if (!ALLOWED_IMAGE.includes(file.type)) { setErr('Please choose a PNG, JPG, WEBP or GIF image.'); return false; }
+    if (file.size > MAX_IMAGE_BYTES) { setErr('Image must be 5 MB or smaller.'); return false; }
+    return true;
+  }
+
+  private uploadImage(file: File, kind: 'avatar' | 'logo') {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('kind', kind);
+    return this.http.post<{ url: string }>(`${environment.apiUrl}/api/uploads/image`, form);
+  }
+
+  onAvatarPicked(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this.avatarError.set('');
+    if (!this.validateImage(file, m => this.avatarError.set(m))) return;
+
+    this.avatarUploading.set(true);
+    this.uploadImage(file, 'avatar').subscribe({
+      next: ({ url }) => {
+        this.http.patch<UserProfile>(`${environment.apiUrl}/api/users/me`, { avatarUrl: url }).subscribe({
+          next: (u) => { this.profile.set(u); this.avatarUploading.set(false); },
+          error: (err) => { this.avatarError.set(err.error?.error ?? 'Failed to save photo.'); this.avatarUploading.set(false); },
+        });
+      },
+      error: (err) => { this.avatarError.set(err.error?.error ?? 'Upload failed.'); this.avatarUploading.set(false); },
+    });
+  }
+
+  removeAvatar() {
+    this.avatarUploading.set(true);
+    this.avatarError.set('');
+    this.http.patch<UserProfile>(`${environment.apiUrl}/api/users/me`, { avatarUrl: null }).subscribe({
+      next: (u) => { this.profile.set(u); this.avatarUploading.set(false); },
+      error: (err) => { this.avatarError.set(err.error?.error ?? 'Failed to remove photo.'); this.avatarUploading.set(false); },
+    });
+  }
+
+  onLogoPicked(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    this.logoError.set('');
+    if (!this.validateImage(file, m => this.logoError.set(m))) return;
+
+    this.logoUploading.set(true);
+    this.uploadImage(file, 'logo').subscribe({
+      next: ({ url }) => {
+        this.http.patch(`${environment.apiUrl}/api/tenant/profile`, { logoUrl: url }).subscribe({
+          next: () => { this.logoUrl.set(url); this.logoUploading.set(false); },
+          error: (err) => { this.logoError.set(err.error?.error ?? 'Failed to save logo.'); this.logoUploading.set(false); },
+        });
+      },
+      error: (err) => { this.logoError.set(err.error?.error ?? 'Upload failed.'); this.logoUploading.set(false); },
+    });
+  }
+
+  removeLogo() {
+    this.logoUploading.set(true);
+    this.logoError.set('');
+    this.http.patch(`${environment.apiUrl}/api/tenant/profile`, { logoUrl: null }).subscribe({
+      next: () => { this.logoUrl.set(null); this.logoUploading.set(false); },
+      error: (err) => { this.logoError.set(err.error?.error ?? 'Failed to remove logo.'); this.logoUploading.set(false); },
     });
   }
 

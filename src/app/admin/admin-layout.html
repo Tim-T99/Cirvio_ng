@@ -7,7 +7,10 @@
         <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
       </svg>
     </button>
-    <span style="font-size: 15px; font-weight: 700; color: var(--cirvio-mint); letter-spacing: -0.01em;">Admin Console</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <app-logo [width]="86" color="var(--cirvio-mint)" />
+      <span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--cirvio-mint);opacity:0.75;">Admin</span>
+    </div>
   </header>
 
   <!-- Backdrop (mobile only, when nav open) -->
