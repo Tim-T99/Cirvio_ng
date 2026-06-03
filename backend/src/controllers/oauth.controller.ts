@@ -9,6 +9,8 @@ import { Request, Response } from 'express'
 import { prisma } from '../prisma/client'
 import { signToken } from '../../utils/jwt'
 import { hashToken } from '../../utils/hash'
+import { sessionDeviceData } from '../../utils/device'
+import { recordIfNewDevice } from '../services/user.service'
 import crypto from 'crypto'
 import {
   generateRegistrationOptions,
@@ -94,13 +96,16 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
     }
 
     const token = signToken({ userId: user.id, tenantId: user.tenantId, role: user.role })
+    const gUserAgent = req.headers['user-agent']
+    await recordIfNewDevice(user.id, gUserAgent, req.ip)
     await prisma.userSession.create({
       data: {
         userId: user.id,
         token: hashToken(token),
         expiresAt: new Date(Date.now() + 1000 * 60 * 15),
         ipAddress: req.ip,
-        userAgent: req.headers['user-agent'],
+        userAgent: gUserAgent,
+        ...sessionDeviceData(gUserAgent, req.ip),
       },
     })
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
@@ -422,13 +427,16 @@ export const passkeyLogin = async (req: Request, res: Response): Promise<void> =
     })
 
     const token = signToken({ userId: user.id, tenantId: user.tenantId, role: user.role })
+    const pkUserAgent = req.headers['user-agent']
+    await recordIfNewDevice(user.id, pkUserAgent, req.ip)
     await prisma.userSession.create({
       data: {
         userId:    user.id,
         token:     hashToken(token),
         expiresAt: new Date(Date.now() + 1000 * 60 * 15),
         ipAddress: req.ip,
-        userAgent: req.headers['user-agent'],
+        userAgent: pkUserAgent,
+        ...sessionDeviceData(pkUserAgent, req.ip),
       },
     })
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })

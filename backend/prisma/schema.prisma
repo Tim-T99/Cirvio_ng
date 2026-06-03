@@ -159,13 +159,27 @@ model Admin {
 }
 
 model AdminSession {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  adminId   String   @db.Uuid
-  token     String   @unique
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adminId    String   @db.Uuid
+  token      String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  // Zero-trust device binding + visibility (IP-flexible)
+  ipAddress   String?
+  userAgent   String?
+  deviceType  String?
+  deviceName  String?
+  os          String?
+  browser     String?
+  fingerprint String?
+  lastSeenAt  DateTime?
+  lastIp      String?
 
   admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([fingerprint])
 }
 
 model AuditLog {
@@ -303,7 +317,19 @@ model UserSession {
   userAgent String?
   createdAt DateTime @default(now())
 
+  // Zero-trust device binding + visibility (IP-flexible)
+  deviceType  String?
+  deviceName  String?
+  os          String?
+  browser     String?
+  fingerprint String?
+  lastSeenAt  DateTime?
+  lastIp      String?
+
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([fingerprint])
 }
 
 model UserActivityLog {

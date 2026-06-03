@@ -9,7 +9,43 @@ import { prisma } from '../prisma/client'
 import { UserRole } from '@prisma/client'
 import { hashPassword, comparePassword, hashToken } from '../../utils/hash'
 import { signToken } from '../../utils/jwt'
+import { sessionDeviceData, fingerprintFor } from '../../utils/device'
 import crypto from 'crypto'
+
+// ─────────────────────────────────────────────
+// NEW-DEVICE DETECTION
+// Records a NEW_DEVICE_LOGIN activity event when a
+// user authenticates from a device fingerprint that
+// has never been seen on any of their prior sessions.
+// Runs only at login (not per-request) → no lag.
+// (Email delivery can be wired here once a mailer
+// is added; the event is already admin-visible.)
+// ─────────────────────────────────────────────
+export const recordIfNewDevice = async (
+  userId: string,
+  userAgent?: string,
+  ipAddress?: string,
+): Promise<void> => {
+  try {
+    const fingerprint = fingerprintFor(userAgent)
+    const seen = await prisma.userSession.findFirst({
+      where: { userId, fingerprint },
+      select: { id: true },
+    })
+    if (seen) return
+    const { deviceName, deviceType } = sessionDeviceData(userAgent, ipAddress)
+    await prisma.userActivityLog.create({
+      data: {
+        userId,
+        action: 'NEW_DEVICE_LOGIN',
+        targetType: 'UserSession',
+        meta: { deviceName, deviceType, ipAddress: ipAddress ?? null },
+      },
+    })
+  } catch {
+    // Never block login on alert bookkeeping
+  }
+}
 
 
 // ─────────────────────────────────────────────
@@ -109,6 +145,9 @@ export const loginUser = async (
   // [S1] Store hashed session token only
   const hashedToken = hashToken(token)
 
+  // New-device alert (before the session row exists for this fingerprint)
+  await recordIfNewDevice(user.id, userAgent, ipAddress)
+
   await prisma.userSession.create({
     data: {
       userId: user.id,
@@ -116,6 +155,7 @@ export const loginUser = async (
       expiresAt: new Date(Date.now() + 1000 * 60 * 15), // 15 minutes
       ipAddress,
       userAgent,
+      ...sessionDeviceData(userAgent, ipAddress),
     },
   })
 
@@ -181,6 +221,7 @@ export const refreshSession = async (
         expiresAt: new Date(Date.now() + 1000 * 60 * 15), // 15 minutes
         ipAddress,
         userAgent,
+        ...sessionDeviceData(userAgent, ipAddress),
       },
     }),
   ])

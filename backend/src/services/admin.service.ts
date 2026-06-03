@@ -9,6 +9,7 @@ import { prisma } from '../prisma/client'
 import { AdminRole, TenantStatus, Emirate } from '@prisma/client'
 import { hashPassword, comparePassword, hashToken } from '../../utils/hash'
 import { signToken } from '../../utils/jwt'
+import { sessionDeviceData } from '../../utils/device'
 
 
 // ─────────────────────────────────────────────
@@ -17,7 +18,8 @@ import { signToken } from '../../utils/jwt'
 
 export const loginAdmin = async (
   email: string,
-  password: string
+  password: string,
+  ctx?: { ipAddress?: string; userAgent?: string }
 ) => {
   const admin = await prisma.admin.findUnique({
     where: { email },
@@ -49,6 +51,9 @@ export const loginAdmin = async (
       adminId: admin.id,
       token: hashedToken,
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 1), // 1 hour
+      ipAddress: ctx?.ipAddress,
+      userAgent: ctx?.userAgent,
+      ...sessionDeviceData(ctx?.userAgent, ctx?.ipAddress),
     },
   })
 
@@ -403,4 +408,168 @@ export const getPlatformStats = async () => {
   ])
 
   return { totalTenants, active, trial, suspended, totalEmployees, platformAdmins }
+}
+
+
+// ─────────────────────────────────────────────
+// SESSIONS · DEVICES · ACCESS CONTROL
+// Per-tenant / per-user device visibility plus the
+// zero-trust enforcement actions (revoke, force
+// logout, lock). Password-reset pseudo-sessions are
+// always excluded.
+// ─────────────────────────────────────────────
+
+const REAL_SESSION = { NOT: { userAgent: 'PASSWORD_RESET' } } as const
+
+/** Write an audit-log entry; never throws (audit must not block an action). */
+export const recordAudit = async (
+  adminId: string | undefined,
+  action: string,
+  targetType: string,
+  targetId: string,
+  meta?: Record<string, unknown>,
+) => {
+  try {
+    await prisma.auditLog.create({
+      data: { adminId: adminId ?? null, action, targetType, targetId, meta: (meta ?? null) as any },
+    })
+  } catch {
+    /* swallow */
+  }
+}
+
+/** Users of a tenant with active-session and distinct-device counts. */
+export const listTenantUsers = async (tenantId: string) => {
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId }, select: { id: true } })
+  if (!tenant) throw new Error('Tenant not found')
+
+  const now = new Date()
+  const users = await prisma.user.findMany({
+    where: { tenantId },
+    select: {
+      id: true, email: true, firstName: true, lastName: true,
+      role: true, isActive: true, lastLoginAt: true, createdAt: true,
+      sessions: {
+        where: { expiresAt: { gt: now }, ...REAL_SESSION },
+        select: { id: true, fingerprint: true },
+      },
+    },
+    orderBy: { createdAt: 'asc' },
+  })
+
+  return users.map(({ sessions, ...u }) => ({
+    ...u,
+    activeSessions: sessions.length,
+    deviceCount: new Set(sessions.map(s => s.fingerprint ?? s.id)).size,
+  }))
+}
+
+/** All sessions (devices) for one user, newest first. */
+export const listUserSessions = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true, tenantId: true, email: true, firstName: true,
+      lastName: true, isActive: true, role: true,
+    },
+  })
+  if (!user) throw new Error('User not found')
+
+  const now = new Date()
+  const sessions = await prisma.userSession.findMany({
+    where: { userId, ...REAL_SESSION },
+    select: {
+      id: true, deviceType: true, deviceName: true, os: true, browser: true,
+      ipAddress: true, lastIp: true, lastSeenAt: true, createdAt: true, expiresAt: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  return { user, sessions: sessions.map(s => ({ ...s, active: s.expiresAt > now })) }
+}
+
+/** Platform-wide active sessions across all tenants (paginated). */
+export const listActiveSessions = async (opts?: { page?: number; limit?: number }) => {
+  const page = Math.max(1, opts?.page ?? 1)
+  const limit = Math.min(100, Math.max(1, opts?.limit ?? 25))
+  const now = new Date()
+  const where = { expiresAt: { gt: now }, ...REAL_SESSION }
+
+  const [total, rows] = await Promise.all([
+    prisma.userSession.count({ where }),
+    prisma.userSession.findMany({
+      where,
+      select: {
+        id: true, deviceType: true, deviceName: true, os: true, browser: true,
+        ipAddress: true, lastIp: true, lastSeenAt: true, createdAt: true,
+        user: {
+          select: {
+            id: true, email: true, firstName: true, lastName: true,
+            tenant: { select: { id: true, name: true } },
+          },
+        },
+      },
+      orderBy: { lastSeenAt: { sort: 'desc', nulls: 'last' } },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+  ])
+
+  return { sessions: rows, total, page, totalPages: Math.max(1, Math.ceil(total / limit)) }
+}
+
+/** Revoke (force-logout) a single session. */
+export const revokeSession = async (sessionId: string) => {
+  const session = await prisma.userSession.findUnique({
+    where: { id: sessionId },
+    select: { id: true, userId: true },
+  })
+  if (!session) throw new Error('Session not found')
+  await prisma.userSession.delete({ where: { id: sessionId } })
+  return { revoked: true, userId: session.userId }
+}
+
+/** Revoke every session for a user (force-logout everywhere). */
+export const revokeUserSessions = async (userId: string) => {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
+  if (!user) throw new Error('User not found')
+  const result = await prisma.userSession.deleteMany({ where: { userId } })
+  return { revoked: result.count }
+}
+
+/** Lock / unlock a tenant user. Deactivating also force-logs-out everywhere. */
+export const setUserActive = async (userId: string, isActive: boolean) => {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } })
+  if (!user) throw new Error('User not found')
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { isActive },
+    select: { id: true, email: true, isActive: true, tenantId: true },
+  })
+
+  if (!isActive) {
+    await prisma.userSession.deleteMany({ where: { userId } })
+  }
+  return updated
+}
+
+/** Active-session and device totals for the platform dashboard. */
+export const getSessionStats = async () => {
+  const now = new Date()
+  const where = { expiresAt: { gt: now }, ...REAL_SESSION }
+
+  const [activeSessions, byType, fingerprints] = await Promise.all([
+    prisma.userSession.count({ where }),
+    prisma.userSession.groupBy({ by: ['deviceType'], where, _count: { _all: true } }),
+    prisma.userSession.findMany({ where, select: { fingerprint: true } }),
+  ])
+
+  const activeDevices = new Set(fingerprints.map(f => f.fingerprint).filter(Boolean)).size
+
+  return {
+    activeSessions,
+    activeDevices,
+    byDeviceType: Object.fromEntries(byType.map(r => [r.deviceType ?? 'unknown', r._count._all])),
+  }
 }

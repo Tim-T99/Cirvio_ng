@@ -41,6 +41,16 @@ router.post('/plans', requireAdminRole('SUPER_ADMIN'), adminCtrl.createPlan)
 router.patch('/plans/:planId', requireAdminRole('SUPER_ADMIN'), adminCtrl.updatePlan)
 
 // ── Audit + Stats + Live Monitoring ──
+// ── Sessions · Devices · Access control ──
+router.get('/tenants/:tenantId/users',        adminCtrl.getTenantUsers)
+router.get('/users/:userId/sessions',         adminCtrl.getUserSessions)
+router.get('/sessions',                       adminCtrl.getActiveSessions)
+router.get('/session-stats',                  adminCtrl.getSessionStats)
+router.delete('/sessions/:sessionId',         requireAdminRole('SUPER_ADMIN'), adminCtrl.revokeSession)
+router.post('/users/:userId/revoke-sessions', requireAdminRole('SUPER_ADMIN'), adminCtrl.revokeUserSessions)
+router.patch('/users/:userId/status',         requireAdminRole('SUPER_ADMIN'), adminCtrl.setUserStatus)
+
+// ── Audit + Stats + Live Monitoring ──
 router.get('/audit-logs',  adminCtrl.getAuditLogs)
 router.get('/stats',       adminCtrl.getPlatformStats)
 router.get('/monitoring',  adminCtrl.getMonitoring)
