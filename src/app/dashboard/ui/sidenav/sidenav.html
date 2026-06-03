@@ -84,9 +84,7 @@
   <!-- User footer -->
   <div style="padding:14px 16px;border-top:1px solid var(--border-soft);">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-      <div style="width:32px;height:32px;border-radius:50%;background:var(--cirvio-mint-50);border:1px solid var(--cirvio-mint-300);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--cirvio-hunter);flex-shrink:0;">
-        {{ initials }}
-      </div>
+      <app-avatar [name]="displayName || profile()?.email || ''" [src]="profile()?.avatarUrl ?? null" [size]="32" />
       <div style="flex:1;min-width:0;">
         <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ displayName }}</p>
       </div>

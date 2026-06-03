@@ -11,6 +11,7 @@ import employeeRoutes from "./src/routes/employee.routes";
 import visaRoutes from "./src/routes/visa.routes";
 import wpsRoutes from "./src/routes/wps.routes";
 import documentRoutes from "./src/routes/document.routes";
+import uploadRoutes from "./src/routes/upload.routes";
 
 import {
   globalLimiter,
@@ -66,6 +67,7 @@ app.use("/api/employees", apiLimiter, employeeRoutes);
 app.use("/api/visas",     apiLimiter, visaRoutes);
 app.use("/api/wps",       apiLimiter, wpsRoutes);
 app.use("/api/documents", apiLimiter, documentRoutes);
+app.use("/api/uploads",   apiLimiter, uploadRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

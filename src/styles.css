@@ -475,6 +475,9 @@ html, body { overflow-x: hidden; max-width: 100vw; }
   .admin-stat-grid { grid-template-columns: repeat(2, 1fr) !important; }
 }
 
+/* Drill-down drawer: wrap long values (emails) so nothing clips horizontally */
+.admin-drawer-body td p { overflow-wrap: anywhere; word-break: break-word; }
+
 /* Compact clickable stat cards + responsive drill-down drawer on mobile */
 @media (max-width: 768px) {
   .admin-stat-card { padding: 14px !important; min-height: 0 !important; }

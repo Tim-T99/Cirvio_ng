@@ -1,0 +1,286 @@
+<div class="admin-page" style="padding: 32px 36px; max-width: 900px;">
+
+  <!-- Back + header -->
+  <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;">
+    <button
+      (click)="back()"
+      style="display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back
+    </button>
+
+    @if (user(); as u) {
+      <h1 style="font-size: 20px; font-weight: 700; color: var(--fg-1); margin: 0; letter-spacing: -0.01em; flex: 1;">{{ u.firstName }} {{ u.lastName }}</h1>
+      <span
+        [style.background]="u.isActive ? 'var(--success-bg)' : 'var(--danger-bg)'"
+        [style.color]="u.isActive ? 'var(--success)' : 'var(--danger)'"
+        style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:3px 10px;border-radius:var(--radius-pill);"
+      >{{ u.isActive ? 'Active' : 'Locked' }}</span>
+
+      @if (!editing()) {
+        <button
+          (click)="startEdit()"
+          style="display:flex;align-items:center;gap:6px;padding:7px 16px;border:none;border-radius:var(--radius-sm);background:var(--cirvio-hunter);font-size:13px;font-weight:500;color:#fff;cursor:pointer;font-family:inherit;"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Edit
+        </button>
+      } @else {
+        <div style="display:flex;gap:8px;">
+          <button (click)="cancelEdit()" [disabled]="saving()"
+            style="padding:7px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;">Cancel</button>
+          <button (click)="save()" [disabled]="saving()"
+            style="display:flex;align-items:center;gap:6px;padding:7px 16px;border:none;border-radius:var(--radius-sm);background:var(--cirvio-hunter);font-size:13px;font-weight:500;color:#fff;cursor:pointer;font-family:inherit;"
+            [style.opacity]="saving() ? '0.6' : '1'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {{ saving() ? 'Saving…' : 'Save changes' }}
+          </button>
+        </div>
+      }
+    }
+  </div>
+
+  @if (error()) {
+    <div style="background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:12px 16px;font-size:14px;color:var(--danger);margin-bottom:20px;">{{ error() }}</div>
+  }
+  @if (saveError()) {
+    <div style="background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:12px 16px;font-size:14px;color:var(--danger);margin-bottom:20px;">{{ saveError() }}</div>
+  }
+
+  @if (loading()) {
+    <div style="text-align:center;padding:60px;font-size:14px;color:var(--fg-3);">Loading…</div>
+  }
+
+  @if (!loading() && user(); as u) {
+    <div class="admin-2col-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+      <!-- Profile -->
+      <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;">
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Profile</h2>
+
+        <!-- Avatar + upload -->
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+          <app-avatar [name]="u.firstName + ' ' + u.lastName" [src]="u.avatarUrl" [size]="64" />
+          <div style="min-width:0;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <label
+                style="padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                [style.opacity]="uploading() ? '0.6' : '1'">
+                {{ uploading() ? 'Uploading…' : (u.avatarUrl ? 'Change photo' : 'Upload photo') }}
+                <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" (change)="onAvatarPicked($event)" [disabled]="uploading()" style="display:none;" />
+              </label>
+              @if (u.avatarUrl) {
+                <button (click)="removeAvatar()" [disabled]="uploading()"
+                  style="padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:12px;color:var(--danger);cursor:pointer;font-family:inherit;">Remove</button>
+              }
+            </div>
+            <p style="font-size:11px;color:var(--fg-3);margin:8px 0 0;">PNG, JPG, WEBP or GIF · up to 5 MB</p>
+            @if (uploadError()) {
+              <p style="font-size:11px;color:var(--danger);margin:4px 0 0;">{{ uploadError() }}</p>
+            }
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">First name</p>
+            @if (editing()) {
+              <input type="text" class="field" [value]="editFirstName()" (input)="editFirstName.set($any($event.target).value)" style="font-size:13px;" />
+            } @else {
+              <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;">{{ u.firstName }}</p>
+            }
+          </div>
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Last name</p>
+            @if (editing()) {
+              <input type="text" class="field" [value]="editLastName()" (input)="editLastName.set($any($event.target).value)" style="font-size:13px;" />
+            } @else {
+              <p style="font-size:14px;font-weight:500;color:var(--fg-1);margin:0;">{{ u.lastName }}</p>
+            }
+          </div>
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Email</p>
+            @if (editing()) {
+              <input type="email" class="field" [value]="editEmail()" (input)="editEmail.set($any($event.target).value)" style="font-size:13px;" />
+            } @else {
+              <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ u.email }}</p>
+            }
+          </div>
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Phone</p>
+            @if (editing()) {
+              <input type="tel" class="field" [value]="editPhone()" (input)="editPhone.set($any($event.target).value)" placeholder="+971 50 000 0000" style="font-size:13px;" />
+            } @else {
+              <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ u.phone || '—' }}</p>
+            }
+          </div>
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Role</p>
+            @if (editing()) {
+              <select class="field" style="font-size:13px;" (change)="editRole.set($any($event.target).value)">
+                @for (r of ROLES; track r.value) {
+                  <option [value]="r.value" [selected]="editRole() === r.value">{{ r.label }}</option>
+                }
+              </select>
+            } @else {
+              <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ roleLabel(u.role) }}</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Tenant & Plan -->
+      <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;">
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Tenant &amp; Plan</h2>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Organisation</p>
+            <a [routerLink]="['/admin/dashboard/tenants', u.tenant.id]" style="font-size:14px;font-weight:500;color:var(--cirvio-hunter);margin:0;text-decoration:none;">{{ u.tenant.name }}</a>
+          </div>
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Tenant status</p>
+            <span
+              [style.background]="statusStyle(u.tenant.status).background"
+              [style.color]="statusStyle(u.tenant.status).color"
+              style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:2px 10px;border-radius:var(--radius-pill);">{{ u.tenant.status }}</span>
+          </div>
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 6px;">Plan</p>
+            <select class="field" style="font-size:13px;" (change)="editPlanId.set($any($event.target).value || null)">
+              <option value="" [selected]="!editPlanId()">— No plan —</option>
+              @for (p of plans(); track p.id) {
+                <option [value]="p.id" [selected]="editPlanId() === p.id">{{ p.name }} — AED {{ p.priceAed }} / {{ p.billingCycleMonths }}mo</option>
+              }
+            </select>
+            @if (editPlanId() !== u.tenant.planId) {
+              <button (click)="savePlan()" [disabled]="savingPlan()"
+                style="margin-top:10px;padding:6px 14px;border:none;border-radius:var(--radius-sm);background:var(--cirvio-hunter);font-size:12px;font-weight:500;color:#fff;cursor:pointer;font-family:inherit;"
+                [style.opacity]="savingPlan() ? '0.6' : '1'">{{ savingPlan() ? 'Updating…' : 'Update plan' }}</button>
+            }
+            @if (planError()) {
+              <p style="font-size:11px;color:var(--danger);margin:6px 0 0;">{{ planError() }}</p>
+            }
+            <p style="font-size:11px;color:var(--fg-3);margin:8px 0 0;">Changing the plan applies to the whole tenant.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account -->
+      <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;">
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Account</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:var(--bg-sunken);border-radius:var(--radius-sm);padding:14px 16px;">
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Devices</p>
+            <p style="font-size:22px;font-weight:700;color:var(--fg-1);margin:0;">{{ u.deviceCount }}</p>
+          </div>
+          <div style="background:var(--bg-sunken);border-radius:var(--radius-sm);padding:14px 16px;">
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Active sessions</p>
+            <p style="font-size:22px;font-weight:700;color:var(--fg-1);margin:0;">{{ u.activeSessions }}</p>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:16px;">
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Last login</p>
+            <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ u.lastLoginAt ? (u.lastLoginAt | date:'d MMM y, h:mm a') : 'Never' }}</p>
+          </div>
+          <div>
+            <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;">Created</p>
+            <p style="font-size:13px;color:var(--fg-2);margin:0;">{{ u.createdAt | date:'d MMM y, h:mm a' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger zone -->
+      <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;">
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Access &amp; danger zone</h2>
+
+        @if (actionError()) {
+          <div style="background:var(--danger-bg);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--danger);margin-bottom:14px;">{{ actionError() }}</div>
+        }
+
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+              <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">{{ u.isActive ? 'Deactivate user' : 'Reactivate user' }}</p>
+              <p style="font-size:12px;color:var(--fg-3);margin:2px 0 0;">{{ u.isActive ? 'Locks the account and signs them out everywhere.' : 'Restores sign-in access.' }}</p>
+            </div>
+            <button (click)="toggleActive()" [disabled]="busy() === 'status'"
+              [style.color]="u.isActive ? 'var(--danger)' : 'var(--success)'"
+              style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">
+              {{ busy() === 'status' ? '…' : (u.isActive ? 'Deactivate' : 'Reactivate') }}
+            </button>
+          </div>
+
+          <div style="border-top:1px solid var(--border-soft);padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div>
+              <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">Delete user</p>
+              <p style="font-size:12px;color:var(--fg-3);margin:2px 0 0;">Permanently removes this user and their sessions.</p>
+            </div>
+            @if (!confirmingDelete()) {
+              <button (click)="confirmingDelete.set(true)"
+                style="padding:7px 14px;border:1px solid var(--danger);border-radius:var(--radius-sm);background:transparent;font-size:12px;color:var(--danger);cursor:pointer;font-family:inherit;white-space:nowrap;">Delete</button>
+            } @else {
+              <div style="display:flex;gap:8px;">
+                <button (click)="confirmingDelete.set(false)" [disabled]="busy() === 'delete'"
+                  style="padding:7px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:12px;color:var(--fg-2);cursor:pointer;font-family:inherit;">Cancel</button>
+                <button (click)="deleteUser()" [disabled]="busy() === 'delete'"
+                  style="padding:7px 12px;border:none;border-radius:var(--radius-sm);background:var(--danger);font-size:12px;color:#fff;cursor:pointer;font-family:inherit;">
+                  {{ busy() === 'delete' ? 'Deleting…' : 'Confirm delete' }}
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Devices & Sessions -->
+      <div style="background:var(--bg-elev-1); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden; grid-column:1 / -1;">
+        <div style="padding:16px 20px; border-bottom:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <div>
+            <h2 style="font-size:14px; font-weight:700; color:var(--fg-1); margin:0;">Devices &amp; Sessions</h2>
+            <p style="font-size:12px; color:var(--fg-3); margin:2px 0 0;">Active sessions, device &amp; IP visibility</p>
+          </div>
+          @if (sessions().length > 0) {
+            <button (click)="revokeAll()" [disabled]="accessBusy() === 'all'"
+              style="padding:6px 12px; border:1px solid var(--danger); border-radius:var(--radius-xs); background:transparent; color:var(--danger); font-size:12px; cursor:pointer; font-family:inherit;">
+              {{ accessBusy() === 'all' ? 'Revoking…' : 'Revoke all' }}
+            </button>
+          }
+        </div>
+
+        @if (loadingSessions()) {
+          <div style="padding:30px; text-align:center; font-size:14px; color:var(--fg-3);">Loading devices…</div>
+        } @else if (sessions().length === 0) {
+          <div style="padding:30px; text-align:center; font-size:14px; color:var(--fg-3);">No active sessions or devices on record.</div>
+        } @else {
+          @for (s of sessions(); track s.id) {
+            <div style="display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid var(--border-soft);">
+              <div style="flex:1; min-width:0;">
+                <p style="font-size:13px; font-weight:500; color:var(--fg-1); margin:0;">
+                  {{ deviceMeta(s) }}
+                  <span [style.background]="s.active ? 'var(--success-bg)' : 'var(--neutral-100)'" [style.color]="s.active ? 'var(--success)' : 'var(--fg-3)'"
+                    style="font-size:10px; font-weight:600; text-transform:uppercase; padding:1px 6px; border-radius:var(--radius-pill); margin-left:6px;">{{ s.active ? 'Active' : 'Expired' }}</span>
+                  <span style="font-size:11px; color:var(--fg-3); margin-left:6px;">{{ s.deviceType || 'unknown' }}</span>
+                </p>
+                <p style="font-size:12px; color:var(--fg-3); margin:2px 0 0;">
+                  IP {{ s.lastIp || s.ipAddress || '—' }} ·
+                  last seen {{ s.lastSeenAt ? (s.lastSeenAt | date:'d MMM y, HH:mm') : '—' }} ·
+                  signed in {{ s.createdAt | date:'d MMM y' }}
+                </p>
+              </div>
+              @if (s.active) {
+                <button (click)="revokeSession(s.id)" [disabled]="accessBusy() === s.id"
+                  style="padding:5px 10px; border:1px solid var(--border); border-radius:var(--radius-xs); background:transparent; color:var(--danger); font-size:12px; cursor:pointer; font-family:inherit; flex-shrink:0;">
+                  {{ accessBusy() === s.id ? '…' : 'Revoke' }}
+                </button>
+              }
+            </div>
+          }
+        }
+      </div>
+
+    </div>
+  }
+
+</div>

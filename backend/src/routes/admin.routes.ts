@@ -10,6 +10,7 @@ import * as adminCtrl from '../controllers/admin.controller'
 import { requireAdmin } from '../middleware/auth.middleware'
 import { requireAdminRole } from '../middleware/role.middleware'
 import { adminAuthLimiter } from '../middleware/rateLimit.middleware'
+import { uploadMiddleware, handleImageUpload } from '../controllers/upload.controller'
 
 const router = Router()
 
@@ -49,6 +50,14 @@ router.get('/session-stats',                  adminCtrl.getSessionStats)
 router.delete('/sessions/:sessionId',         requireAdminRole('SUPER_ADMIN'), adminCtrl.revokeSession)
 router.post('/users/:userId/revoke-sessions', requireAdminRole('SUPER_ADMIN'), adminCtrl.revokeUserSessions)
 router.patch('/users/:userId/status',         requireAdminRole('SUPER_ADMIN'), adminCtrl.setUserStatus)
+
+// ── Tenant-user management (profile / role / delete) ──
+router.get('/users/:userId',                  adminCtrl.getUser)
+router.patch('/users/:userId',                requireAdminRole('SUPER_ADMIN'), adminCtrl.updateUser)
+router.delete('/users/:userId',               requireAdminRole('SUPER_ADMIN'), adminCtrl.deleteUser)
+
+// ── Image upload (avatars / logos) ──
+router.post('/uploads/image', uploadMiddleware, handleImageUpload)
 
 // ── Audit + Stats + Live Monitoring ──
 router.get('/audit-logs',  adminCtrl.getAuditLogs)

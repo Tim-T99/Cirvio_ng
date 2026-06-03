@@ -1,9 +1,10 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import { forkJoin } from 'rxjs';
+import { AvatarComponent } from '../../shared/avatar/avatar';
 
 interface TenantDetail {
   id: string;
@@ -41,6 +42,7 @@ interface TenantUser {
   email: string;
   firstName: string;
   lastName: string;
+  avatarUrl: string | null;
   role: string;
   isActive: boolean;
   lastLoginAt: string | null;
@@ -66,7 +68,7 @@ interface DeviceSession {
 @Component({
   selector: 'app-tenant-detail',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink, AvatarComponent],
   templateUrl: './tenant-detail.html',
 })
 export class TenantDetailComponent implements OnInit {

@@ -414,6 +414,9 @@ export const getMonitoring = async (_req: Request, res: Response): Promise<void>
 const notFoundOr500 = (err: unknown, res: Response) => {
   const message = (err as Error).message
   if (message?.includes('not found')) { res.status(404).json({ error: message }); return }
+  if (message?.includes('already in use') || message?.startsWith('Cannot')) {
+    res.status(409).json({ error: message }); return
+  }
   res.status(500).json({ error: 'Internal server error' })
 }
 
@@ -461,6 +464,49 @@ export const revokeUserSessions = async (req: Request, res: Response): Promise<v
     const userId = req.params.userId as string
     const result = await adminService.revokeUserSessions(userId)
     await adminService.recordAudit(req.admin!.adminId, 'USER_SESSIONS_REVOKED', 'User', userId, { count: result.revoked })
+    res.status(200).json(result)
+  } catch (err) { notFoundOr500(err, res) }
+}
+
+export const getUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = await adminService.getUserDetail(req.params.userId as string)
+    res.status(200).json({ user })
+  } catch (err) { notFoundOr500(err, res) }
+}
+
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.params.userId as string
+    const { firstName, lastName, email, phone, role, avatarUrl } = req.body as Record<string, unknown>
+
+    const data: Record<string, unknown> = {}
+    if (typeof firstName === 'string') data.firstName = firstName.trim()
+    if (typeof lastName === 'string') data.lastName = lastName.trim()
+    if (typeof email === 'string') data.email = email.trim().toLowerCase()
+    if (phone === null || typeof phone === 'string') data.phone = phone
+    if (avatarUrl === null || typeof avatarUrl === 'string') data.avatarUrl = avatarUrl
+    if (typeof role === 'string') {
+      if (!['TENANT_ADMIN', 'HR_MANAGER', 'VIEWER'].includes(role)) {
+        res.status(400).json({ error: 'Invalid role' }); return
+      }
+      data.role = role
+    }
+    if (Object.keys(data).length === 0) {
+      res.status(400).json({ error: 'No valid fields to update' }); return
+    }
+
+    const updated = await adminService.updateUserDetail(userId, data as any)
+    await adminService.recordAudit(req.admin!.adminId, 'USER_UPDATED', 'User', userId, data)
+    res.status(200).json(updated)
+  } catch (err) { notFoundOr500(err, res) }
+}
+
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.params.userId as string
+    const result = await adminService.deleteUser(userId)
+    await adminService.recordAudit(req.admin!.adminId, 'USER_DELETED', 'User', userId, { email: result.email })
     res.status(200).json(result)
   } catch (err) { notFoundOr500(err, res) }
 }

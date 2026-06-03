@@ -24,6 +24,28 @@
         </div>
       }
 
+      <!-- Avatar -->
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+        <app-avatar [name]="(firstName() + ' ' + lastName()).trim() || (profile()?.email ?? '')" [src]="profile()?.avatarUrl ?? null" [size]="64" />
+        <div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+              [style.opacity]="avatarUploading() ? '0.6' : '1'">
+              {{ avatarUploading() ? 'Uploading…' : (profile()?.avatarUrl ? 'Change photo' : 'Upload photo') }}
+              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" (change)="onAvatarPicked($event)" [disabled]="avatarUploading()" style="display:none;" />
+            </label>
+            @if (profile()?.avatarUrl) {
+              <button (click)="removeAvatar()" [disabled]="avatarUploading()"
+                style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--danger);cursor:pointer;font-family:inherit;">Remove</button>
+            }
+          </div>
+          <p style="font-size:12px;color:var(--fg-3);margin:8px 0 0;">PNG, JPG, WEBP or GIF · up to 5 MB</p>
+          @if (avatarError()) {
+            <p style="font-size:12px;color:var(--danger);margin:4px 0 0;">{{ avatarError() }}</p>
+          }
+        </div>
+      </div>
+
       <div style="display:flex;flex-direction:column;gap:16px;">
         <div class="dash-settings-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
@@ -79,6 +101,32 @@
         @if (orgSuccess()) {
           <div style="background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--success);margin-bottom:16px;">Organisation profile updated.</div>
         }
+
+        <!-- Logo -->
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+          @if (logoUrl()) {
+            <img [src]="logoUrl()" alt="Logo" style="width:64px;height:64px;border-radius:var(--radius-sm);object-fit:contain;background:var(--bg-sunken);border:1px solid var(--border);" />
+          } @else {
+            <div style="width:64px;height:64px;border-radius:var(--radius-sm);background:var(--bg-sunken);border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--fg-3);font-size:11px;">Logo</div>
+          }
+          <div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <label style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--fg-2);cursor:pointer;font-family:inherit;"
+                [style.opacity]="logoUploading() ? '0.6' : '1'">
+                {{ logoUploading() ? 'Uploading…' : (logoUrl() ? 'Change logo' : 'Upload logo') }}
+                <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" (change)="onLogoPicked($event)" [disabled]="logoUploading()" style="display:none;" />
+              </label>
+              @if (logoUrl()) {
+                <button (click)="removeLogo()" [disabled]="logoUploading()"
+                  style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;font-size:13px;color:var(--danger);cursor:pointer;font-family:inherit;">Remove</button>
+              }
+            </div>
+            <p style="font-size:12px;color:var(--fg-3);margin:8px 0 0;">PNG, JPG, WEBP or GIF · up to 5 MB</p>
+            @if (logoError()) {
+              <p style="font-size:12px;color:var(--danger);margin:4px 0 0;">{{ logoError() }}</p>
+            }
+          </div>
+        </div>
 
         <div style="display:flex;flex-direction:column;gap:16px;">
           <div>
