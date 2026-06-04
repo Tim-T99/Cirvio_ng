@@ -1,6 +1,6 @@
 // src/routes/oauth.routes.ts
 // ─────────────────────────────────────────────
-// OAUTH / PASSKEY ROUTES
+// PASSKEY ROUTES
 // Login routes are public.
 // Registration and management routes require
 // an authenticated user session.
@@ -9,13 +9,9 @@
 import { Router } from 'express'
 import * as oauthCtrl from '../controllers/oauth.controller'
 import { requireUser } from '../middleware/auth.middleware'
-import { oauthLimiter, passkeyLimiter } from '../middleware/rateLimit.middleware'
+import { passkeyLimiter } from '../middleware/rateLimit.middleware'
 
 const router = Router()
-
-// ── Google OAuth ──
-router.post('/google/login',    oauthLimiter, oauthCtrl.googleCallback)
-router.post('/google/register', oauthLimiter, oauthCtrl.googleRegister)
 
 // ── Passkey login (public) ──
 router.post('/passkey/login/options', passkeyLimiter, oauthCtrl.passkeyLoginOptions)

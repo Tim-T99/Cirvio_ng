@@ -117,18 +117,6 @@ export class AuthService {
       .pipe(tap((res) => this.applyToken(res)));
   }
 
-  loginWithGoogle(credential: string) {
-    return this.http
-      .post<LoginResponse>(`${environment.apiUrl}/api/auth/google/login`, { credential })
-      .pipe(tap((res) => this.applyToken(res)));
-  }
-
-  registerWithGoogle(payload: { credential: string; organizationName: string; country: string; industry?: string }) {
-    return this.http
-      .post<LoginResponse>(`${environment.apiUrl}/api/auth/google/register`, payload)
-      .pipe(tap((res) => this.applyToken(res)));
-  }
-
   passkeyLoginOptions(email?: string) {
     return this.http.post<{ options: any; challengeId: string }>(
       `${environment.apiUrl}/api/auth/passkey/login/options`, { email }
