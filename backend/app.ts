@@ -12,10 +12,12 @@ import visaRoutes from "./src/routes/visa.routes";
 import wpsRoutes from "./src/routes/wps.routes";
 import documentRoutes from "./src/routes/document.routes";
 import uploadRoutes from "./src/routes/upload.routes";
+import chatRoutes from "./src/routes/chat.routes";
 
 import {
   globalLimiter,
   apiLimiter,
+  chatLimiter,
 } from "./src/middleware/rateLimit.middleware";
 
 import { startVisaAlertJob } from "./src/jobs/visaAlert.job";
@@ -68,6 +70,7 @@ app.use("/api/visas",     apiLimiter, visaRoutes);
 app.use("/api/wps",       apiLimiter, wpsRoutes);
 app.use("/api/documents", apiLimiter, documentRoutes);
 app.use("/api/uploads",   apiLimiter, uploadRoutes);
+app.use("/api/chat",      chatLimiter, chatRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

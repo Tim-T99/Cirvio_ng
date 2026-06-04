@@ -134,3 +134,10 @@ export const uploadLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit:    Math.floor(30 * M),
 })
+
+/** AI chat — each call may fan out to several LLM round-trips (expensive) */
+export const chatLimiter = rateLimit({
+  ...base,
+  windowMs: 15 * 60 * 1000,
+  limit:    Math.floor(40 * M),
+})

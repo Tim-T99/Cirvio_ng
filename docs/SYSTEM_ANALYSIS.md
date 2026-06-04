@@ -238,6 +238,9 @@ recommendations and writes them to `AiInsight`.
 ---
 
 ## Appendix: endpoints the frontend calls but backend lacks
-- `POST /api/chat` — **missing entirely** (see §2.1).
+- ~~`POST /api/chat` — missing entirely~~ ✅ **RESOLVED (Step 2).** Implemented
+  with Claude + read-only tenant-scoped tools, conversation persistence
+  (`Conversation`/`ChatMessage`), tool-call audit (`AiToolAuditLog`), and
+  `chatLimiter`. See `backend/AI.md`.
 
 (Everything else the frontend calls maps to a real backend route.)
