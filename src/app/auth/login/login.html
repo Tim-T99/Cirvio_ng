@@ -24,12 +24,8 @@
           </div>
         }
 
-        <!-- Social sign-in -->
+        <!-- Passkey sign-in -->
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;">
-          @if (hasGoogle) {
-            <div id="google-btn" style="display:flex;justify-content:center;min-height:44px;"></div>
-          }
-
           <!-- Passkey -->
           <button (click)="signInWithPasskey()"
             style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 16px;border:1px solid var(--border);border-radius:var(--radius-md);background:transparent;font-size:14px;font-weight:500;color:var(--fg-1);cursor:pointer;font-family:inherit;"
