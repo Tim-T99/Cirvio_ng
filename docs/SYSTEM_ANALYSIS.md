@@ -223,12 +223,13 @@ recommendations and writes them to `AiInsight`.
 
 ## 7. Suggested sequencing
 
-1. **Org hierarchy data model** (§4.1) — unblocks everything AI-org-related, and
-   immediately improves the existing org-chart page. _Schema + migration +
-   employee form (manager picker) + org-chart rendering._
-2. **Chat backend MVP** (§6.1–6.4) — real `/api/chat` with Claude + read-only
-   tools + `Conversation`/`ChatMessage` persistence + `chatLimiter`. Turns the
-   dead chat UI into a working assistant.
+1. ✅ **DONE — Org hierarchy data model** (§4.1). Shipped: `Employee.managerId`
+   self-relation (manager/reports) + `jobLevel`; `Department.parentDepartmentId`
+   tree + `costCenter`; cycle-safe manager validation; org chart rebuilt as a
+   real reporting tree; manager picker in the employee create/edit forms.
+2. ⏳ **IN PROGRESS — Chat backend MVP** (§6.1–6.4) — real `/api/chat` with Claude
+   + read-only tools + `Conversation`/`ChatMessage` persistence + `chatLimiter`.
+   Turns the dead chat UI into a working assistant.
 3. **Compliance & efficiency tools** (§6.5) — the analysis/recommendation value.
 4. **Write tools with confirmation** (§6.3 phase 2).
 5. **Infra hardening** — Redis for sessions/rate-limit/passkey challenges (§2.4,
