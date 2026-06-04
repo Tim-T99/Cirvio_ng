@@ -86,10 +86,6 @@ export class SignupComponent {
     return base && this.allRulesMet() && this.password() === this.confirmPassword() && this.confirmPassword().length > 0;
   });
 
-  signInWithApple() {
-    this.serverError.set('Apple Sign-In requires server configuration. Contact your administrator.');
-  }
-
   // ── Validation ────────────────────────────────────────────────────────────
 
   handleEmailBlur() {
