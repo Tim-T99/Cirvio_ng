@@ -19,8 +19,10 @@ export const routes: Routes = [
   // Auth pages (standalone, no shared layout)
   { path: 'login',          canActivate: [guestGuard], loadComponent: () => import('./auth/login/login').then(m => m.LoginComponent) },
   { path: 'signup',         canActivate: [guestGuard], loadComponent: () => import('./auth/signup/signup').then(m => m.SignupComponent) },
-  { path: 'admin',          loadComponent: () => import('./auth/admin-login/admin-login').then(m => m.AdminLoginComponent) },
-  { path: 'accept-invite',  loadComponent: () => import('./auth/accept-invite/accept-invite').then(m => m.AcceptInviteComponent) },
+  { path: 'admin',           loadComponent: () => import('./auth/admin-login/admin-login').then(m => m.AdminLoginComponent) },
+  { path: 'accept-invite',   loadComponent: () => import('./auth/accept-invite/accept-invite').then(m => m.AcceptInviteComponent) },
+  { path: 'forgot-password', canActivate: [guestGuard], loadComponent: () => import('./auth/forgot-password/forgot-password').then(m => m.ForgotPasswordComponent) },
+  { path: 'reset-password',  loadComponent: () => import('./auth/reset-password/reset-password').then(m => m.ResetPasswordComponent) },
 
   // User dashboard
   {

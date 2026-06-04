@@ -273,6 +273,19 @@
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
               <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Reports to (manager)</label>
+                <select class="field" [value]="form().managerId" (change)="setField('managerId',$any($event.target).value)" style="font-size:13px;">
+                  <option value="">— None —</option>
+                  @for (m of managerChoices(); track m.id) { <option [value]="m.id">{{ m.firstName }} {{ m.lastName }}@if (m.jobTitle) { · {{ m.jobTitle }}}</option> }
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Job level <span style="color:var(--fg-3);font-weight:400;">(optional)</span></label>
+                <input type="number" min="1" max="20" class="field" [value]="form().jobLevel" (input)="setField('jobLevel',$any($event.target).valueAsNumber || '')" placeholder="e.g. 3" style="font-size:13px;" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
                 <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Start date</label>
                 <input type="date" class="field" [value]="form().startDate" (input)="setField('startDate',$any($event.target).value)" style="font-size:13px;" />
               </div>

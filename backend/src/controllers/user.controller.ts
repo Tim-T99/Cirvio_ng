@@ -6,6 +6,7 @@
 import { Request, Response } from 'express'
 import * as userService from '../services/user.service'
 import { prisma } from '../prisma/client'
+import { sendPasswordResetEmail, frontendUrl } from '../lib/email'
 
 
 export const login = async (req: Request, res: Response): Promise<void> => {
@@ -94,7 +95,13 @@ export const requestPasswordReset = async (req: Request, res: Response): Promise
       return
     }
     const result = await userService.requestPasswordReset(email, tenant.id)
-    // In production: send result.plainToken via email — never return in response
+    // Send the reset link by email. plainToken is only present when the user
+    // exists; we never reveal that fact in the response ([S4]).
+    const token: string | undefined = (result as { plainToken?: string }).plainToken
+    if (token) {
+      const resetUrl = `${frontendUrl()}/reset-password?token=${encodeURIComponent(token)}`
+      await sendPasswordResetEmail({ to: email, resetUrl })
+    }
     res.status(200).json({ message: result.message })
   } catch {
     res.status(500).json({ error: 'Internal server error' })

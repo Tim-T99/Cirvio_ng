@@ -29,6 +29,23 @@ interface OrgProfile {
 const ALLOWED_IMAGE = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+interface TenantInvite {
+  id: string;
+  email: string;
+  role: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
+interface InviteResponse {
+  message: string;
+  email: string;
+  role: string;
+  emailed: boolean;
+  emailConfigured: boolean;
+  inviteUrl: string;
+}
+
 const COUNTRY_NAMES: Record<string, string> = {
   AE: 'United Arab Emirates',
   SA: 'Saudi Arabia',
@@ -108,6 +125,21 @@ export class SettingsComponent implements OnInit {
   passkeyName      = signal('');
   readonly passkeySupported = isPlatformBrowser(this.platformId) && !!(window as any).PublicKeyCredential;
 
+  // Team invites (TENANT_ADMIN only)
+  readonly INVITE_ROLES = [
+    { value: 'VIEWER', label: 'Viewer' },
+    { value: 'HR_MANAGER', label: 'HR Manager' },
+    { value: 'TENANT_ADMIN', label: 'Tenant Admin' },
+  ];
+  invites          = signal<TenantInvite[]>([]);
+  inviteEmail      = signal('');
+  inviteRole       = signal('VIEWER');
+  invitingBusy     = signal(false);
+  inviteError      = signal('');
+  lastInvite       = signal<{ inviteUrl: string; emailed: boolean; email: string } | null>(null);
+  linkCopied       = signal(false);
+  revokingId       = signal<string | null>(null);
+
   ngOnInit() {
     this.http.get<UserProfile>(`${environment.apiUrl}/api/users/me`).subscribe({
       next: (u) => {
@@ -115,11 +147,64 @@ export class SettingsComponent implements OnInit {
         this.firstName.set(u.firstName ?? '');
         this.lastName.set(u.lastName ?? '');
         this.loading.set(false);
-        if (u.role === 'TENANT_ADMIN') this.loadOrgProfile();
+        if (u.role === 'TENANT_ADMIN') { this.loadOrgProfile(); this.loadInvites(); }
         this.loadPasskeys();
       },
       error: () => { this.error.set('Failed to load profile.'); this.loading.set(false); },
     });
+  }
+
+  // ── Team invites ──────────────────────────────────────────────────────────
+
+  private loadInvites() {
+    this.http.get<TenantInvite[]>(`${environment.apiUrl}/api/tenant/invites`).subscribe({
+      next: (list) => this.invites.set(list ?? []),
+      error: () => {},
+    });
+  }
+
+  private readonly EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+
+  sendInvite() {
+    const email = this.inviteEmail().trim();
+    this.inviteError.set('');
+    this.linkCopied.set(false);
+    if (!this.EMAIL_RE.test(email)) { this.inviteError.set('Enter a valid email address.'); return; }
+
+    this.invitingBusy.set(true);
+    this.http.post<InviteResponse>(`${environment.apiUrl}/api/tenant/invites`, {
+      email,
+      role: this.inviteRole(),
+    }).subscribe({
+      next: (r) => {
+        this.lastInvite.set({ inviteUrl: r.inviteUrl, emailed: r.emailed, email: r.email });
+        this.inviteEmail.set('');
+        this.invitingBusy.set(false);
+        this.loadInvites();
+      },
+      error: (err) => { this.inviteError.set(err.error?.error ?? 'Failed to create invite.'); this.invitingBusy.set(false); },
+    });
+  }
+
+  copyInviteLink() {
+    const url = this.lastInvite()?.inviteUrl;
+    if (!url || !isPlatformBrowser(this.platformId)) return;
+    navigator.clipboard?.writeText(url).then(() => {
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 2500);
+    }).catch(() => {});
+  }
+
+  revokeInvite(id: string) {
+    this.revokingId.set(id);
+    this.http.delete(`${environment.apiUrl}/api/tenant/invites/${id}`).subscribe({
+      next: () => { this.invites.update(list => list.filter(i => i.id !== id)); this.revokingId.set(null); },
+      error: (err) => { this.inviteError.set(err.error?.error ?? 'Failed to revoke invite.'); this.revokingId.set(null); },
+    });
+  }
+
+  roleLabel(value: string): string {
+    return this.INVITE_ROLES.find(r => r.value === value)?.label ?? value;
   }
 
   private loadOrgProfile() {

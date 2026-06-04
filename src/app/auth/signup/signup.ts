@@ -43,10 +43,12 @@ export class SignupComponent {
   confirmPassword  = signal('');
   showPassword     = signal(false);
   passwordFocused  = signal(false);
-  emailTouched     = signal(false);
-  errors           = signal<Record<string, string>>({});
   serverError      = signal('');
   loading          = signal(false);
+
+  // Validation state
+  submitted = signal(false);
+  touched   = signal<Record<string, boolean>>({});
 
   readonly INDUSTRIES = INDUSTRIES;
 
@@ -74,45 +76,45 @@ export class SignupComponent {
 
   readonly allRulesMet = computed(() => Object.values(this.passwordRules()).every(Boolean));
 
-  readonly isFormReady = computed(() => {
-    const base =
-      this.organizationName().trim().length > 0 &&
-      this.firstName().trim().length > 0 &&
-      this.lastName().trim().length > 0 &&
-      this.EMAIL_RE.test(this.email().trim()) &&
-      this.industry().length > 0 &&
-      this.country().length > 0;
-
-    return base && this.allRulesMet() && this.password() === this.confirmPassword() && this.confirmPassword().length > 0;
-  });
-
   // ── Validation ────────────────────────────────────────────────────────────
 
-  handleEmailBlur() {
-    this.emailTouched.set(true);
-    if (this.email() && !this.EMAIL_RE.test(this.email().trim())) {
-      this.errors.update(e => ({ ...e, email: 'Please enter a valid email address' }));
-    }
+  /** Per-field errors derived from the current values (re-evaluates as the user types). */
+  readonly fieldErrors = computed<Record<string, string>>(() => {
+    const e: Record<string, string> = {};
+    if (!this.organizationName().trim()) e['organizationName'] = 'Organization name is required';
+    if (!this.industry())                e['industry']         = 'Please select an industry';
+    if (!this.country())                 e['country']          = 'Please select a country';
+    if (!this.firstName().trim())        e['firstName']        = 'First name is required';
+    if (!this.lastName().trim())         e['lastName']         = 'Last name is required';
+
+    const email = this.email().trim();
+    if (!email)                          e['email'] = 'Email is required';
+    else if (!this.EMAIL_RE.test(email)) e['email'] = 'Enter a valid email address';
+
+    if (!this.password())                e['password'] = 'Password is required';
+    else if (!this.allRulesMet())        e['password'] = 'Password does not meet all requirements';
+
+    if (!this.confirmPassword())                        e['confirmPassword'] = 'Please confirm your password';
+    else if (this.password() !== this.confirmPassword()) e['confirmPassword'] = 'Passwords do not match';
+
+    return e;
+  });
+
+  readonly isFormReady = computed(() => Object.keys(this.fieldErrors()).length === 0);
+
+  /** Show a field's error only once it's been blurred or the form was submitted. */
+  showError(field: string): boolean {
+    return (this.submitted() || !!this.touched()[field]) && !!this.fieldErrors()[field];
   }
 
-  validate(): boolean {
-    const next: Record<string, string> = {};
-    if (!this.organizationName().trim()) next['organizationName'] = 'Organization name is required';
-    if (!this.industry())                next['industry']         = 'Please select an industry';
-    if (!this.country())                 next['country']          = 'Please select a country';
-    if (!this.firstName().trim())        next['firstName']        = 'First name is required';
-    if (!this.lastName().trim())         next['lastName']         = 'Last name is required';
-    if (!this.email().trim())            next['email']            = 'Email is required';
-    else if (!this.EMAIL_RE.test(this.email().trim())) next['email'] = 'Please enter a valid email address';
-    if (!this.allRulesMet()) next['password'] = 'Password does not meet all requirements';
-    if (this.confirmPassword() && this.password() !== this.confirmPassword()) next['confirmPassword'] = 'Passwords do not match';
-    this.errors.set(next);
-    return Object.keys(next).length === 0;
+  markTouched(field: string): void {
+    this.touched.update(t => ({ ...t, [field]: true }));
   }
 
   handleSubmit(e: Event) {
     e.preventDefault();
-    if (!this.validate()) return;
+    this.submitted.set(true);
+    if (!this.isFormReady() || this.loading()) return;
     this.loading.set(true);
     this.serverError.set('');
 

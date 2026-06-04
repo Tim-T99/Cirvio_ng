@@ -18,10 +18,13 @@ interface EmployeeFull {
   passportNumber?: string; passportExpiry?: string; labourCardNo?: string;
   basicSalaryAed?: number; allowancesAed?: number;
   wpsPersonId?: string; wpsBankCode?: string;
+  managerId?: string | null; jobLevel?: number | null;
   createdAt: string; updatedAt: string;
   department?: { id: string; name: string };
+  manager?: { id: string; firstName: string; lastName: string; jobTitle?: string } | null;
+  reports?: { id: string; firstName: string; lastName: string; jobTitle?: string; status: string }[];
   user?: { id: string; email: string; role: string; isActive: boolean } | null;
-  _count: { visaRecords: number; documents: number; wpsRecords: number };
+  _count: { visaRecords: number; documents: number; wpsRecords: number; reports: number };
 }
 
 interface VisaRecord {
@@ -100,10 +103,21 @@ export class EmployeeDetailComponent implements OnInit {
 
   readonly MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
+  managerOptions = signal<{ id: string; firstName: string; lastName: string; jobTitle?: string }[]>([]);
+
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.loadEmployee(id);
     this.http.get<Department[]>(`${API}/employees/departments/list`).subscribe({ next: d => this.depts.set(d) });
+    this.http.get<{ data: { id: string; firstName: string; lastName: string; jobTitle?: string }[] }>(
+      `${API}/employees?pageSize=500`
+    ).subscribe({ next: r => this.managerOptions.set(r.data ?? []) });
+  }
+
+  // Candidate managers: everyone except this employee (avoids self-reporting).
+  managerChoices() {
+    const id = this.employee()?.id;
+    return this.managerOptions().filter(e => e.id !== id);
   }
 
   loadEmployee(id: string) {
@@ -128,6 +142,7 @@ export class EmployeeDetailComponent implements OnInit {
       nationality: e.nationality ?? '', workEmail: e.workEmail ?? '',
       personalEmail: e.personalEmail ?? '', phone: e.phone ?? '',
       jobTitle: e.jobTitle ?? '', departmentId: e.department?.id ?? '',
+      managerId: e.managerId ?? '', jobLevel: e.jobLevel ?? '',
       employmentType: e.employmentType, startDate: e.startDate?.substring(0,10) ?? '',
       employeeNo: e.employeeNo ?? '',
       eidNumber: e.eidNumber ?? '', eidExpiry: e.eidExpiry?.substring(0,10) ?? '',
@@ -146,7 +161,8 @@ export class EmployeeDetailComponent implements OnInit {
     const id = this.employee()!.id;
     const body = { ...this.editForm() };
     if (!body['departmentId']) delete body['departmentId'];
-    ['basicSalaryAed','allowancesAed'].forEach(k => { if (body[k] === '') delete body[k]; });
+    ['basicSalaryAed','allowancesAed','jobLevel'].forEach(k => { if (body[k] === '') delete body[k]; });
+    // managerId sent as-is ('' clears the manager; backend normalises to null)
     ['gender','dateOfBirth','nationality','workEmail','personalEmail','phone','middleName',
      'eidNumber','eidExpiry','passportNumber','passportExpiry','labourCardNo','wpsPersonId','wpsBankCode',
     ].forEach(k => { if (body[k] === '') delete body[k]; });

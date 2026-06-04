@@ -27,7 +27,8 @@ type EmployeeForm = {
   firstName: string; lastName: string; middleName: string;
   gender: string; dateOfBirth: string; nationality: string;
   workEmail: string; personalEmail: string; phone: string;
-  jobTitle: string; departmentId: string; employmentType: string;
+  jobTitle: string; departmentId: string; managerId: string; jobLevel: number | '';
+  employmentType: string;
   startDate: string; employeeNo: string;
   eidNumber: string; eidExpiry: string;
   passportNumber: string; passportExpiry: string; labourCardNo: string;
@@ -39,7 +40,8 @@ function emptyForm(): EmployeeForm {
   return {
     firstName: '', lastName: '', middleName: '', gender: '',
     dateOfBirth: '', nationality: '', workEmail: '', personalEmail: '',
-    phone: '', jobTitle: '', departmentId: '', employmentType: 'FULL_TIME',
+    phone: '', jobTitle: '', departmentId: '', managerId: '', jobLevel: '',
+    employmentType: 'FULL_TIME',
     startDate: '', employeeNo: '', eidNumber: '', eidExpiry: '',
     passportNumber: '', passportExpiry: '', labourCardNo: '',
     basicSalaryAed: '', allowancesAed: '', wpsPersonId: '', wpsBankCode: '',
@@ -59,6 +61,8 @@ export class EmployeesComponent implements OnInit {
   // ── Data ────────────────────────────────────────────────────────────────────
   employees   = signal<Employee[]>([]);
   departments = signal<Department[]>([]);
+  // Lightweight full roster for the manager picker (the main list is paginated)
+  managerOptions = signal<{ id: string; firstName: string; lastName: string; jobTitle?: string }[]>([]);
   total       = signal(0);
   loading     = signal(true);
   error       = signal('');
@@ -103,6 +107,7 @@ export class EmployeesComponent implements OnInit {
 
   ngOnInit() {
     this.loadDepartments();
+    this.loadManagerOptions();
     this.loadEmployees();
   }
 
@@ -112,6 +117,20 @@ export class EmployeesComponent implements OnInit {
     this.http.get<Department[]>(`${API}/employees/departments/list`).subscribe({
       next: (d) => this.departments.set(d),
     });
+  }
+
+  loadManagerOptions() {
+    this.http.get<{ data: { id: string; firstName: string; lastName: string; jobTitle?: string }[] }>(
+      `${API}/employees?pageSize=500`
+    ).subscribe({
+      next: (r) => this.managerOptions.set(r.data ?? []),
+    });
+  }
+
+  // Candidate managers for the form: everyone except the employee being edited.
+  managerChoices() {
+    const id = this.editingId();
+    return this.managerOptions().filter(e => e.id !== id);
   }
 
   loadEmployees() {
@@ -164,6 +183,8 @@ export class EmployeesComponent implements OnInit {
           phone:          e.phone ?? '',
           jobTitle:       e.jobTitle ?? '',
           departmentId:   e.department?.id ?? '',
+          managerId:      e.managerId ?? '',
+          jobLevel:       e.jobLevel ?? '',
           employmentType: e.employmentType ?? 'FULL_TIME',
           startDate:      e.startDate ? e.startDate.substring(0, 10) : '',
           employeeNo:     e.employeeNo ?? '',
@@ -196,7 +217,10 @@ export class EmployeesComponent implements OnInit {
     const body: Record<string, unknown> = { ...f };
     if (body['basicSalaryAed'] === '') delete body['basicSalaryAed'];
     if (body['allowancesAed']  === '') delete body['allowancesAed'];
+    if (body['jobLevel']       === '') delete body['jobLevel'];
     if (!body['departmentId'])         delete body['departmentId'];
+    // managerId is sent as-is: '' clears the manager on update (backend
+    // normalises it to null), and is treated as "no manager" on create.
     // Remove empty strings for optional fields
     ['gender','dateOfBirth','nationality','workEmail','personalEmail','phone','middleName',
      'eidNumber','eidExpiry','passportNumber','passportExpiry','labourCardNo','wpsPersonId','wpsBankCode'

@@ -374,6 +374,8 @@ model Employee {
   employeeNo       String?        // internal HR reference
   jobTitle         String
   departmentId     String?        @db.Uuid
+  managerId        String?        @db.Uuid   // reports-to (org hierarchy)
+  jobLevel         Int?           // numeric band for span-of-control / cost analysis
   employmentType   EmploymentType @default(FULL_TIME)
   startDate        DateTime
   endDate          DateTime?      // null = currently employed
@@ -398,25 +400,32 @@ model Employee {
   // Relations
   tenant           Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   department       Department?    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  manager          Employee?      @relation("EmployeeReports", fields: [managerId], references: [id], onDelete: SetNull)
+  reports          Employee[]     @relation("EmployeeReports")
   user             User?          // reverse of User.employeeId
   visaRecords      VisaRecord[]
   wpsRecords       WpsRecord[]
   documents        Document[]
 
+  @@index([tenantId, managerId])
   @@unique([tenantId, eidNumber])
   @@unique([tenantId, employeeNo])
 }
 
 model Department {
-  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId    String     @db.Uuid
-  name        String     // e.g. "Operations", "Finance", "HR"
-  description String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id                 String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId           String       @db.Uuid
+  name               String       // e.g. "Operations", "Finance", "HR"
+  description        String?
+  parentDepartmentId String?      @db.Uuid   // department tree
+  costCenter         String?      // for cost/efficiency rollups
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
-  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  employees   Employee[]
+  tenant             Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parent             Department?  @relation("DepartmentTree", fields: [parentDepartmentId], references: [id], onDelete: SetNull)
+  children           Department[] @relation("DepartmentTree")
+  employees          Employee[]
 
   @@unique([tenantId, name])
 }

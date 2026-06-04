@@ -28,11 +28,11 @@
               Organization name <span style="color:var(--danger);">*</span>
             </label>
             <input name="organizationName" type="text" placeholder="Acme Corp"
-              [value]="organizationName()" (input)="organizationName.set($any($event.target).value)"
+              [value]="organizationName()" (input)="organizationName.set($any($event.target).value)" (blur)="markTouched('organizationName')"
               required autocomplete="organization"
-              [class]="'field' + (errors()['organizationName'] ? ' error' : '')" />
-            @if (errors()['organizationName']) {
-              <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ errors()['organizationName'] }}</p>
+              [class]="'field' + (showError('organizationName') ? ' error' : '')" />
+            @if (showError('organizationName')) {
+              <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ fieldErrors()['organizationName'] }}</p>
             }
           </div>
 
@@ -41,15 +41,15 @@
             <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">
               Industry <span style="color:var(--danger);">*</span>
             </label>
-            <select name="industry" [class]="'field' + (errors()['industry'] ? ' error' : '')"
-              [value]="industry()" (change)="industry.set($any($event.target).value)" required>
+            <select name="industry" [class]="'field' + (showError('industry') ? ' error' : '')"
+              [value]="industry()" (change)="industry.set($any($event.target).value); markTouched('industry')" (blur)="markTouched('industry')" required>
               <option value="" disabled selected>Select your industry…</option>
               @for (ind of INDUSTRIES; track ind) {
                 <option [value]="ind">{{ ind }}</option>
               }
             </select>
-            @if (errors()['industry']) {
-              <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ errors()['industry'] }}</p>
+            @if (showError('industry')) {
+              <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ fieldErrors()['industry'] }}</p>
             }
           </div>
 
@@ -58,7 +58,7 @@
             <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">
               Country <span style="color:var(--danger);">*</span>
             </label>
-            <select name="country" [class]="'field' + (errors()['country'] ? ' error' : '')"
+            <select name="country" [class]="'field' + (showError('country') ? ' error' : '')"
               [value]="country()" (change)="country.set($any($event.target).value)" required>
               @for (c of countries; track c.code) {
                 <option [value]="c.code">{{ c.name }}</option>
@@ -78,11 +78,11 @@
                 First name <span style="color:var(--danger);">*</span>
               </label>
               <input name="firstName" type="text" placeholder="Jane"
-                [value]="firstName()" (input)="firstName.set($any($event.target).value)"
+                [value]="firstName()" (input)="firstName.set($any($event.target).value)" (blur)="markTouched('firstName')"
                 required autocomplete="given-name"
-                [class]="'field' + (errors()['firstName'] ? ' error' : '')" />
-              @if (errors()['firstName']) {
-                <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ errors()['firstName'] }}</p>
+                [class]="'field' + (showError('firstName') ? ' error' : '')" />
+              @if (showError('firstName')) {
+                <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ fieldErrors()['firstName'] }}</p>
               }
             </div>
             <div>
@@ -90,11 +90,11 @@
                 Last name <span style="color:var(--danger);">*</span>
               </label>
               <input name="lastName" type="text" placeholder="Doe"
-                [value]="lastName()" (input)="lastName.set($any($event.target).value)"
+                [value]="lastName()" (input)="lastName.set($any($event.target).value)" (blur)="markTouched('lastName')"
                 required autocomplete="family-name"
-                [class]="'field' + (errors()['lastName'] ? ' error' : '')" />
-              @if (errors()['lastName']) {
-                <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ errors()['lastName'] }}</p>
+                [class]="'field' + (showError('lastName') ? ' error' : '')" />
+              @if (showError('lastName')) {
+                <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ fieldErrors()['lastName'] }}</p>
               }
             </div>
           </div>
@@ -105,11 +105,11 @@
               Work email <span style="color:var(--danger);">*</span>
             </label>
             <input name="email" type="email" placeholder="jane@company.com"
-              [value]="email()" (input)="email.set($any($event.target).value)" (blur)="handleEmailBlur()"
+              [value]="email()" (input)="email.set($any($event.target).value)" (blur)="markTouched('email')"
               required autocomplete="email"
-              [class]="'field' + (errors()['email'] ? ' error' : '')" />
-            @if (emailTouched() && errors()['email']) {
-              <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ errors()['email'] }}</p>
+              [class]="'field' + (showError('email') ? ' error' : '')" />
+            @if (showError('email')) {
+              <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ fieldErrors()['email'] }}</p>
             }
           </div>
 
@@ -121,9 +121,9 @@
               <div style="position:relative;">
                 <input name="password" [type]="showPassword() ? 'text' : 'password'" placeholder="Password"
                   [value]="password()" (input)="password.set($any($event.target).value)"
-                  (focus)="passwordFocused.set(true)" (blur)="passwordFocused.set(false)"
+                  (focus)="passwordFocused.set(true)" (blur)="passwordFocused.set(false); markTouched('password')"
                   required autocomplete="new-password"
-                  [class]="'field' + (errors()['password'] ? ' error' : '')" style="padding-right:44px;" />
+                  [class]="'field' + (showError('password') ? ' error' : '')" style="padding-right:44px;" />
                 <button type="button" (click)="showPassword.set(!showPassword())" tabindex="-1"
                   style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--fg-3);padding:0;display:flex;">
                   @if (showPassword()) {
@@ -141,6 +141,9 @@
                   <app-password-rule [met]="passwordRules().special"   label="Special character" />
                 </div>
               }
+              @if (showError('password') && !password()) {
+                <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ fieldErrors()['password'] }}</p>
+              }
             </div>
 
             <div>
@@ -148,16 +151,16 @@
                 Confirm password <span style="color:var(--danger);">*</span>
               </label>
               <input name="confirmPassword" [type]="showPassword() ? 'text' : 'password'" placeholder="Confirm password"
-                [value]="confirmPassword()" (input)="confirmPassword.set($any($event.target).value)"
+                [value]="confirmPassword()" (input)="confirmPassword.set($any($event.target).value)" (blur)="markTouched('confirmPassword')"
                 required autocomplete="new-password"
-                [class]="'field' + (errors()['confirmPassword'] ? ' error' : '')" />
-              @if (errors()['confirmPassword']) {
-                <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ errors()['confirmPassword'] }}</p>
+                [class]="'field' + (showError('confirmPassword') ? ' error' : '')" />
+              @if (showError('confirmPassword')) {
+                <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ fieldErrors()['confirmPassword'] }}</p>
               }
             </div>
 
           <button type="submit" class="btn-primary"
-            [disabled]="!isFormReady() || loading()"
+            [disabled]="loading()"
             style="width:100%;padding:11px 22px;margin-top:4px;">
             {{ loading() ? 'Creating workspace…' : 'Create workspace' }}
           </button>

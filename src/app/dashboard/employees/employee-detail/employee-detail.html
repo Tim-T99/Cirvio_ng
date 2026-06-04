@@ -121,6 +121,8 @@
                 @for (row of [
                   {label:'Job title',       value: emp.jobTitle},
                   {label:'Department',      value: emp.department?.name},
+                  {label:'Reports to',      value: emp.manager ? (emp.manager.firstName + ' ' + emp.manager.lastName) : null},
+                  {label:'Direct reports',  value: emp._count.reports ? (emp._count.reports + '') : null},
                   {label:'Type',            value: emp.employmentType.replace('_',' ')},
                   {label:'Employee no.',    value: emp.employeeNo},
                   {label:'Start date',      value: emp.startDate ? (emp.startDate | date:'d MMM y') : null},
@@ -178,6 +180,17 @@
                   <option value="">— None —</option>
                   @for (d of depts(); track d.id) { <option [value]="d.id">{{ d.name }}</option> }
                 </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Reports to (manager)</label>
+                <select class="field" [value]="editForm()['managerId']" (change)="setEdit('managerId',$any($event.target).value)" style="font-size:13px;">
+                  <option value="">— None —</option>
+                  @for (m of managerChoices(); track m.id) { <option [value]="m.id">{{ m.firstName }} {{ m.lastName }}@if (m.jobTitle) { · {{ m.jobTitle }}}</option> }
+                </select>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Job level</label>
+                <input type="number" min="1" max="20" class="field" [value]="editForm()['jobLevel']" (input)="setEdit('jobLevel',$any($event.target).valueAsNumber||'')" style="font-size:13px;" />
               </div>
               <div>
                 <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Work email</label>
