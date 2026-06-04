@@ -85,8 +85,7 @@ function button(href: string, label: string): string {
 }
 
 /** Invitation to join a tenant workspace. */
-export async function sendInviteEmail(opts: {
-  to: string
+export async function sendInviteEmail(opts: {  to: string
   inviteUrl: string
   orgName: string
   role: string
@@ -107,4 +106,26 @@ export async function sendInviteEmail(opts: {
      </p>`,
   )
   return sendEmail({ to: opts.to, subject: `You're invited to ${opts.orgName} on Cirvio`, html })
+}
+
+/** Password reset link. */
+export async function sendPasswordResetEmail(opts: {
+  to: string
+  resetUrl: string
+}): Promise<boolean> {
+  const html = layout(
+    'Reset your password',
+    `<p style="font-size:14px;color:#44403c;line-height:1.6;margin:0 0 20px;">
+       We received a request to reset your Cirvio password. Click below to choose
+       a new one. This link expires in 1 hour.
+     </p>
+     <p style="margin:0 0 22px;">${button(opts.resetUrl, 'Reset password')}</p>
+     <p style="font-size:12px;color:#a8a29e;line-height:1.5;margin:0;">
+       If you didn't request this, you can safely ignore this email — your
+       password won't change.<br><br>
+       Or paste this link into your browser:<br>
+       <span style="color:#78716c;word-break:break-all;">${opts.resetUrl}</span>
+     </p>`,
+  )
+  return sendEmail({ to: opts.to, subject: 'Reset your Cirvio password', html })
 }
