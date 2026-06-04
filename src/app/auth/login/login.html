@@ -51,8 +51,12 @@
               Email <span style="color:var(--danger);">*</span>
             </label>
             <input name="email" type="email" placeholder="you@company.com"
-              [value]="email()" (input)="email.set($any($event.target).value)"
-              required autocomplete="email" class="field" />
+              [value]="email()" (input)="email.set($any($event.target).value)" (blur)="markTouched('email')"
+              required autocomplete="email"
+              [class]="'field' + (showError('email') ? ' error' : '')" />
+            @if (showError('email')) {
+              <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ fieldErrors()['email'] }}</p>
+            }
           </div>
 
           <div>
@@ -62,8 +66,9 @@
             </div>
             <div style="position:relative;">
               <input name="password" [type]="showPassword() ? 'text' : 'password'" placeholder="Password"
-                [value]="password()" (input)="password.set($any($event.target).value)"
-                required autocomplete="current-password" class="field" style="padding-right:44px;" />
+                [value]="password()" (input)="password.set($any($event.target).value)" (blur)="markTouched('password')"
+                required autocomplete="current-password"
+                [class]="'field' + (showError('password') ? ' error' : '')" style="padding-right:44px;" />
               <button type="button" (click)="showPassword.set(!showPassword())" tabindex="-1"
                 style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--fg-3);padding:0;display:flex;">
                 @if (showPassword()) {
@@ -73,9 +78,12 @@
                 }
               </button>
             </div>
+            @if (showError('password')) {
+              <p style="font-size:12px;color:var(--danger);margin-top:4px;">{{ fieldErrors()['password'] }}</p>
+            }
           </div>
 
-          <button type="submit" class="btn-primary" [disabled]="!isFormReady || loading()" style="width:100%;padding:11px 22px;margin-top:4px;">
+          <button type="submit" class="btn-primary" [disabled]="loading()" style="width:100%;padding:11px 22px;margin-top:4px;">
             {{ loading() ? 'Logging in…' : 'Log in' }}
           </button>
         </form>

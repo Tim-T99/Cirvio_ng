@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -24,8 +24,30 @@ export class LoginComponent implements OnInit {
   loading          = signal(false);
   sessionExpiredMsg = signal('');
 
+  // Validation state
+  submitted = signal(false);
+  touched   = signal<Record<string, boolean>>({});
+
   private readonly EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
-  get isFormReady() { return this.EMAIL_RE.test(this.email().trim()) && this.password().length > 0; }
+
+  /** Per-field errors derived from the current values (re-evaluates as the user types). */
+  readonly fieldErrors = computed<Record<string, string>>(() => {
+    const errors: Record<string, string> = {};
+    const email = this.email().trim();
+    if (!email)                       errors['email'] = 'Email is required';
+    else if (!this.EMAIL_RE.test(email)) errors['email'] = 'Enter a valid email address';
+    if (!this.password())             errors['password'] = 'Password is required';
+    return errors;
+  });
+
+  /** Show a field's error only once it's been blurred or the form was submitted. */
+  showError(field: string): boolean {
+    return (this.submitted() || !!this.touched()[field]) && !!this.fieldErrors()[field];
+  }
+
+  markTouched(field: string): void {
+    this.touched.update(t => ({ ...t, [field]: true }));
+  }
 
   ngOnInit() {
     const reason = this.route.snapshot.queryParamMap.get('reason');
@@ -73,7 +95,8 @@ export class LoginComponent implements OnInit {
 
   handleSubmit(e: Event) {
     e.preventDefault();
-    if (!this.isFormReady || this.loading()) return;
+    this.submitted.set(true);
+    if (Object.keys(this.fieldErrors()).length > 0 || this.loading()) return;
     this.error.set('');
     this.loading.set(true);
     this.auth.login(this.email().trim(), this.password()).subscribe({
