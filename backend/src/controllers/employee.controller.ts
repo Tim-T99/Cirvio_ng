@@ -25,6 +25,10 @@ export const create = async (req: Request, res: Response): Promise<void> => {
       res.status(404).json({ error: message })
       return
     }
+    if (message.includes('cycle') || message.includes('report to themselves')) {
+      res.status(400).json({ error: message })
+      return
+    }
     res.status(500).json({ error: 'Internal server error' })
   }
 }
@@ -98,6 +102,10 @@ export const update = async (req: Request, res: Response): Promise<void> => {
     }
     if (message.includes('already exists')) {
       res.status(409).json({ error: message })
+      return
+    }
+    if (message.includes('cycle') || message.includes('report to themselves')) {
+      res.status(400).json({ error: message })
       return
     }
     res.status(500).json({ error: 'Internal server error' })

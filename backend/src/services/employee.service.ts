@@ -49,6 +49,8 @@ const employeeListSelect = {
   workEmail: true,
   phone: true,
   employeeNo: true,
+  managerId: true,
+  jobLevel: true,
   createdAt: true,
   department: {
     select: { id: true, name: true },
@@ -76,12 +78,22 @@ const employeeFullSelect = {
 
   updatedAt: true,
 
+  // Org hierarchy
+  manager: {
+    select: { id: true, firstName: true, lastName: true, jobTitle: true },
+  },
+  reports: {
+    select: { id: true, firstName: true, lastName: true, jobTitle: true, status: true },
+    orderBy: { firstName: 'asc' as const },
+  },
+
   // Related counts
   _count: {
     select: {
       visaRecords: true,
       documents: true,
       wpsRecords: true,
+      reports: true,
     },
   },
 
@@ -96,6 +108,49 @@ const employeeFullSelect = {
   },
 } as const
 
+
+// ─────────────────────────────────────────────
+// ORG HIERARCHY VALIDATION
+// [S1] Manager must belong to the same tenant.
+// Prevents reporting cycles (A→B→A) which would
+// break the org-tree layout and any AI traversal.
+// `subjectId` is the employee being assigned a
+// manager (omit on create — a new row has no reports
+// yet, so it can't form a cycle).
+// ─────────────────────────────────────────────
+const assertValidManager = async (
+  tenantId: string,
+  managerId: string,
+  subjectId?: string
+): Promise<void> => {
+  if (subjectId && managerId === subjectId) {
+    throw new Error('An employee cannot report to themselves')
+  }
+
+  const manager = await prisma.employee.findFirst({
+    where: { id: managerId, tenantId },
+    select: { id: true, managerId: true },
+  })
+  if (!manager) throw new Error('Manager not found')
+
+  // Walk up the manager's chain; if we reach the subject, it's a cycle.
+  if (subjectId) {
+    let cursor: string | null = manager.managerId
+    const seen = new Set<string>([manager.id])
+    while (cursor) {
+      if (cursor === subjectId) {
+        throw new Error('That manager would create a reporting cycle')
+      }
+      if (seen.has(cursor)) break // pre-existing cycle guard
+      seen.add(cursor)
+      const next: { managerId: string | null } | null = await prisma.employee.findUnique({
+        where: { id: cursor },
+        select: { managerId: true },
+      })
+      cursor = next?.managerId ?? null
+    }
+  }
+}
 
 // ─────────────────────────────────────────────
 // CREATE
@@ -123,6 +178,8 @@ export const createEmployee = async (
     employeeNo?: string
     jobTitle: string
     departmentId?: string
+    managerId?: string | null
+    jobLevel?: number | null
     employmentType?: EmploymentType
     startDate: Date
     eidNumber?: string
@@ -147,6 +204,10 @@ export const createEmployee = async (
     if (!dept) throw new Error('Department not found')
   }
 
+  // [S1] Verify manager belongs to this tenant if provided
+  const managerId = data.managerId || null
+  if (managerId) await assertValidManager(tenantId, managerId)
+
   // Check EID uniqueness within tenant if provided
   if (data.eidNumber) {
     const existing = await prisma.employee.findFirst({
@@ -169,6 +230,7 @@ export const createEmployee = async (
     data: {
       tenantId,
       ...data,
+      managerId,
     },
     select: employeeFullSelect,
   })
@@ -344,6 +406,8 @@ export const updateEmployee = async (
     employeeNo: string
     jobTitle: string
     departmentId: string
+    managerId: string | null
+    jobLevel: number | null
     employmentType: EmploymentType
     startDate: Date
     eidNumber: string
@@ -396,6 +460,12 @@ export const updateEmployee = async (
       select: { id: true },
     })
     if (!dept) throw new Error('Department not found')
+  }
+
+  // [S1] Verify manager (cycle-safe) if the field is being set
+  if ('managerId' in data) {
+    data.managerId = data.managerId || null  // normalise '' → null
+    if (data.managerId) await assertValidManager(tenantId, data.managerId, employeeId)
   }
 
   const updated = await prisma.employee.update({

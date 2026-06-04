@@ -27,6 +27,7 @@ interface Employee {
   phone?: string;
   nationality?: string;
   employmentType?: string;
+  managerId?: string | null;
   department?: { id: string; name: string };
 }
 
@@ -34,13 +35,9 @@ interface Employee {
 
 const NODE_W      = 180;
 const NODE_H      = 72;
-const DEPT_W      = 164;
-const DEPT_H      = 60;
 const EMP_W       = 160;
 const EMP_H       = 56;
 const H_GAP       = 24;   // horizontal gap between sibling nodes
-const DEPT_TOP    = 140;  // y of department row
-const EMP_TOP_OFF = 100;  // offset below department row to employee row
 const CANVAS_PAD  = 60;
 
 export interface OrgNode {
@@ -113,6 +110,25 @@ export class OrgChartComponent implements AfterViewInit, OnDestroy {
     return this.employees().filter(e => e.department?.id === n.id);
   });
 
+  // Reporting line of the selected employee
+  readonly selectedManager = computed(() => {
+    const e = this.selectedEmployee();
+    if (!e?.managerId) return null;
+    return this.employees().find(x => x.id === e.managerId) ?? null;
+  });
+
+  readonly directReports = computed(() => {
+    const e = this.selectedEmployee();
+    if (!e) return [];
+    return this.employees().filter(x => x.managerId === e.id);
+  });
+
+  // Count of employees with no manager (unassigned to the reporting tree)
+  readonly unassignedCount = computed(() => {
+    const ids = new Set(this.employees().map(e => e.id));
+    return this.employees().filter(e => !e.managerId || !ids.has(e.managerId)).length;
+  });
+
   constructor() {
     // Fetch tenant name for company node
     this.http.get<{ name: string; status: string }>(`${environment.apiUrl}/api/tenant/profile`).subscribe({
@@ -141,86 +157,104 @@ export class OrgChartComponent implements AfterViewInit, OnDestroy {
   // ── Layout engine ───────────────────────────────────────────────────────────
 
   buildLayout() {
-    const depts = this.departments();
     const emps  = this.employees();
-    const nodes: OrgNode[]  = [];
-    const lines: SvgLine[]  = [];
+    const nodes: OrgNode[] = [];
+    const lines: SvgLine[] = [];
 
-    // For each department, calculate how wide its employee row is
-    const deptGroups = depts.map(d => {
-      const members = emps.filter(e => e.department?.id === d.id);
-      const rowW = members.length > 0
-        ? members.length * EMP_W + (members.length - 1) * H_GAP
-        : DEPT_W;
-      return { dept: d, members, rowW };
-    });
+    // Build the reporting tree from managerId. Employees with no (in-set)
+    // manager become roots directly under the company node.
+    const byId = new Map(emps.map(e => [e.id, e]));
+    const childrenOf = new Map<string, Employee[]>();
+    const roots: Employee[] = [];
+    for (const e of emps) {
+      const mid = e.managerId && byId.has(e.managerId) ? e.managerId : null;
+      if (mid) {
+        const arr = childrenOf.get(mid) ?? [];
+        arr.push(e);
+        childrenOf.set(mid, arr);
+      } else {
+        roots.push(e);
+      }
+    }
+    const byName = (a: Employee, b: Employee) =>
+      (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName);
+    roots.sort(byName);
+    childrenOf.forEach(arr => arr.sort(byName));
 
-    // Total width needed for all department groups
-    const totalW = deptGroups.reduce((sum, g) => sum + Math.max(g.rowW, DEPT_W), 0)
-      + (deptGroups.length - 1) * H_GAP;
+    const LEVEL = EMP_H + 70; // vertical distance between tiers
 
-    const canvasW = Math.max(800, totalW + CANVAS_PAD * 2);
+    // Subtree width (memoised) — leaf is one node wide, parent spans its kids.
+    const widthCache = new Map<string, number>();
+    const subW = (e: Employee): number => {
+      const cached = widthCache.get(e.id);
+      if (cached !== undefined) return cached;
+      const kids = childrenOf.get(e.id) ?? [];
+      const w = kids.length === 0
+        ? EMP_W
+        : Math.max(EMP_W, kids.reduce((s, k) => s + subW(k), 0) + (kids.length - 1) * H_GAP);
+      widthCache.set(e.id, w);
+      return w;
+    };
 
-    // Company node centred at top
+    const rootsW = roots.length
+      ? roots.reduce((s, r) => s + subW(r), 0) + (roots.length - 1) * H_GAP
+      : NODE_W;
+    const canvasW = Math.max(800, Math.max(NODE_W, rootsW) + CANVAS_PAD * 2);
+
+    // Company root node, centred at top.
     const compX = canvasW / 2 - NODE_W / 2;
     const compY = CANVAS_PAD;
     nodes.push({
-      id: 'company',
-      kind: 'company',
-      label: this.companyName() || 'Company',
-      sublabel: this.companyStatus(),
-      x: compX, y: compY, w: NODE_W, h: NODE_H,
-      raw: null,
+      id: 'company', kind: 'company',
+      label: this.companyName() || 'Company', sublabel: this.companyStatus(),
+      x: compX, y: compY, w: NODE_W, h: NODE_H, raw: null,
     });
 
-    // Department nodes
-    let cursor = CANVAS_PAD;
-    for (const { dept, members, rowW } of deptGroups) {
-      const groupW = Math.max(rowW, DEPT_W);
-      const deptX  = cursor + groupW / 2 - DEPT_W / 2;
-      const deptY  = DEPT_TOP;
+    // Centre/edge registry so we can draw elbow connectors afterwards.
+    const centers = new Map<string, { cx: number; topY: number; botY: number }>();
+    centers.set('company', { cx: compX + NODE_W / 2, topY: compY, botY: compY + NODE_H });
 
+    const place = (e: Employee, leftX: number, depth: number): number => {
+      const kids = childrenOf.get(e.id) ?? [];
+      let cx: number;
+      if (kids.length) {
+        let cl = leftX;
+        const childCenters: number[] = [];
+        for (const k of kids) {
+          childCenters.push(place(k, cl, depth + 1));
+          cl += subW(k) + H_GAP;
+        }
+        cx = (childCenters[0] + childCenters[childCenters.length - 1]) / 2;
+      } else {
+        cx = leftX + EMP_W / 2;
+      }
+      const y = compY + NODE_H + LEVEL + depth * LEVEL;
       nodes.push({
-        id: dept.id,
-        kind: 'department',
-        label: dept.name,
-        sublabel: `${dept._count.employees} employee${dept._count.employees === 1 ? '' : 's'}`,
-        x: deptX, y: deptY, w: DEPT_W, h: DEPT_H,
-        raw: dept,
+        id: e.id, kind: 'employee',
+        label: `${e.firstName} ${e.lastName}`, sublabel: e.jobTitle || '—',
+        x: cx - EMP_W / 2, y, w: EMP_W, h: EMP_H, raw: e, status: e.status,
       });
+      centers.set(e.id, { cx, topY: y, botY: y + EMP_H });
+      return cx;
+    };
 
-      // Line: company → department (elbow)
-      const compCenterX = compX + NODE_W / 2;
-      const deptCenterX = deptX + DEPT_W / 2;
-      const midY = (compY + NODE_H + deptY) / 2;
-      lines.push({ x1: compCenterX, y1: compY + NODE_H, x2: compCenterX, y2: midY });
-      lines.push({ x1: compCenterX, y1: midY, x2: deptCenterX, y2: midY });
-      lines.push({ x1: deptCenterX, y1: midY, x2: deptCenterX, y2: deptY });
+    let cl = (canvasW - rootsW) / 2;
+    for (const r of roots) {
+      place(r, cl, 0);
+      cl += subW(r) + H_GAP;
+    }
 
-      // Employee nodes
-      const empY = deptY + DEPT_H + EMP_TOP_OFF;
-      const empRowStartX = cursor + groupW / 2 - rowW / 2;
-      members.forEach((emp, i) => {
-        const empX = empRowStartX + i * (EMP_W + H_GAP);
-        nodes.push({
-          id: emp.id,
-          kind: 'employee',
-          label: `${emp.firstName} ${emp.lastName}`,
-          sublabel: emp.jobTitle || '—',
-          x: empX, y: empY, w: EMP_W, h: EMP_H,
-          raw: emp,
-          status: emp.status,
-        });
-        // Line: department → employee
-        const empCenterX = empX + EMP_W / 2;
-        const deptBottom = deptY + DEPT_H;
-        const empMidY = (deptBottom + empY) / 2;
-        lines.push({ x1: deptCenterX, y1: deptBottom, x2: deptCenterX, y2: empMidY });
-        lines.push({ x1: deptCenterX, y1: empMidY, x2: empCenterX, y2: empMidY });
-        lines.push({ x1: empCenterX, y1: empMidY, x2: empCenterX, y2: empY });
-      });
-
-      cursor += groupW + H_GAP;
+    // Elbow connectors: each node → its parent (manager, or company for roots).
+    for (const e of emps) {
+      const child = centers.get(e.id);
+      if (!child) continue;
+      const parentId = e.managerId && byId.has(e.managerId) ? e.managerId : 'company';
+      const parent = centers.get(parentId);
+      if (!parent) continue;
+      const midY = (parent.botY + child.topY) / 2;
+      lines.push({ x1: parent.cx, y1: parent.botY, x2: parent.cx, y2: midY });
+      lines.push({ x1: parent.cx, y1: midY, x2: child.cx, y2: midY });
+      lines.push({ x1: child.cx, y1: midY, x2: child.cx, y2: child.topY });
     }
 
     const maxY = nodes.reduce((m, n) => Math.max(m, n.y + n.h), 0) + CANVAS_PAD;
@@ -243,6 +277,11 @@ export class OrgChartComponent implements AfterViewInit, OnDestroy {
 
   selectNode(node: OrgNode) {
     this.selectedNode.set(this.selectedNode()?.id === node.id ? null : node);
+  }
+
+  selectById(id: string) {
+    const node = this.nodes().find(n => n.id === id);
+    if (node) this.selectedNode.set(node);
   }
 
   closePanel() { this.selectedNode.set(null); }
