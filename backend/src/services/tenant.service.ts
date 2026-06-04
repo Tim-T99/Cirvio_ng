@@ -316,7 +316,11 @@ export const createInvite = async (
 
   // Return plaintext once — caller sends this in the invite email link
   // It is never retrievable again after this point
-  return { plainToken, email: data.email, role: data.role }
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { name: true },
+  })
+  return { plainToken, email: data.email, role: data.role, orgName: tenant?.name ?? 'your organisation' }
 }
 
 export const validateInvite = async (plainToken: string) => {

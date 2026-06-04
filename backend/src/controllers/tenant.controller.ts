@@ -5,6 +5,9 @@
 
 import { Request, Response } from 'express'
 import * as tenantService from '../services/tenant.service'
+import { sendInviteEmail, isEmailConfigured, frontendUrl } from '../lib/email'
+
+const INVITE_ROLES = ['TENANT_ADMIN', 'HR_MANAGER', 'VIEWER']
 
 
 export const register = async (req: Request, res: Response): Promise<void> => {
@@ -68,14 +71,33 @@ export const createInvite = async (req: Request, res: Response): Promise<void> =
       res.status(400).json({ error: 'Email and role are required' })
       return
     }
+    if (!INVITE_ROLES.includes(role)) {
+      res.status(400).json({ error: 'Invalid role' })
+      return
+    }
+
     const result = await tenantService.createInvite(req.user!.tenantId, { email, role })
+
+    // Build the accept link and try to deliver it by email.
+    const inviteUrl = `${frontendUrl()}/accept-invite?token=${encodeURIComponent(result.plainToken)}`
+    const emailed = await sendInviteEmail({
+      to: result.email,
+      inviteUrl,
+      orgName: result.orgName,
+      role: result.role,
+    })
+
     res.status(201).json({
-      message: 'Invite created. Send the token to the user via email.',
+      message: emailed
+        ? `Invite sent to ${result.email}.`
+        : 'Invite created. Email is not configured — share the link below with the user.',
       email: result.email,
       role: result.role,
-      // plainToken returned here — controller sends via email in production
-      // never log or store this value
-      inviteToken: result.plainToken,
+      emailed,
+      emailConfigured: isEmailConfigured(),
+      // Accept link — always returned so the admin can copy/share it
+      // even when email delivery isn't configured.
+      inviteUrl,
     })
   } catch (err) {
     const message = (err as Error).message

@@ -170,6 +170,83 @@
       </div>
     }
 
+    <!-- Team / invites (TENANT_ADMIN only) -->
+    @if (isTenantAdmin) {
+      <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;">
+        <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0 0 6px;">Team</h2>
+        <p style="font-size:13px;color:var(--fg-3);margin:0 0 20px;">Invite colleagues to your workspace. They'll set their own password from the invite link.</p>
+
+        @if (inviteError()) {
+          <div style="background:var(--danger-bg);border:1px solid rgba(184,69,69,0.20);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--danger);margin-bottom:16px;">{{ inviteError() }}</div>
+        }
+
+        <!-- Invite form -->
+        <div class="dash-settings-2col" style="display:grid;grid-template-columns:2fr 1fr;gap:12px;align-items:end;">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Email</label>
+            <input type="email" class="field" placeholder="colleague@company.com"
+              [value]="inviteEmail()" (input)="inviteEmail.set($any($event.target).value)" autocomplete="off" />
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Role</label>
+            <select class="field" [value]="inviteRole()" (change)="inviteRole.set($any($event.target).value)">
+              @for (r of INVITE_ROLES; track r.value) {
+                <option [value]="r.value">{{ r.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <button class="btn-primary" (click)="sendInvite()" [disabled]="invitingBusy()" style="padding:9px 22px;">
+            {{ invitingBusy() ? 'Sending…' : 'Send invite' }}
+          </button>
+        </div>
+
+        <!-- Last invite result -->
+        @if (lastInvite(); as li) {
+          <div style="margin-top:16px;background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius-sm);padding:14px 16px;">
+            <p style="font-size:13px;color:var(--success);margin:0 0 8px;font-weight:500;">
+              @if (li.emailed) { Invite emailed to {{ li.email }}. }
+              @else { Invite created for {{ li.email }} — email isn't configured, so share this link: }
+            </p>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <input type="text" readonly [value]="li.inviteUrl"
+                style="flex:1;min-width:220px;font-size:12px;font-family:monospace;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--fg-2);" />
+              <button (click)="copyInviteLink()"
+                style="padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elev-1);font-size:13px;color:var(--fg-1);cursor:pointer;font-family:inherit;white-space:nowrap;">
+                {{ linkCopied() ? 'Copied ✓' : 'Copy link' }}
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Pending invites -->
+        <div style="margin-top:24px;">
+          <h3 style="font-size:13px;font-weight:600;color:var(--fg-2);margin:0 0 10px;">Pending invites</h3>
+          @if (invites().length === 0) {
+            <p style="font-size:13px;color:var(--fg-3);margin:0;">No pending invites.</p>
+          } @else {
+            <div style="border:1px solid var(--border-soft);border-radius:var(--radius-sm);overflow:hidden;">
+              @for (inv of invites(); track inv.id) {
+                <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border-soft);">
+                  <div style="flex:1;min-width:0;">
+                    <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ inv.email }}
+                      <span style="font-size:11px;font-weight:600;color:var(--fg-3);text-transform:uppercase;margin-left:6px;">{{ roleLabel(inv.role) }}</span>
+                    </p>
+                    <p style="font-size:12px;color:var(--fg-3);margin:0;">Expires {{ inv.expiresAt | date:'d MMM y, h:mm a' }}</p>
+                  </div>
+                  <button (click)="revokeInvite(inv.id)" [disabled]="revokingId() === inv.id"
+                    style="padding:5px 12px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;color:var(--danger);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">
+                    {{ revokingId() === inv.id ? '…' : 'Revoke' }}
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
     <!-- Passkeys section -->
     <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;">
       <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0 0 4px;">Passkeys</h2>
