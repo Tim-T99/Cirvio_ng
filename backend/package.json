@@ -2,6 +2,9 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "server.ts",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "server": "nodemon --exec tsx server.ts",
     "build": "prisma generate && tsc",

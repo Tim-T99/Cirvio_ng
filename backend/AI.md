@@ -1,22 +1,41 @@
 # AI assistant (chat)
 
 The dashboard chat (`/dashboard/chat`) is backed by `POST /api/chat`, which
-runs Claude with **read-only, tenant-scoped tools** so the assistant can answer
+runs an LLM with **read-only, tenant-scoped tools** so the assistant can answer
 questions grounded in the organisation's live data.
 
 ## Environment variables
 
-| Variable            | Required | Description                                                       |
-| ------------------- | -------- | ----------------------------------------------------------------- |
-| `ANTHROPIC_API_KEY` | for AI   | Anthropic API key. If unset, the endpoint still works but replies with a "not configured" message (no crash). |
-| `CHAT_MODEL`        | no       | Model id. Defaults to `claude-sonnet-4-6`. Use `claude-opus-4-8` for heavier analysis. |
+The assistant talks to any **OpenAI-compatible** chat-completions endpoint, so
+you can use a free provider (default: **Groq**) — no Anthropic key required.
+
+| Variable       | Required | Description                                                                 |
+| -------------- | -------- | --------------------------------------------------------------------------- |
+| `GROQ_API_KEY` | for AI   | API key. If unset, the endpoint still works but replies with a "not configured" message (no crash). |
+| `CHAT_MODEL`   | no       | Model id. Defaults to `llama-3.3-70b-versatile` (Groq).                      |
+| `LLM_BASE_URL` | no       | OpenAI-compatible base URL. Defaults to `https://api.groq.com/openai/v1`.    |
+| `LLM_API_KEY`  | no       | Alternative to `GROQ_API_KEY` (used if `GROQ_API_KEY` is unset).             |
+
+### Where to set it
+Railway → your backend service → **Variables** tab → add `GROQ_API_KEY`, then
+redeploy. Get a free key (no credit card) at <https://console.groq.com>.
+
+### Switching providers (all free-tier, no code change)
+Just point the env vars at another OpenAI-compatible endpoint:
+
+| Provider   | `LLM_BASE_URL`                               | key var        | example `CHAT_MODEL`            |
+| ---------- | -------------------------------------------- | -------------- | ------------------------------- |
+| Groq       | `https://api.groq.com/openai/v1` (default)   | `GROQ_API_KEY` | `llama-3.3-70b-versatile`       |
+| OpenRouter | `https://openrouter.ai/api/v1`               | `LLM_API_KEY`  | `meta-llama/llama-3.3-70b-instruct` |
+| Together   | `https://api.together.xyz/v1`                | `LLM_API_KEY`  | `meta-llama/Llama-3.3-70B-Instruct-Turbo` |
+| Ollama     | `http://localhost:11434/v1`                  | `LLM_API_KEY` (any) | `llama3.1`                 |
 
 ## How it works
 
 1. `POST /api/chat { message, conversationId? }` (auth + active-tenant required,
    rate-limited by `chatLimiter`).
 2. The orchestrator (`src/services/chat/chat.service.ts`) persists the message,
-   builds a tenant/role-aware system prompt, and runs Claude's tool-use loop.
+   builds a tenant/role-aware system prompt, and runs the tool-use loop.
 3. Tools (`src/services/chat/tools.ts`) are **read-only** and route through the
    existing tenant-scoped services. `tenantId`/`role` come from the session —
    never from the model — so the assistant can't see another tenant's data or

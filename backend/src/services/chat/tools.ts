@@ -8,7 +8,7 @@
 // model can never see another tenant's data or widen its own scope.
 // ─────────────────────────────────────────────
 
-import { ToolDef } from '../../lib/anthropic'
+import { LlmTool } from '../../lib/llm'
 import * as employeeService from '../employee.service'
 import * as visaService from '../visa.service'
 import * as wpsService from '../wps.service'
@@ -24,7 +24,7 @@ export interface ChatContext {
 type Executor = (ctx: ChatContext, args: Record<string, any>) => Promise<unknown>
 
 interface RegisteredTool {
-  def: ToolDef
+  def: LlmTool
   run: Executor
 }
 
@@ -34,7 +34,7 @@ const tools: RegisteredTool[] = [
       name: 'get_org_overview',
       description:
         'Get a structured snapshot of the whole organisation: headcount and status breakdown, reporting hierarchy (depth, managers, spans of control, wide spans, single-report managers, employees with no manager), department headcount + monthly payroll cost, plan limits and subscription status. Use this first when asked anything about org structure, size, efficiency, or cost.',
-      input_schema: { type: 'object', properties: {} },
+      parameters: { type: 'object', properties: {} },
     },
     run: (ctx) => getOrgOverview(ctx.tenantId),
   },
@@ -43,7 +43,7 @@ const tools: RegisteredTool[] = [
       name: 'list_employees',
       description:
         'List employees (paginated, max 50 per page). Use to find specific people or count by criteria. Returns id, name, job title, status, department and managerId. Use the returned id with get_employee for full detail.',
-      input_schema: {
+      parameters: {
         type: 'object',
         properties: {
           search: { type: 'string', description: 'Match name, job title, employee no. or work email' },
@@ -81,7 +81,7 @@ const tools: RegisteredTool[] = [
       name: 'get_employee',
       description:
         'Get full detail for one employee by id, including manager, direct reports, and a summary of their visa, WPS and document records. Get the id from list_employees first.',
-      input_schema: {
+      parameters: {
         type: 'object',
         properties: { employeeId: { type: 'string', description: 'Employee UUID' } },
         required: ['employeeId'],
@@ -112,7 +112,7 @@ const tools: RegisteredTool[] = [
       name: 'get_compliance_summary',
       description:
         'Get the tenant compliance posture: visa status counts and pending expiry alerts, WPS submission/lateness/violation stats for the current year, and documents expiring within 90 days. Use for questions about compliance risk, expiring visas, WPS, or deadlines.',
-      input_schema: { type: 'object', properties: {} },
+      parameters: { type: 'object', properties: {} },
     },
     run: async (ctx) => {
       const year = new Date().getFullYear()
@@ -135,7 +135,7 @@ const tools: RegisteredTool[] = [
   },
 ]
 
-export const toolDefs: ToolDef[] = tools.map(t => t.def)
+export const toolDefs: LlmTool[] = tools.map(t => t.def)
 
 const byName = new Map(tools.map(t => [t.def.name, t]))
 
