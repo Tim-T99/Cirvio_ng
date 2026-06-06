@@ -239,7 +239,8 @@ recommendations and writes them to `AiInsight`.
 
 ## Appendix: endpoints the frontend calls but backend lacks
 - ~~`POST /api/chat` — missing entirely~~ ✅ **RESOLVED (Step 2).** Implemented
-  with Claude + read-only tenant-scoped tools, conversation persistence
+  with an LLM (Groq by default, any OpenAI-compatible provider) + read-only
+  tenant-scoped tools, conversation persistence
   (`Conversation`/`ChatMessage`), tool-call audit (`AiToolAuditLog`), and
   `chatLimiter`. See `backend/AI.md`.
 

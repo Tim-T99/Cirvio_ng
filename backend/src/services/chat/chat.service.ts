@@ -7,8 +7,8 @@
 
 import { prisma } from '../../prisma/client'
 import {
-  createMessage, isAiConfigured, ClaudeMessage, ContentBlock, ToolUseBlock, TextBlock,
-} from '../../lib/anthropic'
+  createCompletion, isAiConfigured, LlmMessage,
+} from '../../lib/llm'
 import { ChatContext, toolDefs, runTool } from './tools'
 
 const MAX_TOOL_ITERATIONS = 6
@@ -88,7 +88,7 @@ export async function sendMessage(
     take: HISTORY_LIMIT,
     select: { role: true, content: true },
   })
-  const messages: ClaudeMessage[] = history.map(m => ({
+  const messages: LlmMessage[] = history.map(m => ({
     role: m.role === 'USER' ? 'user' : 'assistant',
     content: m.content,
   }))
@@ -97,30 +97,24 @@ export async function sendMessage(
   let finalText = ''
 
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
-    const res = await createMessage({ system, messages, tools: toolDefs })
+    const res = await createCompletion({ system, messages, tools: toolDefs })
 
-    const toolUses = res.content.filter((b): b is ToolUseBlock => b.type === 'tool_use')
-    const text = res.content
-      .filter((b): b is TextBlock => b.type === 'text')
-      .map(b => b.text)
-      .join('\n')
-      .trim()
-    if (text) finalText = text
+    if (res.text) finalText = res.text
 
-    if (res.stop_reason !== 'tool_use' || toolUses.length === 0) break
+    // No tool calls → final answer, stop the loop.
+    if (res.toolCalls.length === 0) break
 
-    // Echo the assistant's tool-use turn back into the transcript.
-    messages.push({ role: 'assistant', content: res.content })
+    // Echo the assistant's tool-call turn back into the transcript.
+    messages.push(res.message)
 
-    // Execute each requested tool and collect results.
-    const results: ContentBlock[] = []
-    for (const tu of toolUses) {
-      toolsUsed.push(tu.name)
+    // Execute each requested tool and append its result.
+    for (const tc of res.toolCalls) {
+      toolsUsed.push(tc.name)
       let ok = true
       let errMsg: string | undefined
       let output: unknown
       try {
-        output = await runTool(ctx, tu.name, (tu.input as Record<string, any>) ?? {})
+        output = await runTool(ctx, tc.name, tc.arguments ?? {})
       } catch (err) {
         ok = false
         errMsg = (err as Error).message
@@ -131,20 +125,18 @@ export async function sendMessage(
         data: {
           tenantId: ctx.tenantId,
           userId: ctx.userId,
-          tool: tu.name,
-          args: (tu.input as any) ?? undefined,
+          tool: tc.name,
+          args: (tc.arguments as any) ?? undefined,
           ok,
           error: errMsg,
         },
       })
-      results.push({
-        type: 'tool_result',
-        tool_use_id: tu.id,
+      messages.push({
+        role: 'tool',
+        tool_call_id: tc.id,
         content: JSON.stringify(output),
-        is_error: !ok,
       })
     }
-    messages.push({ role: 'user', content: results })
   }
 
   if (!finalText) finalText = 'Sorry, I could not produce a response. Please try rephrasing.'
