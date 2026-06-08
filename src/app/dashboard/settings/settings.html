@@ -170,6 +170,79 @@
       </div>
     }
 
+    <!-- Billing & plan (TENANT_ADMIN only) -->
+    @if (isTenantAdmin) {
+      <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;">
+        <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0 0 6px;">Billing & plan</h2>
+        <p style="font-size:13px;color:var(--fg-3);margin:0 0 20px;">Manage your subscription and plan.</p>
+
+        @if (billingNotice() === 'success') {
+          <div style="background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--success);margin-bottom:16px;">Subscription updated — thank you! It may take a few seconds to reflect.</div>
+        } @else if (billingNotice() === 'cancelled') {
+          <div style="background:var(--warning-bg);border:1px solid rgba(198,138,46,0.25);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--warning);margin-bottom:16px;">Checkout cancelled — no changes were made.</div>
+        }
+        @if (billingError()) {
+          <div style="background:var(--danger-bg);border:1px solid rgba(184,69,69,0.20);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--danger);margin-bottom:16px;">{{ billingError() }}</div>
+        }
+
+        @if (billing(); as b) {
+          @if (!b.billingEnabled) {
+            <div style="background:var(--bg-sunken);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;color:var(--fg-2);">Billing isn't configured on this deployment yet.</div>
+          } @else {
+            <!-- Current status -->
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:14px 16px;border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--bg);margin-bottom:18px;">
+              <div>
+                <p style="font-size:13px;color:var(--fg-3);margin:0 0 2px;">Current plan</p>
+                <p style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0;">
+                  {{ b.plan?.name ?? 'No plan' }}
+                  <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:var(--radius-pill);margin-left:6px;"
+                    [style.background]="b.status === 'ACTIVE' ? 'var(--success-bg)' : 'var(--warning-bg)'"
+                    [style.color]="b.status === 'ACTIVE' ? 'var(--success)' : 'var(--warning)'">{{ b.status }}</span>
+                </p>
+                @if (b.status === 'TRIAL' && !b.trialExpired && b.trialEndsAt) {
+                  <p style="font-size:12px;color:var(--fg-3);margin:4px 0 0;">Trial ends {{ b.trialEndsAt | date:'d MMM y' }}</p>
+                } @else if (b.trialExpired) {
+                  <p style="font-size:12px;color:var(--danger);margin:4px 0 0;">Trial expired — subscribe to restore full access.</p>
+                } @else if (b.subscriptionEndsAt && b.status === 'ACTIVE') {
+                  <p style="font-size:12px;color:var(--fg-3);margin:4px 0 0;">Renews {{ b.subscriptionEndsAt | date:'d MMM y' }}</p>
+                }
+                <p style="font-size:12px;color:var(--fg-3);margin:4px 0 0;">{{ b.usage.employees }}@if (b.usage.maxEmployees) { / {{ b.usage.maxEmployees }}} employees · {{ b.usage.users }}@if (b.usage.maxAdmins) { / {{ b.usage.maxAdmins }}} users</p>
+              </div>
+              @if (b.canManageBilling) {
+                <button (click)="manageBilling()" [disabled]="billingBusy() === 'portal'"
+                  style="padding:9px 18px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elev-1);font-size:13px;color:var(--fg-1);cursor:pointer;font-family:inherit;white-space:nowrap;">
+                  {{ billingBusy() === 'portal' ? 'Opening…' : 'Manage subscription' }}
+                </button>
+              }
+            </div>
+
+            <!-- Plans -->
+            @if (billingPlans().length) {
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+                @for (p of billingPlans(); track p.id) {
+                  <div style="border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:16px;background:var(--bg);display:flex;flex-direction:column;gap:6px;"
+                    [style.borderColor]="isCurrentPlan(p.id) ? 'var(--cirvio-sage)' : 'var(--border-soft)'">
+                    <p style="font-size:14px;font-weight:600;color:var(--fg-1);margin:0;">{{ p.name }}</p>
+                    <p style="font-size:16px;font-weight:700;color:var(--fg-1);margin:0;">{{ planPrice(p) }}</p>
+                    <p style="font-size:12px;color:var(--fg-3);margin:0 0 8px;">Up to {{ p.maxEmployees }} employees · {{ p.maxAdmins }} users</p>
+                    @if (isCurrentPlan(p.id)) {
+                      <span style="font-size:12px;font-weight:600;color:var(--cirvio-sage);text-align:center;padding:8px;">Current plan</span>
+                    } @else if (!p.stripePriceId) {
+                      <span style="font-size:12px;color:var(--fg-3);text-align:center;padding:8px;">Contact us</span>
+                    } @else {
+                      <button (click)="subscribe(p.id)" [disabled]="billingBusy() === p.id" class="btn-primary" style="padding:8px 14px;font-size:13px;">
+                        {{ billingBusy() === p.id ? 'Redirecting…' : (b.hasSubscription ? 'Switch to this plan' : 'Subscribe') }}
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          }
+        }
+      </div>
+    }
+
     <!-- Team / invites (TENANT_ADMIN only) -->
     @if (isTenantAdmin) {
       <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;">

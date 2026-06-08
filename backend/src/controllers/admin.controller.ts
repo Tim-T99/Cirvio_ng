@@ -263,7 +263,7 @@ export const listPlans = async (_req: Request, res: Response): Promise<void> => 
 
 export const createPlan = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, maxEmployees, maxAdmins, priceAed, billingCycleMonths } = req.body
+    const { name, maxEmployees, maxAdmins, priceAed, billingCycleMonths, stripePriceId } = req.body
 
     if (!name || !maxEmployees || !maxAdmins || !priceAed) {
       res.status(400).json({ error: 'name, maxEmployees, maxAdmins, and priceAed are required' })
@@ -271,7 +271,7 @@ export const createPlan = async (req: Request, res: Response): Promise<void> => 
     }
 
     const plan = await adminService.createPlan({
-      name, maxEmployees, maxAdmins, priceAed, billingCycleMonths,
+      name, maxEmployees, maxAdmins, priceAed, billingCycleMonths, stripePriceId,
     })
     res.status(201).json(plan)
   } catch {
