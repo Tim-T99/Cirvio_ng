@@ -157,6 +157,10 @@
             <input type="number" class="field" placeholder="2" [value]="form().maxAdmins" (input)="setField('maxAdmins', +$any($event.target).value)" />
           </div>
         </div>
+        <div>
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Stripe Price ID <span style="color:var(--fg-3);font-weight:400;">(optional — enables self-serve checkout)</span></label>
+          <input type="text" class="field" placeholder="price_1AbC..." [value]="form().stripePriceId" (input)="setField('stripePriceId', $any($event.target).value)" />
+        </div>
         <div style="display:flex;align-items:center;gap:10px;">
           <input
             type="checkbox"

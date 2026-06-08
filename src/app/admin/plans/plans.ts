@@ -9,6 +9,7 @@ export interface Plan {
   maxAdmins: number;
   priceAed: number;
   billingCycleMonths: number;
+  stripePriceId: string | null;
   isActive: boolean;
 }
 
@@ -18,6 +19,7 @@ interface PlanForm {
   maxAdmins: number | string;
   priceAed: number | string;
   billingCycleMonths: number | string;
+  stripePriceId: string;
   isActive: boolean;
 }
 
@@ -45,6 +47,7 @@ export class PlansComponent implements OnInit {
     maxAdmins: '',
     priceAed: '',
     billingCycleMonths: 1,
+    stripePriceId: '',
     isActive: true,
   });
 
@@ -69,7 +72,7 @@ export class PlansComponent implements OnInit {
 
   openCreate(): void {
     this.editingPlan.set(null);
-    this.form.set({ name: '', maxEmployees: '', maxAdmins: '', priceAed: '', billingCycleMonths: 1, isActive: true });
+    this.form.set({ name: '', maxEmployees: '', maxAdmins: '', priceAed: '', billingCycleMonths: 1, stripePriceId: '', isActive: true });
     this.saveError.set('');
     this.showModal.set(true);
   }
@@ -82,6 +85,7 @@ export class PlansComponent implements OnInit {
       maxAdmins: plan.maxAdmins,
       priceAed: plan.priceAed,
       billingCycleMonths: plan.billingCycleMonths,
+      stripePriceId: plan.stripePriceId ?? '',
       isActive: plan.isActive,
     });
     this.saveError.set('');
@@ -111,6 +115,7 @@ export class PlansComponent implements OnInit {
       maxAdmins: Number(f.maxAdmins),
       priceAed: Number(f.priceAed),
       billingCycleMonths: Number(f.billingCycleMonths),
+      stripePriceId: f.stripePriceId.trim() || null,
       isActive: f.isActive,
     };
     const editing = this.editingPlan();
