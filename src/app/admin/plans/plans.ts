@@ -10,8 +10,11 @@ export interface Plan {
   priceAed: number;
   billingCycleMonths: number;
   stripePriceId: string | null;
+  features: string[] | null;
   isActive: boolean;
 }
+
+interface FeatureDef { key: string; label: string; description: string; }
 
 interface PlanForm {
   name: string;
@@ -20,6 +23,7 @@ interface PlanForm {
   priceAed: number | string;
   billingCycleMonths: number | string;
   stripePriceId: string;
+  features: string[];
   isActive: boolean;
 }
 
@@ -41,6 +45,8 @@ export class PlansComponent implements OnInit {
   readonly showModal = signal(false);
   readonly editingPlan = signal<Plan | null>(null);
 
+  readonly featureCatalog = signal<FeatureDef[]>([]);
+
   readonly form = signal<PlanForm>({
     name: '',
     maxEmployees: '',
@@ -48,11 +54,31 @@ export class PlansComponent implements OnInit {
     priceAed: '',
     billingCycleMonths: 1,
     stripePriceId: '',
+    features: [],
     isActive: true,
   });
 
   ngOnInit(): void {
     this.fetchPlans();
+    this.http.get<FeatureDef[]>(`${environment.apiUrl}/api/admin/features`).subscribe({
+      next: (f) => this.featureCatalog.set(f ?? []),
+      error: () => {},
+    });
+  }
+
+  private allFeatureKeys(): string[] {
+    return this.featureCatalog().map(f => f.key);
+  }
+
+  toggleFeature(key: string): void {
+    this.form.update(f => ({
+      ...f,
+      features: f.features.includes(key) ? f.features.filter(k => k !== key) : [...f.features, key],
+    }));
+  }
+
+  featureLabel(key: string): string {
+    return this.featureCatalog().find(f => f.key === key)?.label ?? key;
   }
 
   fetchPlans(): void {
@@ -72,7 +98,8 @@ export class PlansComponent implements OnInit {
 
   openCreate(): void {
     this.editingPlan.set(null);
-    this.form.set({ name: '', maxEmployees: '', maxAdmins: '', priceAed: '', billingCycleMonths: 1, stripePriceId: '', isActive: true });
+    // New plans default to including every feature; admin unchecks to restrict.
+    this.form.set({ name: '', maxEmployees: '', maxAdmins: '', priceAed: '', billingCycleMonths: 1, stripePriceId: '', features: this.allFeatureKeys(), isActive: true });
     this.saveError.set('');
     this.showModal.set(true);
   }
@@ -86,6 +113,8 @@ export class PlansComponent implements OnInit {
       priceAed: plan.priceAed,
       billingCycleMonths: plan.billingCycleMonths,
       stripePriceId: plan.stripePriceId ?? '',
+      // null = all features enabled (legacy plans); otherwise the stored set.
+      features: plan.features ?? this.allFeatureKeys(),
       isActive: plan.isActive,
     });
     this.saveError.set('');
@@ -116,6 +145,7 @@ export class PlansComponent implements OnInit {
       priceAed: Number(f.priceAed),
       billingCycleMonths: Number(f.billingCycleMonths),
       stripePriceId: f.stripePriceId.trim() || null,
+      features: f.features,
       isActive: f.isActive,
     };
     const editing = this.editingPlan();

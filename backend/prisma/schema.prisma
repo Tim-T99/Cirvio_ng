@@ -209,6 +209,7 @@ model Plan {
   priceAed           Float
   billingCycleMonths Int      @default(1)
   stripePriceId      String?  // Stripe Price ID this plan maps to (for checkout)
+  features           Json?    // string[] of enabled feature keys; null = all enabled
   isActive           Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt

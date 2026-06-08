@@ -10,6 +10,7 @@
 import { prisma } from '../prisma/client'
 import { getStripe, webhookSecret } from '../lib/stripe'
 import { frontendUrl } from '../lib/email'
+import { getTenantFeatures } from './entitlement.service'
 
 // ── Public plan + subscription reads ─────────────────────────────────────────
 
@@ -19,7 +20,7 @@ export const listPlans = async () => {
     orderBy: { priceAed: 'asc' },
     select: {
       id: true, name: true, priceAed: true, billingCycleMonths: true,
-      maxEmployees: true, maxAdmins: true,
+      maxEmployees: true, maxAdmins: true, features: true,
       // A plan is purchasable only if an admin has linked a Stripe price.
       stripePriceId: true,
     },
@@ -39,9 +40,10 @@ export const getSubscription = async (tenantId: string) => {
   })
   if (!tenant) throw new Error('Tenant not found')
 
-  const [employeeCount, userCount] = await Promise.all([
+  const [employeeCount, userCount, features] = await Promise.all([
     prisma.employee.count({ where: { tenantId } }),
     prisma.user.count({ where: { tenantId } }),
+    getTenantFeatures(tenantId),
   ])
 
   const now = new Date()
@@ -56,6 +58,8 @@ export const getSubscription = async (tenantId: string) => {
     hasSubscription: !!tenant.stripeSubscriptionId,
     canManageBilling: !!tenant.stripeCustomerId,
     trialExpired,
+    features,
+    isPaid: tenant.status === 'ACTIVE',
     usage: {
       employees: employeeCount,
       users: userCount,

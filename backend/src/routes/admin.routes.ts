@@ -37,6 +37,7 @@ router.patch('/tenants/:tenantId/status', requireAdminRole('SUPER_ADMIN'), admin
 router.patch('/tenants/:tenantId/plan', requireAdminRole('SUPER_ADMIN'), adminCtrl.changeTenantPlan)
 
 // ── Plans ──
+router.get('/features', adminCtrl.getFeatures)
 router.get('/plans', adminCtrl.listPlans)
 router.post('/plans', requireAdminRole('SUPER_ADMIN'), adminCtrl.createPlan)
 router.patch('/plans/:planId', requireAdminRole('SUPER_ADMIN'), adminCtrl.updatePlan)
