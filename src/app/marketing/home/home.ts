@@ -20,23 +20,25 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private observer?: IntersectionObserver;
 
   readonly features: Feature[] = [
-    { icon: 'users',    title: 'Employee Records',    desc: 'Complete digital profiles for every employee — contracts, IDs, and HR data in one secure place.' },
-    { icon: 'shield',   title: 'Visa Tracking',       desc: 'Monitor visa types, status, and expiry dates. Receive automated alerts 90, 60, and 30 days before renewal.' },
-    { icon: 'file',     title: 'Payroll Compliance',  desc: 'Stay on top of payroll filings and Wage Protection System requirements with a full audit trail.' },
-    { icon: 'bell',     title: 'Smart Alerts',        desc: 'Automated notifications for visas, trade licenses, and document renewals. Never miss a deadline.' },
+    { icon: 'users',    title: 'Employee Records',      desc: 'Complete digital profiles — personal details, documents, departments, and a real reporting hierarchy.' },
+    { icon: 'shield',   title: 'Visa & ID Tracking',    desc: 'Track every visa, Emirates ID, and labour card. Automated alerts at 90, 60, 30, 14, and 7 days before expiry.' },
+    { icon: 'file',     title: 'WPS Payroll Compliance',desc: 'Monthly payroll records with a full audit trail, plus WPS SIF file generation for MOHRE submission.' },
+    { icon: 'bell',     title: 'Smart Compliance Alerts',desc: 'A daily alert engine flags expiring and expired visas and WPS deadlines on a live dashboard.' },
+    { icon: 'sparkles', title: 'AI Assistant',          desc: 'Ask Cirvio about your workforce — it reads your live org data to answer questions and surface efficiency insights.' },
+    { icon: 'chart',    title: 'Power BI & CSV Export', desc: 'Connect a live, refreshable feed to Power BI or Tableau, or export clean, report-ready CSVs in one click.' },
   ];
 
   readonly steps: Step[] = [
-    { n: '01', title: 'Add your employees',      desc: 'Import or manually enter staff records, documents, and visa details in minutes.' },
-    { n: '02', title: 'Configure your alerts',   desc: 'Set notification windows — 30, 60, or 90 days — for every visa and compliance deadline.' },
-    { n: '03', title: 'Stay ahead of deadlines', desc: 'Get proactive alerts and a live compliance dashboard so nothing slips through.' },
+    { n: '01', title: 'Add your employees',      desc: 'Enter staff records, documents, visas, and reporting lines in minutes.' },
+    { n: '02', title: 'Let the alerts run',      desc: 'Cirvio automatically watches every visa, ID, and WPS deadline — no setup needed.' },
+    { n: '03', title: 'Stay ahead of deadlines', desc: 'Work from a live dashboard, ask the AI assistant, and export reports whenever you need them.' },
   ];
 
   readonly stats: Stat[] = [
-    { value: '100%',        label: 'Audit ready' },
-    { value: '14-day',      label: 'Free trial' },
-    { value: 'Real-time',   label: 'Alerts' },
-    { value: 'Multi-region',label: 'Compliance' },
+    { value: '14-day',  label: 'Free trial' },
+    { value: '5-stage', label: 'Visa expiry alerts' },
+    { value: 'Power BI',label: '& CSV data export' },
+    { value: 'Passkey', label: 'Passwordless sign-in' },
   ];
 
   readonly heroStats: HeroStat[] = [
@@ -52,11 +54,11 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   ];
 
   readonly checklist: string[] = [
-    'Employment visa monitoring and renewal alerts',
-    'Payroll filing reminders and full audit logs',
-    'Trade licence and document expiry tracking',
-    'Labour card status and renewal management',
-    'Regulatory deadline notifications (MOHRE, GDRFA, and more)',
+    'Employment & residence visa monitoring with renewal alerts',
+    'Emirates ID, labour card, and trade licence expiry tracking',
+    'WPS payroll records and SIF file generation for MOHRE',
+    'A live compliance dashboard with in-app alerts',
+    'Org chart, role-based access, and an AI workforce assistant',
   ];
 
   readonly calendar: Calendar[] = [

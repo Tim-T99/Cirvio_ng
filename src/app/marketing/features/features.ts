@@ -29,15 +29,15 @@ export class FeaturesComponent implements AfterViewInit, OnDestroy {
       subtitle: 'Complete digital HR records for every team member.',
       points: [
         'Full employee profiles — personal details, emergency contacts, job history',
-        'Department and role management with organisational hierarchy',
-        'Employment contract storage and expiry tracking',
-        'Bulk employee import via CSV or manual entry',
-        'Role-based access so HR managers see only what they need',
+        'Departments and a real reporting hierarchy, visualised as an org chart',
+        'Employment details, salary, and document storage per employee',
+        'Role-based access so HR managers and viewers see only what they need',
+        'Export any employee data to CSV or your BI tool in one click',
       ],
       visual: [
         { label: 'Total employees',  value: '84',  color: 'var(--fg-1)' },
         { label: 'Departments',      value: '9',   color: 'var(--fg-1)' },
-        { label: 'Active contracts', value: '81',  color: 'var(--success)' },
+        { label: 'Active',           value: '81',  color: 'var(--success)' },
         { label: 'Expiring soon',    value: '3',   color: 'var(--warning)' },
       ],
     },
@@ -46,11 +46,11 @@ export class FeaturesComponent implements AfterViewInit, OnDestroy {
       title: 'Visa & Immigration Tracking',
       subtitle: 'Never miss a visa renewal again.',
       points: [
-        'Track all visa types — employment, residence, investor, visit',
-        'Automated expiry alerts at 90, 60, and 30 days',
-        'Store visa documents, entry stamps, and renewal records',
-        'GDRFA and ICA status monitoring',
-        'Renewal workflow with assignable tasks for your PRO team',
+        'Track all visa types — employment, residence, investor, dependent, golden',
+        'Automated expiry alerts at 90, 60, 30, 14, and 7 days before expiry',
+        'A daily engine flags expiring and expired visas automatically',
+        'Store visa numbers, sponsor, emirate, entry-permit and residence details',
+        'Emirates ID and labour-card expiry tracked alongside every visa',
       ],
       visual: [
         { label: 'Employment visa', value: '62',  color: 'var(--success)' },
@@ -64,11 +64,11 @@ export class FeaturesComponent implements AfterViewInit, OnDestroy {
       title: 'WPS Compliance',
       subtitle: 'Wage Protection System filing, simplified.',
       points: [
-        'Monthly payroll records with full audit trail',
-        'WPS SIF file generation for MOHRE submission',
-        'Salary history per employee with change log',
-        'Filing deadline reminders and calendar view',
-        'MOL compliance status dashboard',
+        'Monthly payroll records with a full audit trail',
+        'WPS SIF file generation in the MOHRE-approved format',
+        'Salary breakdown per employee — basic, allowances, deductions, net',
+        'WPS compliance dashboard with submission and lateness status',
+        'Bulk-create a month’s payroll for all active employees at once',
       ],
       visual: [
         { label: 'Last WPS filing',   value: 'On time',    color: 'var(--success)' },
@@ -80,13 +80,13 @@ export class FeaturesComponent implements AfterViewInit, OnDestroy {
     {
       icon: 'bell',
       title: 'Smart Alerts',
-      subtitle: 'Proactive notifications before deadlines hit.',
+      subtitle: 'Get ahead of every deadline on a live dashboard.',
       points: [
-        'Configurable alert windows — 30, 60, or 90 days',
-        'Email and in-app notifications for all team members',
-        'Escalation rules if actions are not acknowledged',
-        'Digest summaries — daily or weekly compliance reports',
-        'Alert history and acknowledgement audit trail',
+        'A daily engine watches every visa, ID, and WPS deadline automatically',
+        'Visa alerts at 90, 60, 30, 14, and 7 days before expiry',
+        'In-app alerts surfaced on a live compliance dashboard',
+        'Dismiss or resolve alerts, with status tracked per record',
+        'No configuration needed — it runs from the day you add an employee',
       ],
       visual: [
         { label: 'Active alerts',  value: '14', color: 'var(--warning)' },
@@ -95,13 +95,49 @@ export class FeaturesComponent implements AfterViewInit, OnDestroy {
         { label: 'Upcoming 30d',   value: '9',  color: 'var(--info)' },
       ],
     },
+    {
+      icon: 'sparkles',
+      title: 'AI Workforce Assistant',
+      subtitle: 'Ask questions about your organisation in plain language.',
+      points: [
+        'Reads your live, tenant-scoped data — never another company’s',
+        'Answers questions about headcount, structure, visas, and WPS',
+        'Surfaces efficiency insights — wide spans, thin teams, cost outliers',
+        'Every data lookup it makes is logged for a full audit trail',
+        'Read-only and safe: it advises, your team decides',
+      ],
+      visual: [
+        { label: 'Avg span',       value: '5.2',  color: 'var(--fg-1)' },
+        { label: 'Org depth',      value: '4',    color: 'var(--fg-1)' },
+        { label: 'No manager',     value: '3',    color: 'var(--warning)' },
+        { label: 'Insights',       value: 'Live', color: 'var(--info)' },
+      ],
+    },
+    {
+      icon: 'chart',
+      title: 'Power BI & Data Export',
+      subtitle: 'Turn your workforce data into reports in minutes.',
+      points: [
+        'Live OData feed — connect Power BI or Tableau and refresh on schedule',
+        'One-click CSV export of clean, report-ready datasets',
+        'Employees, visas, WPS, documents and departments, denormalised',
+        'Per-tenant access tokens you can create and revoke at any time',
+        'Human-readable columns and derived fields, ready to pivot',
+      ],
+      visual: [
+        { label: 'Datasets',   value: '5',        color: 'var(--fg-1)' },
+        { label: 'Power BI',   value: 'Live',     color: 'var(--success)' },
+        { label: 'Tableau',    value: 'OData',    color: 'var(--success)' },
+        { label: 'CSV',        value: '1-click',  color: 'var(--info)' },
+      ],
+    },
   ];
 
   readonly extras: Extra[] = [
-    { icon: 'doc',     title: 'Document Storage',   desc: 'Centralised, secure document repository for all employee and company files.' },
-    { icon: 'chart',   title: 'Compliance Reports', desc: 'Export audit-ready reports for MOHRE, GDRFA, and internal HR reviews.' },
-    { icon: 'lock',    title: 'Role-based Access',  desc: 'Tenant Admin, HR Manager, and Viewer roles with granular permissions.' },
-    { icon: 'refresh', title: 'Renewal Workflows',  desc: 'Assign renewal tasks to your PRO team with due dates and status tracking.' },
+    { icon: 'doc',     title: 'Document Storage',     desc: 'Secure repository for employee and company files, with expiry tracking.' },
+    { icon: 'chart',   title: 'Power BI & CSV Export',desc: 'Connect a live OData feed to Power BI or Tableau, or export clean CSVs.' },
+    { icon: 'lock',    title: 'Role-based Access',    desc: 'Tenant Admin, HR Manager, and Viewer roles with granular permissions.' },
+    { icon: 'refresh', title: 'Passwordless Sign-in', desc: 'Sign in with passkeys — Face ID, Touch ID, or a security key. No password to phish.' },
   ];
 
   ngAfterViewInit() {

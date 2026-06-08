@@ -8,7 +8,7 @@
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 21h18M3 21V7l9-4 9 4v14M9 21v-6h6v6"/>
         </svg>
-        Trusted by teams across the Gulf
+        Purpose-built for UAE &amp; Gulf compliance
       </div>
 
       <h1 class="animate-fade-up-2" style="font-size:52px;font-weight:600;line-height:1.06;letter-spacing:-0.025em;color:var(--fg-1);margin:0 0 22px;">
@@ -18,7 +18,7 @@
       </h1>
 
       <p class="animate-fade-up-3" style="font-size:18px;color:var(--fg-2);line-height:1.65;margin:0 0 36px;max-width:460px;">
-        Track employee visas, manage payroll compliance, and stay ahead of every regulatory deadline — from a single platform built for modern HR teams.
+        Track visas, Emirates IDs, and WPS payroll compliance, get ahead of every deadline, and turn your workforce data into reports — from one platform built for the Gulf.
       </p>
 
       <div class="hero-ctas animate-fade-up-4" style="display:flex;gap:12px;flex-wrap:wrap;">
@@ -36,12 +36,25 @@
       </p>
     </div>
 
-    <!-- Dashboard mockup -->
+    <!-- Dashboard mockup (browser frame) -->
     <div class="animate-fade-up-3" style="position:relative;">
       <div style="position:absolute;inset:-40px;background:radial-gradient(ellipse at 60% 40%, rgba(140,201,181,0.16) 0%, transparent 70%);pointer-events:none;"></div>
 
-      <div class="cirvio-glass" style="overflow:hidden;position:relative;">
-        <div style="padding:14px 20px;border-bottom:1px solid var(--border-soft);background:rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:space-between;">
+      <div style="border-radius:14px;overflow:hidden;box-shadow:var(--shadow-xl);border:1px solid var(--border);position:relative;background:var(--neutral-0);">
+        <!-- Browser chrome -->
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-sunken);border-bottom:1px solid var(--border-soft);">
+          <div style="display:flex;gap:7px;">
+            <span style="width:11px;height:11px;border-radius:50%;background:#ef6a5e;"></span>
+            <span style="width:11px;height:11px;border-radius:50%;background:#f5bf4f;"></span>
+            <span style="width:11px;height:11px;border-radius:50%;background:#62c554;"></span>
+          </div>
+          <div style="flex:1;display:flex;align-items:center;gap:7px;background:var(--neutral-0);border:1px solid var(--border-soft);border-radius:var(--radius-pill);padding:4px 12px;font-size:11px;color:var(--fg-3);max-width:240px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            app.cirvio.com/dashboard
+          </div>
+        </div>
+
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border-soft);background:var(--bg-elev-1);display:flex;align-items:center;justify-content:space-between;">
           <span style="font-size:13px;font-weight:600;color:var(--fg-1);">Compliance Overview</span>
           <span style="font-size:12px;color:var(--success);font-weight:500;display:flex;align-items:center;gap:5px;">
             <span style="width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;"></span>
@@ -127,6 +140,12 @@
               @if (f.icon === 'bell') {
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               }
+              @if (f.icon === 'sparkles') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.8L18.7 9.7 13.9 11.6 12 16.4 10.1 11.6 5.3 9.7 10.1 7.8z"/><path d="M19 14l.7 1.8L21.5 16.5l-1.8.7L19 19l-.7-1.8L16.5 16.5l1.8-.7z"/></svg>
+              }
+              @if (f.icon === 'chart') {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6"/><rect x="12" y="7" width="3" height="10"/><rect x="17" y="13" width="3" height="4"/></svg>
+              }
             </div>
             <h3 style="font-size:18px;font-weight:600;color:var(--fg-1);margin-bottom:10px;">{{ f.title }}</h3>
             <p style="font-size:14px;color:var(--fg-2);line-height:1.65;">{{ f.desc }}</p>
@@ -136,6 +155,100 @@
             </a>
           </div>
         }
+      </div>
+    </div>
+  </section>
+
+  <!-- Product showcase (device mockups) -->
+  <section class="section-pad" style="padding:88px 32px;overflow:hidden;">
+    <div style="max-width:1200px;margin:0 auto;">
+      <div class="reveal" style="text-align:center;margin-bottom:56px;">
+        <p style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--cirvio-sage);margin-bottom:10px;">See it in action</p>
+        <h2 class="section-title" style="font-size:36px;font-weight:600;letter-spacing:-0.015em;color:var(--fg-1);margin-bottom:12px;">
+          Your whole workforce, on every screen.
+        </h2>
+        <p style="font-size:16px;color:var(--fg-2);max-width:520px;margin:0 auto;line-height:1.65;">
+          A live compliance dashboard and org chart on desktop, deadline alerts in your pocket.
+        </p>
+      </div>
+
+      <div class="showcase-grid reveal" style="display:grid;grid-template-columns:1.7fr 1fr;gap:48px;align-items:center;">
+
+        <!-- Laptop mockup -->
+        <div style="position:relative;">
+          <div style="position:absolute;inset:-30px;background:radial-gradient(ellipse at 40% 40%, rgba(140,201,181,0.18) 0%, transparent 70%);pointer-events:none;"></div>
+          <!-- screen -->
+          <div style="border:10px solid #1c1c1a;border-radius:16px 16px 0 0;background:#1c1c1a;box-shadow:var(--shadow-xl);position:relative;">
+            <div style="background:var(--neutral-0);border-radius:7px;overflow:hidden;">
+              <!-- app top bar -->
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--border-soft);background:var(--bg-elev-1);">
+                <span style="font-size:12px;font-weight:700;letter-spacing:0.06em;color:var(--cirvio-hunter);">CIRVIO</span>
+                <span style="font-size:11px;color:var(--fg-3);">Organisation · 84 people</span>
+              </div>
+              <div style="display:flex;">
+                <!-- mini sidebar -->
+                <div style="width:108px;background:var(--bg-inverse);padding:12px 10px;display:flex;flex-direction:column;gap:7px;">
+                  @for (n of ['Home','Employees','Visas','WPS','Org Chart','Chat']; track n; let first = $first) {
+                    <span style="font-size:11px;font-weight:500;padding:6px 9px;border-radius:7px;"
+                      [style.background]="first ? 'rgba(140,201,181,0.16)' : 'transparent'"
+                      [style.color]="first ? 'var(--cirvio-mint)' : 'rgba(236,236,232,0.6)'">{{ n }}</span>
+                  }
+                </div>
+                <!-- content: org tree -->
+                <div style="flex:1;padding:18px;background:var(--neutral-50);">
+                  <div style="display:flex;justify-content:center;margin-bottom:14px;">
+                    <div style="background:var(--cirvio-hunter);color:#fff;border-radius:8px;padding:7px 16px;font-size:11px;font-weight:600;">Acme Logistics</div>
+                  </div>
+                  <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+                    @for (d of [['Operations','#4A795D'],['Finance','#3F6FB3'],['HR','#C68A2E']]; track d[0]) {
+                      <div style="background:var(--neutral-0);border:1px solid var(--border-soft);border-radius:8px;padding:8px 12px;text-align:center;box-shadow:var(--shadow-xs);">
+                        <p style="font-size:11px;font-weight:600;color:var(--fg-1);margin:0;">{{ d[0] }}</p>
+                        <p style="font-size:10px;color:var(--fg-3);margin:0;">team</p>
+                      </div>
+                    }
+                  </div>
+                  <div style="display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap;">
+                    @for (p of ['JD','AM','SO','RS','LK','TT']; track p) {
+                      <div style="width:30px;height:30px;border-radius:50%;background:var(--cirvio-mint-50);border:1px solid var(--cirvio-mint-300);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--cirvio-hunter);">{{ p }}</div>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- laptop base -->
+          <div style="height:13px;background:linear-gradient(180deg,#d8d8d4,#bdbdb8);border-radius:0 0 12px 12px;margin:0 -22px;box-shadow:var(--shadow-md);"></div>
+          <div style="height:4px;width:90px;margin:0 auto;background:#a8a8a3;border-radius:0 0 6px 6px;"></div>
+        </div>
+
+        <!-- Phone mockup -->
+        <div style="display:flex;justify-content:center;position:relative;">
+          <div style="position:absolute;inset:-20px;background:radial-gradient(ellipse at 50% 30%, rgba(140,201,181,0.18) 0%, transparent 70%);pointer-events:none;"></div>
+          <div style="width:230px;border:9px solid #1c1c1a;border-radius:34px;background:#1c1c1a;box-shadow:var(--shadow-xl);position:relative;">
+            <div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);width:56px;height:5px;background:#000;border-radius:3px;z-index:2;"></div>
+            <div style="background:var(--neutral-0);border-radius:26px;overflow:hidden;">
+              <div style="padding:22px 16px 12px;background:var(--cirvio-hunter);">
+                <p style="font-size:11px;color:rgba(255,255,255,0.6);margin:0 0 2px;">Upcoming renewals</p>
+                <p style="font-size:17px;font-weight:600;color:#fff;margin:0;">6 need attention</p>
+              </div>
+              <div style="padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:var(--neutral-50);">
+                @for (a of heroAlerts; track a.name) {
+                  <div style="display:flex;align-items:center;justify-content:space-between;background:var(--neutral-0);border:1px solid var(--border-soft);border-radius:10px;padding:9px 11px;">
+                    <div style="min-width:0;">
+                      <p style="font-size:11px;font-weight:600;color:var(--fg-1);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ a.name }}</p>
+                      <p style="font-size:10px;color:var(--fg-3);margin:0;">{{ a.type }}</p>
+                    </div>
+                    <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:var(--radius-pill);white-space:nowrap;"
+                      [style.background]="a.urgent ? 'var(--danger-bg)' : 'var(--warning-bg)'"
+                      [style.color]="a.urgent ? 'var(--danger)' : 'var(--warning)'">{{ a.days }}d</span>
+                  </div>
+                }
+                <div style="text-align:center;font-size:10px;color:var(--cirvio-sage);font-weight:600;padding:4px 0 8px;">View all alerts →</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
