@@ -8,6 +8,12 @@
 import { Request, Response } from 'express'
 import * as adminService from '../services/admin.service'
 import { prisma } from '../prisma/client'
+import { FEATURES, sanitizeFeatureKeys } from '../lib/features'
+
+/** Catalog of gateable features admins can assign to plans. */
+export const getFeatures = async (_req: Request, res: Response): Promise<void> => {
+  res.status(200).json(FEATURES)
+}
 import { Emirate } from '@prisma/client'
 
 
@@ -263,7 +269,7 @@ export const listPlans = async (_req: Request, res: Response): Promise<void> => 
 
 export const createPlan = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, maxEmployees, maxAdmins, priceAed, billingCycleMonths, stripePriceId } = req.body
+    const { name, maxEmployees, maxAdmins, priceAed, billingCycleMonths, stripePriceId, features } = req.body
 
     if (!name || !maxEmployees || !maxAdmins || !priceAed) {
       res.status(400).json({ error: 'name, maxEmployees, maxAdmins, and priceAed are required' })
@@ -272,6 +278,7 @@ export const createPlan = async (req: Request, res: Response): Promise<void> => 
 
     const plan = await adminService.createPlan({
       name, maxEmployees, maxAdmins, priceAed, billingCycleMonths, stripePriceId,
+      ...(features !== undefined ? { features: sanitizeFeatureKeys(features) } : {}),
     })
     res.status(201).json(plan)
   } catch {
@@ -281,7 +288,9 @@ export const createPlan = async (req: Request, res: Response): Promise<void> => 
 
 export const updatePlan = async (req: Request, res: Response): Promise<void> => {
   try {
-    const updated = await adminService.updatePlan(req.params.planId as string, req.body)
+    const data = { ...req.body }
+    if (data.features !== undefined) data.features = sanitizeFeatureKeys(data.features)
+    const updated = await adminService.updatePlan(req.params.planId as string, data)
     res.status(200).json(updated)
   } catch {
     res.status(500).json({ error: 'Internal server error' })

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output, signal, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/auth.service';
 import { HttpClient } from '@angular/common/http';
@@ -28,21 +28,33 @@ export class SidenavComponent {
   private http = inject(HttpClient);
 
   profile = signal<UserProfile | null>(null);
+  // Entitled feature keys (null until loaded → links shown by default).
+  private features = signal<string[] | null>(null);
 
-  readonly navLinks = [
-    { label: 'Home',       path: '/dashboard',            exact: true,  icon: 'home'      },
-    { label: 'Employees',  path: '/dashboard/employees',  exact: false, icon: 'employees' },
-    { label: 'Visas',      path: '/dashboard/visas',      exact: false, icon: 'visas'     },
-    { label: 'WPS',        path: '/dashboard/wps',        exact: false, icon: 'wps'       },
-    { label: 'Org Chart',  path: '/dashboard/org',        exact: false, icon: 'org'       },
-    { label: 'Documents',  path: '/dashboard/documents',  exact: false, icon: 'docs'      },
-    { label: 'Chat',       path: '/dashboard/chat',       exact: false, icon: 'chat'      },
-    { label: 'Settings',   path: '/dashboard/settings',   exact: false, icon: 'settings'  },
+  private readonly allLinks = [
+    { label: 'Home',       path: '/dashboard',            exact: true,  icon: 'home',     feature: null as string | null },
+    { label: 'Employees',  path: '/dashboard/employees',  exact: false, icon: 'employees', feature: null as string | null },
+    { label: 'Visas',      path: '/dashboard/visas',      exact: false, icon: 'visas',     feature: null as string | null },
+    { label: 'WPS',        path: '/dashboard/wps',        exact: false, icon: 'wps',       feature: null as string | null },
+    { label: 'Org Chart',  path: '/dashboard/org',        exact: false, icon: 'org',       feature: null as string | null },
+    { label: 'Documents',  path: '/dashboard/documents',  exact: false, icon: 'docs',      feature: null as string | null },
+    { label: 'Chat',       path: '/dashboard/chat',       exact: false, icon: 'chat',      feature: 'ai_assistant' as string | null },
+    { label: 'Settings',   path: '/dashboard/settings',   exact: false, icon: 'settings',  feature: null as string | null },
   ];
+
+  // Hide a link only when entitlements are known AND its feature is excluded.
+  readonly navLinks = computed(() => {
+    const f = this.features();
+    return this.allLinks.filter(l => !l.feature || f === null || f.includes(l.feature));
+  });
 
   constructor() {
     this.http.get<UserProfile>(`${environment.apiUrl}/api/users/me`).subscribe({
       next: (u) => this.profile.set(u),
+      error: () => {},
+    });
+    this.http.get<{ features: string[] }>(`${environment.apiUrl}/api/billing/subscription`).subscribe({
+      next: (s) => this.features.set(s.features ?? null),
       error: () => {},
     });
   }

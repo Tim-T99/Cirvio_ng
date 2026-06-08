@@ -84,6 +84,21 @@
             </div>
           </div>
 
+          <div style="margin-bottom:16px;">
+            <p style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--fg-3);margin:0 0 8px;">Features</p>
+            @if (plan.features === null) {
+              <span style="font-size:12px;color:var(--fg-2);">All features</span>
+            } @else if (plan.features.length === 0) {
+              <span style="font-size:12px;color:var(--fg-3);">None</span>
+            } @else {
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                @for (k of plan.features; track k) {
+                  <span style="font-size:11px;color:var(--cirvio-sage);background:var(--cirvio-mint-50);border:1px solid var(--cirvio-mint-100);border-radius:var(--radius-pill);padding:2px 8px;">{{ featureLabel(k) }}</span>
+                }
+              </div>
+            }
+          </div>
+
           <button
             (click)="openEdit(plan)"
             class="btn-ghost"
@@ -161,6 +176,24 @@
           <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Stripe Price ID <span style="color:var(--fg-3);font-weight:400;">(optional — enables self-serve checkout)</span></label>
           <input type="text" class="field" placeholder="price_1AbC..." [value]="form().stripePriceId" (input)="setField('stripePriceId', $any($event.target).value)" />
         </div>
+
+        @if (featureCatalog().length) {
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--fg-2);margin-bottom:6px;">Included features</label>
+            <div style="display:flex;flex-direction:column;gap:8px;border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:12px;">
+              @for (feat of featureCatalog(); track feat.key) {
+                <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                  <input type="checkbox" [checked]="form().features.includes(feat.key)" (change)="toggleFeature(feat.key)" style="width:15px;height:15px;margin-top:2px;cursor:pointer;flex-shrink:0;" />
+                  <span>
+                    <span style="font-size:13px;color:var(--fg-1);display:block;">{{ feat.label }}</span>
+                    <span style="font-size:12px;color:var(--fg-3);">{{ feat.description }}</span>
+                  </span>
+                </label>
+              }
+            </div>
+          </div>
+        }
+
         <div style="display:flex;align-items:center;gap:10px;">
           <input
             type="checkbox"

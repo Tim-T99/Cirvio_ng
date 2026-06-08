@@ -15,7 +15,7 @@
 
   <!-- Nav links -->
   <div style="flex:1;padding:12px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;">
-    @for (link of navLinks; track link.path) {
+    @for (link of navLinks(); track link.path) {
       <a [routerLink]="link.path" [routerLinkActive]="'nav-active'"
          [routerLinkActiveOptions]="{ exact: link.exact }"
          (click)="navClose.emit()"
