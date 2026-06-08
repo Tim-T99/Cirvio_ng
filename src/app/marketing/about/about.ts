@@ -23,10 +23,10 @@ export class AboutComponent implements AfterViewInit, OnDestroy {
   ];
 
   readonly stats: Stat[] = [
-    { value: '1,200+', label: 'Employees tracked' },
-    { value: '98%',    label: 'On-time filing rate' },
-    { value: '40+',    label: 'UAE companies' },
-    { value: '0',      label: 'Missed renewals' },
+    { value: 'UAE-first', label: 'Built for Gulf compliance' },
+    { value: '5-stage',   label: 'Visa expiry alerts' },
+    { value: 'AI-native', label: 'Workforce assistant built in' },
+    { value: 'Power BI',  label: 'Live data export' },
   ];
 
   ngAfterViewInit() {
