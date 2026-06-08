@@ -15,6 +15,8 @@ import uploadRoutes from "./src/routes/upload.routes";
 import chatRoutes from "./src/routes/chat.routes";
 import billingRoutes from "./src/routes/billing.routes";
 import * as billingCtrl from "./src/controllers/billing.controller";
+import exportRoutes from "./src/routes/export.routes";
+import odataRoutes from "./src/routes/odata.routes";
 
 import {
   globalLimiter,
@@ -82,6 +84,8 @@ app.use("/api/documents", apiLimiter, documentRoutes);
 app.use("/api/uploads",   apiLimiter, uploadRoutes);
 app.use("/api/chat",      chatLimiter, chatRoutes);
 app.use("/api/billing",   apiLimiter, billingRoutes);
+app.use("/api/export",    apiLimiter, exportRoutes);
+app.use("/api/odata",     apiLimiter, odataRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

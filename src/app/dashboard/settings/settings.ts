@@ -75,8 +75,14 @@ interface SubscriptionInfo {
   hasSubscription: boolean;
   canManageBilling: boolean;
   trialExpired: boolean;
+  features: string[];
+  isPaid: boolean;
   usage: { employees: number; users: number; maxEmployees: number | null; maxAdmins: number | null };
 }
+
+interface ExportDataset { key: string; label: string; entitySet: string; columns: string[]; }
+interface ExportTokenInfo { id: string; name: string; prefix: string; lastUsedAt: string | null; createdAt: string; }
+interface NewExportToken { id: string; name: string; prefix: string; token: string; odataUrl: string; createdAt: string; }
 
 interface PasskeyEntry {
   id: string;
@@ -169,6 +175,17 @@ export class SettingsComponent implements OnInit {
   billingError     = signal('');
   billingNotice    = signal('');           // success/cancel banner after Stripe redirect
 
+  // Data export (TENANT_ADMIN, paid + data_export feature)
+  exportDatasets   = signal<ExportDataset[]>([]);
+  exportTokens     = signal<ExportTokenInfo[]>([]);
+  odataUrl         = signal('');
+  newTokenName     = signal('');
+  createdToken     = signal<NewExportToken | null>(null);
+  tokenCopied      = signal(false);
+  exportBusy       = signal('');           // 'create' | token id
+  csvBusy          = signal('');           // dataset key being downloaded
+  exportError      = signal('');
+
   ngOnInit() {
     // Surface the Stripe checkout outcome (?billing=success|cancelled).
     if (isPlatformBrowser(this.platformId)) {
@@ -195,12 +212,85 @@ export class SettingsComponent implements OnInit {
 
   private loadBilling() {
     this.http.get<SubscriptionInfo>(`${environment.apiUrl}/api/billing/subscription`).subscribe({
-      next: (s) => this.billing.set(s),
+      next: (s) => { this.billing.set(s); if (this.canExport) this.loadExport(); },
       error: () => {},
     });
     this.http.get<{ billingEnabled: boolean; plans: BillingPlan[] }>(`${environment.apiUrl}/api/billing/plans`).subscribe({
       next: (r) => this.billingPlans.set(r.plans ?? []),
       error: () => {},
+    });
+  }
+
+  // ── Data export (paid + data_export feature) ───────────────────────────────
+
+  get canExport(): boolean {
+    const b = this.billing();
+    return !!b && b.isPaid && (b.features ?? []).includes('data_export');
+  }
+
+  private loadExport() {
+    this.http.get<{ odataUrl: string; datasets: ExportDataset[] }>(`${environment.apiUrl}/api/export/datasets`).subscribe({
+      next: (r) => { this.exportDatasets.set(r.datasets ?? []); this.odataUrl.set(r.odataUrl); },
+      error: () => {},
+    });
+    this.loadExportTokens();
+  }
+
+  private loadExportTokens() {
+    this.http.get<ExportTokenInfo[]>(`${environment.apiUrl}/api/export/tokens`).subscribe({
+      next: (t) => this.exportTokens.set(t ?? []),
+      error: () => {},
+    });
+  }
+
+  createExportToken() {
+    const name = this.newTokenName().trim() || 'BI export';
+    this.exportError.set('');
+    this.exportBusy.set('create');
+    this.http.post<NewExportToken>(`${environment.apiUrl}/api/export/tokens`, { name }).subscribe({
+      next: (t) => {
+        this.createdToken.set(t);
+        this.newTokenName.set('');
+        this.exportBusy.set('');
+        this.loadExportTokens();
+      },
+      error: (err) => { this.exportError.set(err.error?.error ?? 'Could not create token.'); this.exportBusy.set(''); },
+    });
+  }
+
+  revokeExportToken(id: string) {
+    this.exportBusy.set(id);
+    this.http.delete(`${environment.apiUrl}/api/export/tokens/${id}`).subscribe({
+      next: () => { this.exportTokens.update(list => list.filter(t => t.id !== id)); this.exportBusy.set(''); },
+      error: () => { this.exportError.set('Could not revoke token.'); this.exportBusy.set(''); },
+    });
+  }
+
+  copyToken() {
+    const t = this.createdToken()?.token;
+    if (!t || !isPlatformBrowser(this.platformId)) return;
+    navigator.clipboard?.writeText(t).then(() => {
+      this.tokenCopied.set(true);
+      setTimeout(() => this.tokenCopied.set(false), 2500);
+    }).catch(() => {});
+  }
+
+  downloadCsv(key: string) {
+    this.exportError.set('');
+    this.csvBusy.set(key);
+    this.http.get(`${environment.apiUrl}/api/export/csv/${key}`, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        if (isPlatformBrowser(this.platformId)) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `cirvio-${key}-${new Date().toISOString().slice(0, 10)}.csv`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+        this.csvBusy.set('');
+      },
+      error: () => { this.exportError.set('Download failed. You may not have permission to export this dataset.'); this.csvBusy.set(''); },
     });
   }
 

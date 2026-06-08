@@ -243,6 +243,93 @@
       </div>
     }
 
+    <!-- Data export (TENANT_ADMIN only) -->
+    @if (isTenantAdmin) {
+      <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;">
+        <h2 style="font-size:15px;font-weight:600;color:var(--fg-1);margin:0 0 6px;">Data export · Power BI / Tableau</h2>
+        <p style="font-size:13px;color:var(--fg-3);margin:0 0 20px;">Export clean, report-ready data — download a CSV, or connect a live OData feed.</p>
+
+        @if (!canExport) {
+          <div style="background:var(--bg-sunken);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;color:var(--fg-2);">
+            Data export is available on paid plans that include it. Choose a plan in <strong>Billing &amp; plan</strong> above to unlock it.
+          </div>
+        } @else {
+          @if (exportError()) {
+            <div style="background:var(--danger-bg);border:1px solid rgba(184,69,69,0.20);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;color:var(--danger);margin-bottom:16px;">{{ exportError() }}</div>
+          }
+
+          <!-- CSV downloads -->
+          <p style="font-size:13px;font-weight:600;color:var(--fg-2);margin:0 0 10px;">Download CSV</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;">
+            @for (d of exportDatasets(); track d.key) {
+              <button (click)="downloadCsv(d.key)" [disabled]="csvBusy() === d.key"
+                style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elev-1);font-size:13px;color:var(--fg-1);cursor:pointer;font-family:inherit;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                {{ csvBusy() === d.key ? 'Preparing…' : d.label }}
+              </button>
+            }
+          </div>
+
+          <!-- OData / Power BI connection -->
+          <div style="border-top:1px solid var(--border-soft);padding-top:20px;">
+            <p style="font-size:13px;font-weight:600;color:var(--fg-2);margin:0 0 6px;">Live connection (Power BI / Tableau)</p>
+            <p style="font-size:12px;color:var(--fg-3);margin:0 0 12px;line-height:1.6;">
+              In Power BI: <strong>Get data → OData feed</strong>, paste the URL below, choose <strong>Basic</strong> authentication, and enter your token as the <strong>username</strong> (leave the password blank).
+            </p>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
+              <input type="text" readonly [value]="odataUrl()"
+                style="flex:1;min-width:240px;font-size:12px;font-family:monospace;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--fg-2);" />
+            </div>
+
+            <!-- Create token -->
+            <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px;">
+              <div style="flex:1;min-width:180px;">
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">New access token</label>
+                <input type="text" class="field" placeholder="e.g. Finance Power BI" [value]="newTokenName()" (input)="newTokenName.set($any($event.target).value)" style="font-size:13px;" />
+              </div>
+              <button class="btn-primary" (click)="createExportToken()" [disabled]="exportBusy() === 'create'" style="padding:9px 18px;">
+                {{ exportBusy() === 'create' ? 'Creating…' : 'Generate token' }}
+              </button>
+            </div>
+
+            <!-- Newly created token (shown once) -->
+            @if (createdToken(); as ct) {
+              <div style="background:var(--success-bg);border:1px solid var(--success);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;">
+                <p style="font-size:13px;color:var(--success);font-weight:600;margin:0 0 8px;">Token created — copy it now, it won't be shown again.</p>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                  <input type="text" readonly [value]="ct.token"
+                    style="flex:1;min-width:220px;font-size:12px;font-family:monospace;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--fg-1);" />
+                  <button (click)="copyToken()" style="padding:8px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elev-1);font-size:13px;color:var(--fg-1);cursor:pointer;font-family:inherit;white-space:nowrap;">
+                    {{ tokenCopied() ? 'Copied ✓' : 'Copy token' }}
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- Existing tokens -->
+            @if (exportTokens().length) {
+              <div style="border:1px solid var(--border-soft);border-radius:var(--radius-sm);overflow:hidden;">
+                @for (t of exportTokens(); track t.id) {
+                  <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border-soft);">
+                    <div style="flex:1;min-width:0;">
+                      <p style="font-size:13px;font-weight:500;color:var(--fg-1);margin:0;">{{ t.name }} <span style="font-family:monospace;font-size:12px;color:var(--fg-3);">{{ t.prefix }}…</span></p>
+                      <p style="font-size:12px;color:var(--fg-3);margin:0;">Created {{ t.createdAt | date:'d MMM y' }}@if (t.lastUsedAt) { · last used {{ t.lastUsedAt | date:'d MMM y' }}}</p>
+                    </div>
+                    <button (click)="revokeExportToken(t.id)" [disabled]="exportBusy() === t.id"
+                      style="padding:5px 12px;border:1px solid var(--border);border-radius:var(--radius-xs);background:transparent;color:var(--danger);font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;">
+                      {{ exportBusy() === t.id ? '…' : 'Revoke' }}
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <p style="font-size:13px;color:var(--fg-3);margin:0;">No active tokens. Generate one to connect Power BI.</p>
+            }
+          </div>
+        }
+      </div>
+    }
+
     <!-- Team / invites (TENANT_ADMIN only) -->
     @if (isTenantAdmin) {
       <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:20px;">

@@ -264,6 +264,7 @@ model Tenant {
   documents            Document[]
   invites              TenantInvite[]
   conversations        Conversation[]
+  exportTokens         ExportToken[]
 }
 
 model TenantInvite {
@@ -717,4 +718,20 @@ model AiToolAuditLog {
   createdAt DateTime @default(now())
 
   @@index([tenantId, createdAt])
+}
+
+model ExportToken {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId   String    @db.Uuid
+  name       String
+  tokenHash  String    @unique          // sha256 of the plaintext token
+  prefix     String                      // first chars of the token, for display
+  createdBy  String?   @db.Uuid
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
 }
