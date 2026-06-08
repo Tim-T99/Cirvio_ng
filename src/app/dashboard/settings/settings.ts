@@ -56,6 +56,28 @@ const COUNTRY_NAMES: Record<string, string> = {
   OTHER: 'Other',
 };
 
+interface BillingPlan {
+  id: string;
+  name: string;
+  priceAed: number;
+  billingCycleMonths: number;
+  maxEmployees: number;
+  maxAdmins: number;
+  stripePriceId: string | null;
+}
+
+interface SubscriptionInfo {
+  billingEnabled: boolean;
+  status: string;
+  plan: { id: string; name: string; priceAed: number; maxEmployees: number; maxAdmins: number } | null;
+  trialEndsAt: string | null;
+  subscriptionEndsAt: string | null;
+  hasSubscription: boolean;
+  canManageBilling: boolean;
+  trialExpired: boolean;
+  usage: { employees: number; users: number; maxEmployees: number | null; maxAdmins: number | null };
+}
+
 interface PasskeyEntry {
   id: string;
   name: string | null;
@@ -140,18 +162,73 @@ export class SettingsComponent implements OnInit {
   linkCopied       = signal(false);
   revokingId       = signal<string | null>(null);
 
+  // Billing (TENANT_ADMIN only)
+  billing          = signal<SubscriptionInfo | null>(null);
+  billingPlans     = signal<BillingPlan[]>([]);
+  billingBusy      = signal('');           // planId being checked out, or 'portal'
+  billingError     = signal('');
+  billingNotice    = signal('');           // success/cancel banner after Stripe redirect
+
   ngOnInit() {
+    // Surface the Stripe checkout outcome (?billing=success|cancelled).
+    if (isPlatformBrowser(this.platformId)) {
+      const params = new URLSearchParams(window.location.search);
+      const b = params.get('billing');
+      if (b === 'success') this.billingNotice.set('success');
+      else if (b === 'cancelled') this.billingNotice.set('cancelled');
+    }
+
     this.http.get<UserProfile>(`${environment.apiUrl}/api/users/me`).subscribe({
       next: (u) => {
         this.profile.set(u);
         this.firstName.set(u.firstName ?? '');
         this.lastName.set(u.lastName ?? '');
         this.loading.set(false);
-        if (u.role === 'TENANT_ADMIN') { this.loadOrgProfile(); this.loadInvites(); }
+        if (u.role === 'TENANT_ADMIN') { this.loadOrgProfile(); this.loadInvites(); this.loadBilling(); }
         this.loadPasskeys();
       },
       error: () => { this.error.set('Failed to load profile.'); this.loading.set(false); },
     });
+  }
+
+  // ── Billing ────────────────────────────────────────────────────────────────
+
+  private loadBilling() {
+    this.http.get<SubscriptionInfo>(`${environment.apiUrl}/api/billing/subscription`).subscribe({
+      next: (s) => this.billing.set(s),
+      error: () => {},
+    });
+    this.http.get<{ billingEnabled: boolean; plans: BillingPlan[] }>(`${environment.apiUrl}/api/billing/plans`).subscribe({
+      next: (r) => this.billingPlans.set(r.plans ?? []),
+      error: () => {},
+    });
+  }
+
+  subscribe(planId: string) {
+    this.billingError.set('');
+    this.billingBusy.set(planId);
+    this.http.post<{ url: string }>(`${environment.apiUrl}/api/billing/checkout`, { planId }).subscribe({
+      next: (r) => { if (isPlatformBrowser(this.platformId)) window.location.href = r.url; },
+      error: (err) => { this.billingError.set(err.error?.error ?? 'Could not start checkout.'); this.billingBusy.set(''); },
+    });
+  }
+
+  manageBilling() {
+    this.billingError.set('');
+    this.billingBusy.set('portal');
+    this.http.post<{ url: string }>(`${environment.apiUrl}/api/billing/portal`, {}).subscribe({
+      next: (r) => { if (isPlatformBrowser(this.platformId)) window.location.href = r.url; },
+      error: (err) => { this.billingError.set(err.error?.error ?? 'Could not open billing portal.'); this.billingBusy.set(''); },
+    });
+  }
+
+  planPrice(p: BillingPlan): string {
+    const cycle = p.billingCycleMonths === 1 ? 'mo' : `${p.billingCycleMonths} mo`;
+    return `AED ${p.priceAed.toLocaleString()} / ${cycle}`;
+  }
+
+  get isCurrentPlan(): (planId: string) => boolean {
+    return (planId: string) => this.billing()?.status === 'ACTIVE' && this.billing()?.plan?.id === planId;
   }
 
   // ── Team invites ──────────────────────────────────────────────────────────

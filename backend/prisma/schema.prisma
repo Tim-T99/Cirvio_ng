@@ -208,6 +208,7 @@ model Plan {
   maxAdmins          Int
   priceAed           Float
   billingCycleMonths Int      @default(1)
+  stripePriceId      String?  // Stripe Price ID this plan maps to (for checkout)
   isActive           Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -237,6 +238,10 @@ model Tenant {
   status               TenantStatus @default(TRIAL)
   trialEndsAt          DateTime?
   subscriptionEndsAt   DateTime?
+
+  // Stripe billing
+  stripeCustomerId     String?      @unique
+  stripeSubscriptionId String?      @unique
 
   // Country (ISO 3166-1 alpha-2) — drives which compliance modules are surfaced
   country              String       @default("AE")

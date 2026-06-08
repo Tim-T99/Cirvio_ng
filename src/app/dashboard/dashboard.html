@@ -18,6 +18,18 @@
   <app-sidenav [mobileOpen]="mobileNavOpen()" (navClose)="mobileNavOpen.set(false)" />
 
   <main class="dash-main" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;">
+    @if (banner(); as bn) {
+      <div [style.background]="bn.level === 'danger' ? 'var(--danger-bg)' : 'var(--warning-bg)'"
+        [style.color]="bn.level === 'danger' ? 'var(--danger)' : 'var(--warning)'"
+        style="display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 16px;font-size:13px;font-weight:500;flex-wrap:wrap;border-bottom:1px solid var(--border-soft);">
+        <span>{{ bn.text }}</span>
+        <a routerLink="/dashboard/settings"
+          [style.background]="bn.level === 'danger' ? 'var(--danger)' : 'var(--warning)'"
+          style="color:#fff;text-decoration:none;font-weight:600;padding:4px 14px;border-radius:var(--radius-pill);font-size:12px;">
+          {{ bn.level === 'danger' ? 'Upgrade now' : 'View plans' }}
+        </a>
+      </div>
+    }
     <router-outlet />
   </main>
 </div>

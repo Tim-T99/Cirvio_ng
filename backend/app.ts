@@ -13,6 +13,8 @@ import wpsRoutes from "./src/routes/wps.routes";
 import documentRoutes from "./src/routes/document.routes";
 import uploadRoutes from "./src/routes/upload.routes";
 import chatRoutes from "./src/routes/chat.routes";
+import billingRoutes from "./src/routes/billing.routes";
+import * as billingCtrl from "./src/controllers/billing.controller";
 
 import {
   globalLimiter,
@@ -41,6 +43,14 @@ app.use(
     allowedHeaders: ["Authorization", "Content-Type"],
   })
 );
+// Stripe webhook needs the raw request body for signature verification, so it
+// must be registered BEFORE express.json (which would consume/parse the body).
+app.post(
+  "/api/billing/webhook",
+  express.raw({ type: "application/json" }),
+  billingCtrl.webhook
+);
+
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
@@ -71,6 +81,7 @@ app.use("/api/wps",       apiLimiter, wpsRoutes);
 app.use("/api/documents", apiLimiter, documentRoutes);
 app.use("/api/uploads",   apiLimiter, uploadRoutes);
 app.use("/api/chat",      chatLimiter, chatRoutes);
+app.use("/api/billing",   apiLimiter, billingRoutes);
 
 // ─── 404 Handler ──────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

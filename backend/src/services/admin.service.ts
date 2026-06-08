@@ -336,6 +336,7 @@ export const createPlan = async (data: {
   maxAdmins: number
   priceAed: number
   billingCycleMonths?: number
+  stripePriceId?: string
 }) => {
   return prisma.plan.create({ data })
 }
@@ -347,6 +348,7 @@ export const updatePlan = async (
     maxEmployees: number
     maxAdmins: number
     priceAed: number
+    stripePriceId: string
     isActive: boolean
   }>
 ) => {
