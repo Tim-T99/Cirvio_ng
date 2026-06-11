@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -8,6 +8,7 @@ interface Stat { value: string; label: string; }
 interface HeroStat { label: string; value: string; sub: string; warn?: boolean; ok?: boolean; }
 interface Alert { name: string; type: string; days: number; urgent: boolean; }
 interface Calendar { name: string; date: string; status: string; dot: string; }
+type TabKey = 'dashboard' | 'org' | 'visas' | 'ai' | 'export';
 
 @Component({
   selector: 'app-home',
@@ -67,6 +68,52 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     { name: 'Labour card — R. Shankar',   date: 'Jun 28', status: 'upcoming',      dot: 'var(--warning)' },
     { name: 'Trade licence renewal',      date: 'Jul 03', status: 'upcoming',      dot: 'var(--info)' },
   ];
+
+  // ── Interactive product showcase ──────────────────────────────────────────
+  readonly activeTab = signal<TabKey>('dashboard');
+  setTab(k: TabKey) { this.activeTab.set(k); }
+
+  readonly tabs: { key: TabKey; label: string; nav: string }[] = [
+    { key: 'dashboard', label: 'Dashboard',    nav: 'Home' },
+    { key: 'org',       label: 'Org chart',    nav: 'Org Chart' },
+    { key: 'visas',     label: 'Visa alerts',  nav: 'Visas' },
+    { key: 'ai',        label: 'AI assistant', nav: 'Chat' },
+    { key: 'export',    label: 'Data export',  nav: 'Settings' },
+  ];
+  readonly navItems = ['Home', 'Employees', 'Visas', 'WPS', 'Org Chart', 'Chat', 'Settings'];
+  activeNav() { return this.tabs.find(t => t.key === this.activeTab())?.nav ?? 'Home'; }
+  tabLabel() { return this.tabs.find(t => t.key === this.activeTab())?.label ?? ''; }
+
+  readonly deptBars = [
+    { name: 'Operations', pct: 100, color: 'var(--cirvio-sage)' },
+    { name: 'Logistics',  pct: 74,  color: 'var(--cirvio-sage)' },
+    { name: 'Finance',    pct: 52,  color: 'var(--info)' },
+    { name: 'HR',         pct: 33,  color: 'var(--warning)' },
+    { name: 'Sales',      pct: 61,  color: 'var(--cirvio-mint)' },
+  ];
+
+  readonly visaRows = [
+    { name: 'Ahmed Al Mansoori', type: 'Employment', days: 12, status: 'Expiring', urgent: true },
+    { name: 'Sarah Okafor',      type: 'Residence',  days: 24, status: 'Expiring', urgent: false },
+    { name: 'Ravi Shankar',      type: 'Employment', days: 31, status: 'Expiring', urgent: false },
+    { name: 'Mei Lin',           type: 'Investor',   days: 88, status: 'Active',   urgent: false },
+    { name: 'Tomás Rivera',      type: 'Employment', days: 140,status: 'Active',   urgent: false },
+  ];
+
+  readonly aiMsgs: { role: 'user' | 'ai'; text: string; chips?: string[] }[] = [
+    { role: 'user', text: 'Which managers are overloaded?' },
+    { role: 'ai',   text: 'Two managers have wide spans: Operations lead (11 reports) and Logistics lead (9). Consider a team-lead layer under Operations to rebalance.', chips: ['Org overview'] },
+  ];
+
+  readonly exportSets = [
+    { name: 'Employees', rows: 84 },
+    { name: 'Visas', rows: 80 },
+    { name: 'WPS records', rows: 1008 },
+    { name: 'Documents', rows: 212 },
+    { name: 'Departments', rows: 9 },
+  ];
+
+  readonly worksWith = ['Power BI', 'Tableau', 'WPS / SIF', 'MOHRE format', 'Emirates ID', 'CSV / Excel', 'Passkeys', 'Stripe billing'];
 
   ngAfterViewInit() {
     if (!isPlatformBrowser(this.platformId)) return;
