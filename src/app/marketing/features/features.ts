@@ -140,6 +140,37 @@ export class FeaturesComponent implements AfterViewInit, OnDestroy {
     { icon: 'refresh', title: 'Passwordless Sign-in', desc: 'Sign in with passkeys — Face ID, Touch ID, or a security key. No password to phish.' },
   ];
 
+  // ── Per-feature mockup data ────────────────────────────────────────────────
+  screenRoute(icon: string): string {
+    return { users: 'employees', shield: 'visas', file: 'wps', bell: 'visas', sparkles: 'chat', chart: 'settings' }[icon] ?? 'dashboard';
+  }
+
+  readonly visaRows = [
+    { name: 'Ahmed Al Mansoori', type: 'Employment', days: 12, status: 'Expiring', urgent: true },
+    { name: 'Sarah Okafor',      type: 'Residence',  days: 24, status: 'Expiring', urgent: false },
+    { name: 'Ravi Shankar',      type: 'Employment', days: 31, status: 'Expiring', urgent: false },
+    { name: 'Mei Lin',           type: 'Investor',   days: 88, status: 'Active',   urgent: false },
+  ];
+
+  readonly alertRows = [
+    { name: 'Visa — A. Al Mansoori', sub: 'Employment · expires in 12 days', level: 'danger' },
+    { name: 'Emirates ID — S. Okafor', sub: 'Renewal due in 24 days', level: 'warning' },
+    { name: 'WPS filing', sub: 'June cycle due Jun 14', level: 'warning' },
+    { name: 'Labour card — R. Shankar', sub: 'Expires in 31 days', level: 'info' },
+  ];
+
+  readonly aiMsgs: { role: 'user' | 'ai'; text: string; chips?: string[] }[] = [
+    { role: 'user', text: 'Where are we top-heavy?' },
+    { role: 'ai',   text: 'Operations has 11 reports under one manager — the widest span in the org. Three employees also have no manager assigned.', chips: ['Org overview'] },
+  ];
+
+  readonly exportSets = [
+    { name: 'Employees', rows: 84 },
+    { name: 'Visas', rows: 80 },
+    { name: 'WPS records', rows: 1008 },
+    { name: 'Departments', rows: 9 },
+  ];
+
   ngAfterViewInit() {
     if (!isPlatformBrowser(this.platformId)) return;
     this.observer = new IntersectionObserver(
