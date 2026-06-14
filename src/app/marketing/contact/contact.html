@@ -1,14 +1,17 @@
 <div style="background:var(--bg);">
 
   <!-- Header -->
-  <section style="background:var(--cirvio-hunter);padding:72px 32px 80px;text-align:center;">
-    <p style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--cirvio-mint);margin-bottom:16px;">Get in touch</p>
-    <h1 style="font-size:48px;font-weight:600;letter-spacing:-0.025em;color:var(--fg-on-dark);margin-bottom:18px;line-height:1.1;">
-      We'd love to hear from you.
-    </h1>
-    <p style="font-size:18px;color:rgba(236,236,232,0.7);max-width:480px;margin:0 auto;line-height:1.65;">
-      Whether you have a question about pricing, features, or compliance requirements — our team is ready to help.
-    </p>
+  <section style="background:var(--cirvio-hunter);padding:72px 32px 80px;text-align:center;position:relative;overflow:hidden;">
+    <div class="anim-aurora" style="position:absolute;inset:-15% -5%;background:radial-gradient(ellipse at 40% 20%, rgba(140,201,181,0.22) 0%, transparent 60%);pointer-events:none;z-index:0;"></div>
+    <div style="position:relative;z-index:1;">
+      <p style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--cirvio-mint);margin-bottom:16px;">Get in touch</p>
+      <h1 style="font-size:48px;font-weight:600;letter-spacing:-0.025em;color:var(--fg-on-dark);margin-bottom:18px;line-height:1.1;">
+        We'd love to hear from you.
+      </h1>
+      <p style="font-size:18px;color:rgba(236,236,232,0.7);max-width:480px;margin:0 auto;line-height:1.65;">
+        Whether you have a question about pricing, features, or compliance requirements — our team is ready to help.
+      </p>
+    </div>
   </section>
 
   <!-- Main content -->
@@ -66,7 +69,7 @@
       </div>
 
       <!-- Form -->
-      <div class="cirvio-glass" style="padding:36px 32px;border-radius:20px;">
+      <div class="cirvio-glass card-lift" style="padding:36px 32px;border-radius:20px;">
         @if (status() === 'success') {
           <div style="text-align:center;padding:40px 20px;">
             <div style="width:64px;height:64px;border-radius:50%;background:var(--success-bg);border:1px solid var(--success);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
