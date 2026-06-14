@@ -1,14 +1,17 @@
 <div style="background:var(--bg);">
 
   <!-- Page header -->
-  <section style="background:var(--cirvio-hunter);padding:72px 32px 80px;text-align:center;">
-    <p style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--cirvio-mint);margin-bottom:16px;">Pricing</p>
-    <h1 style="font-size:48px;font-weight:600;letter-spacing:-0.025em;color:var(--fg-on-dark);margin-bottom:18px;line-height:1.1;">
-      Simple, transparent pricing.
-    </h1>
-    <p style="font-size:18px;color:rgba(236,236,232,0.7);max-width:480px;margin:0 auto;line-height:1.65;">
-      No hidden fees. No per-module charges. Everything your team needs to stay compliant, in one flat price.
-    </p>
+  <section style="background:var(--cirvio-hunter);padding:72px 32px 80px;text-align:center;position:relative;overflow:hidden;">
+    <div class="anim-aurora" style="position:absolute;inset:-15% -5%;background:radial-gradient(ellipse at 30% 15%, rgba(140,201,181,0.22) 0%, transparent 60%);pointer-events:none;z-index:0;"></div>
+    <div style="position:relative;z-index:1;">
+      <p style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--cirvio-mint);margin-bottom:16px;">Pricing</p>
+      <h1 style="font-size:48px;font-weight:600;letter-spacing:-0.025em;color:var(--fg-on-dark);margin-bottom:18px;line-height:1.1;">
+        Simple, transparent pricing.
+      </h1>
+      <p style="font-size:18px;color:rgba(236,236,232,0.7);max-width:480px;margin:0 auto;line-height:1.65;">
+        No hidden fees. No per-module charges. Everything your team needs to stay compliant, in one flat price.
+      </p>
+    </div>
   </section>
 
   <!-- Pricing cards -->
@@ -16,9 +19,11 @@
     <div style="max-width:1100px;margin:0 auto;">
       <div class="col-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch;">
         @for (p of plans; track p.name) {
-          <div class="reveal cirvio-glass" style="padding:32px 28px;border-radius:20px;display:flex;flex-direction:column;position:relative;"
+          <div class="reveal cirvio-glass card-lift" style="padding:32px 28px;border-radius:20px;display:flex;flex-direction:column;position:relative;"
                [style.border]="p.highlight ? '2px solid var(--cirvio-sage)' : '1px solid var(--border)'"
-               [style.background]="p.highlight ? 'var(--cirvio-mint-50)' : 'var(--bg)'">
+               [style.background]="p.highlight ? 'var(--cirvio-mint-50)' : 'var(--bg)'"
+               [style.box-shadow]="p.highlight ? '0 24px 60px rgba(74,121,93,0.18)' : 'var(--shadow-sm)'"
+               [style.transform]="p.highlight ? 'translateY(-8px)' : 'none'">
 
             @if (p.badge) {
               <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--cirvio-sage);color:#fff;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:4px 14px;border-radius:99px;white-space:nowrap;">
@@ -73,8 +78,8 @@
         }
       </div>
 
-      <p class="reveal" style="text-align:center;margin-top:32px;font-size:13px;color:var(--fg-3);">
-        All prices exclude VAT. Annual billing available at 2 months free.
+      <p class="reveal" style="text-align:center;margin-top:40px;font-size:13px;color:var(--fg-3);">
+        All prices exclude VAT · 14-day free trial on every plan · cancel anytime.
       </p>
     </div>
   </section>
@@ -94,7 +99,7 @@
 
       <div style="display:flex;flex-direction:column;gap:16px;">
         @for (f of faqs; track f.q) {
-          <div class="cirvio-glass reveal" style="padding:24px 28px;border-radius:16px;">
+          <div class="cirvio-glass reveal card-lift" style="padding:24px 28px;border-radius:16px;">
             <h3 style="font-size:15px;font-weight:600;color:var(--fg-1);margin-bottom:8px;">{{ f.q }}</h3>
             <p style="font-size:14px;color:var(--fg-2);line-height:1.65;margin:0;">{{ f.a }}</p>
           </div>
