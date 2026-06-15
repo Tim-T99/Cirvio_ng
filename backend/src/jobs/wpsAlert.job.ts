@@ -7,7 +7,7 @@
 // ─────────────────────────────────────────────
 
 import cron from 'node-cron'
-import { processWpsAlerts } from '../services/wps.service'
+import { processWpsAlerts, deliverWpsAlertDigests } from '../services/wps.service'
 
 /**
  * Runs the WPS alert processing job.
@@ -17,15 +17,20 @@ import { processWpsAlerts } from '../services/wps.service'
  */
 async function runWpsAlertJob(): Promise<void> {
   const startTime = Date.now()
-  console.log(`[wpsAlert.job] Running at ${new Date().toISOString()}`)
+  const runStart = new Date()
+  console.log(`[wpsAlert.job] Running at ${runStart.toISOString()}`)
 
   try {
     const results = await processWpsAlerts()
 
+    // Email the freshly-fired alerts to each tenant's admins/HR (no-op if email off).
+    const { tenantsNotified } = await deliverWpsAlertDigests(runStart)
+
     console.log(
       `[wpsAlert.job] Complete in ${Date.now() - startTime}ms — ` +
       `${results.processed} alert(s) processed, ` +
-      `${results.latePaymentsDetected} late payment(s) detected.` +
+      `${results.latePaymentsDetected} late payment(s) detected, ` +
+      `${tenantsNotified} tenant(s) emailed.` +
       (results.errors.length > 0
         ? ` Errors: ${results.errors.join('; ')}`
         : '')

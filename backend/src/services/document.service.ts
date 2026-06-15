@@ -10,6 +10,7 @@
 import { prisma } from '../prisma/client'
 import { DocumentType } from '@prisma/client'
 import { assertTenantActive } from './tenant.service'
+import { createDocumentUploadUrl, createDocumentDownloadUrl } from '../lib/storage'
 
 
 // ─────────────────────────────────────────────
@@ -339,19 +340,11 @@ export const getPresignedDownloadUrl = async (
 
   if (!document) throw new Error('Document not found')
 
-  // In production: call your R2/S3 SDK to generate presigned URL
-  // Example for Cloudflare R2:
-  // const url = await r2.getSignedUrl('getObject', {
-  //   Bucket: process.env.R2_BUCKET_NAME,
-  //   Key: document.fileUrl,
-  //   Expires: expiresInSeconds,
-  // })
-
-  // Placeholder — replace with actual SDK call
-  const presignedUrl = `${process.env.FILE_BUCKET_DOMAIN}/${document.fileUrl}?expires=${Date.now() + expiresInSeconds * 1000}`
+  // Short-lived signed URL from the private bucket (file never proxies through us).
+  const downloadUrl = await createDocumentDownloadUrl(document.fileUrl, expiresInSeconds)
 
   return {
-    presignedUrl,
+    downloadUrl,
     fileName: document.fileName,
     mimeType: document.mimeType,
     expiresAt: new Date(Date.now() + expiresInSeconds * 1000),
@@ -381,21 +374,12 @@ export const getPresignedUploadUrl = async (
 
   const bucketKey = `uploads/${tenantId}/${employeeId}/${Date.now()}_${sanitizedFileName}`
 
-  // In production: call your R2/S3 SDK to generate presigned PUT URL
-  // Example for Cloudflare R2:
-  // const presignedUrl = await r2.getSignedUrl('putObject', {
-  //   Bucket: process.env.R2_BUCKET_NAME,
-  //   Key: bucketKey,
-  //   ContentType: mimeType,
-  //   Expires: 300,
-  // })
-
-  // Placeholder — replace with actual SDK call
-  const presignedUrl = `${process.env.FILE_BUCKET_DOMAIN}/${bucketKey}?method=PUT&expires=${Date.now() + 300000}`
+  // Signed PUT URL — client uploads the file directly to the bucket.
+  const { uploadUrl, path } = await createDocumentUploadUrl(bucketKey)
 
   return {
-    presignedUrl,
-    bucketKey,   // client sends this back as fileUrl when calling createDocument
+    uploadUrl,
+    bucketKey: path,   // client sends this back as fileUrl when calling createDocument
     expiresAt: new Date(Date.now() + 300 * 1000),
   }
 }

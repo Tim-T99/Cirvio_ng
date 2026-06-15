@@ -6,7 +6,7 @@
 // ─────────────────────────────────────────────
 
 import cron from 'node-cron'
-import { processVisaAlerts } from '../services/visa.service'
+import { processVisaAlerts, deliverVisaAlertDigests } from '../services/visa.service'
 
 /**
  * Runs the visa alert processing job.
@@ -16,15 +16,20 @@ import { processVisaAlerts } from '../services/visa.service'
  */
 async function runVisaAlertJob(): Promise<void> {
   const startTime = Date.now()
-  console.log(`[visaAlert.job] Running at ${new Date().toISOString()}`)
+  const runStart = new Date()
+  console.log(`[visaAlert.job] Running at ${runStart.toISOString()}`)
 
   try {
     const results = await processVisaAlerts()
 
+    // Email the freshly-fired alerts to each tenant's admins/HR (no-op if email off).
+    const { tenantsNotified } = await deliverVisaAlertDigests(runStart)
+
     console.log(
       `[visaAlert.job] Complete in ${Date.now() - startTime}ms — ` +
       `${results.processed} alert(s) processed, ` +
-      `${results.statusUpdates} status update(s).` +
+      `${results.statusUpdates} status update(s), ` +
+      `${tenantsNotified} tenant(s) emailed.` +
       (results.errors.length > 0
         ? ` Errors: ${results.errors.join('; ')}`
         : '')

@@ -12,8 +12,11 @@ import {
   SifStatus,
   WpsAlertType,
   AlertStatus,
+  UserRole,
 } from '@prisma/client'
 import { assertTenantActive } from './tenant.service'
+import { uploadFile, isStorageConfigured } from '../lib/storage'
+import { isEmailConfigured, sendAlertDigestEmail } from '../lib/email'
 
 
 // ─────────────────────────────────────────────
@@ -794,9 +797,12 @@ export const generateSifFile = async (
   // Build SIF content (UAE SIF format)
   const sifContent = buildSifContent(records, month, year)
 
-  // In production: upload sifContent to R2/S3, store URL
-  // For now: store as placeholder — file upload handled in controller
-  const fileUrl = `pending_upload/${fileName}`
+  // Persist the SIF to private storage when configured. The content is also
+  // returned in the response, so generation works even without storage set up.
+  let fileUrl = `pending_upload/${fileName}`
+  if (isStorageConfigured()) {
+    fileUrl = await uploadFile(`sif/${tenantId}/${fileName}`, Buffer.from(sifContent, 'utf8'), 'text/csv')
+  }
 
   const sifFile = existing
     ? await prisma.sifFile.update({
@@ -1129,4 +1135,74 @@ export const getWpsDashboardSummary = async (
       totalDisbursedAed: m._sum.netSalary ?? 0,
     })),
   }
+}
+
+// ─────────────────────────────────────────────
+// ALERT DELIVERY
+// Emails a digest of newly-fired WPS alerts to each tenant's admins/HR.
+// `since` = run start time, so only alerts fired this run are emailed.
+// No-op when email isn't configured.
+// ─────────────────────────────────────────────
+
+export const deliverWpsAlertDigests = async (
+  since: Date
+): Promise<{ tenantsNotified: number }> => {
+  if (!isEmailConfigured()) return { tenantsNotified: 0 }
+
+  const alerts = await prisma.wpsAlert.findMany({
+    where: { status: AlertStatus.SENT, sentAt: { gte: since } },
+    select: {
+      tenantId: true,
+      alertType: true,
+      wpsRecord: {
+        select: {
+          month: true,
+          year: true,
+          employee: { select: { firstName: true, lastName: true } },
+        },
+      },
+    },
+  })
+  if (alerts.length === 0) return { tenantsNotified: 0 }
+
+  const byTenant = new Map<string, typeof alerts>()
+  for (const a of alerts) {
+    const list = byTenant.get(a.tenantId) ?? []
+    list.push(a)
+    byTenant.set(a.tenantId, list)
+  }
+
+  const tagFor = (t: WpsAlertType): string =>
+    t === WpsAlertType.PAYMENT_OVERDUE ? 'Overdue'
+      : t === WpsAlertType.VIOLATION_RAISED ? 'Violation'
+      : 'Due soon'
+
+  let tenantsNotified = 0
+  for (const [tenantId, list] of byTenant) {
+    const recipients = await prisma.user.findMany({
+      where: { tenantId, isActive: true, role: { in: [UserRole.TENANT_ADMIN, UserRole.HR_MANAGER] } },
+      select: { email: true },
+    })
+    if (recipients.length === 0) continue
+
+    const rows = list.map((a) => ({
+      primary: `${a.wpsRecord.employee.firstName} ${a.wpsRecord.employee.lastName}`,
+      secondary: `WPS ${a.wpsRecord.year}-${String(a.wpsRecord.month).padStart(2, '0')}`,
+      tag: tagFor(a.alertType),
+      urgent: a.alertType !== WpsAlertType.PAYMENT_DUE,
+    }))
+
+    for (const r of recipients) {
+      await sendAlertDigestEmail({
+        to: r.email,
+        subject: `WPS payment alerts — ${list.length} item${list.length === 1 ? '' : 's'}`,
+        heading: 'WPS payment deadlines',
+        intro: 'These WPS payments are due, overdue, or have a raised violation:',
+        rows,
+      })
+    }
+    tenantsNotified++
+  }
+
+  return { tenantsNotified }
 }

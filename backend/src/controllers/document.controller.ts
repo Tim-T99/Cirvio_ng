@@ -32,6 +32,10 @@ export const getUploadUrl = async (req: Request, res: Response): Promise<void> =
       res.status(400).json({ error: message })
       return
     }
+    if (message.includes('not configured')) {
+      res.status(503).json({ error: message })
+      return
+    }
     res.status(500).json({ error: 'Internal server error' })
   }
 }
@@ -93,6 +97,10 @@ export const getDownloadUrl = async (req: Request, res: Response): Promise<void>
     const message = (err as Error).message
     if (message.includes('not found')) {
       res.status(404).json({ error: message })
+      return
+    }
+    if (message.includes('not configured')) {
+      res.status(503).json({ error: message })
       return
     }
     res.status(500).json({ error: 'Internal server error' })

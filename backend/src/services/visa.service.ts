@@ -7,8 +7,9 @@
 // ─────────────────────────────────────────────
 
 import { prisma } from '../prisma/client'
-import { VisaStatus, VisaType, VisaAlertType, AlertStatus, Emirate } from '@prisma/client'
+import { VisaStatus, VisaType, VisaAlertType, AlertStatus, Emirate, UserRole } from '@prisma/client'
 import { assertTenantActive } from './tenant.service'
+import { isEmailConfigured, sendAlertDigestEmail } from '../lib/email'
 
 
 // ─────────────────────────────────────────────
@@ -730,4 +731,69 @@ export const getVisaDashboardSummary = async (tenantId: string) => {
     },
     pendingAlerts,
   }
+}
+
+// ─────────────────────────────────────────────
+// ALERT DELIVERY
+// Emails a digest of newly-fired visa alerts to each tenant's admins/HR.
+// `since` = the run start time, so only alerts fired this run are sent
+// (each alert transitions PENDING -> SENT once, so no duplicate emails).
+// No-op when email isn't configured.
+// ─────────────────────────────────────────────
+
+export const deliverVisaAlertDigests = async (
+  since: Date
+): Promise<{ tenantsNotified: number }> => {
+  if (!isEmailConfigured()) return { tenantsNotified: 0 }
+
+  const alerts = await prisma.visaAlert.findMany({
+    where: { status: AlertStatus.SENT, sentAt: { gte: since } },
+    select: {
+      tenantId: true,
+      daysRemaining: true,
+      visaRecord: {
+        select: {
+          visaType: true,
+          employee: { select: { firstName: true, lastName: true } },
+        },
+      },
+    },
+  })
+  if (alerts.length === 0) return { tenantsNotified: 0 }
+
+  const byTenant = new Map<string, typeof alerts>()
+  for (const a of alerts) {
+    const list = byTenant.get(a.tenantId) ?? []
+    list.push(a)
+    byTenant.set(a.tenantId, list)
+  }
+
+  let tenantsNotified = 0
+  for (const [tenantId, list] of byTenant) {
+    const recipients = await prisma.user.findMany({
+      where: { tenantId, isActive: true, role: { in: [UserRole.TENANT_ADMIN, UserRole.HR_MANAGER] } },
+      select: { email: true },
+    })
+    if (recipients.length === 0) continue
+
+    const rows = list.map((a) => ({
+      primary: `${a.visaRecord.employee.firstName} ${a.visaRecord.employee.lastName}`,
+      secondary: `${a.visaRecord.visaType} visa`,
+      tag: `${a.daysRemaining}d left`,
+      urgent: (a.daysRemaining ?? 99) <= 14,
+    }))
+
+    for (const r of recipients) {
+      await sendAlertDigestEmail({
+        to: r.email,
+        subject: `${list.length} visa${list.length === 1 ? '' : 's'} approaching expiry`,
+        heading: 'Upcoming visa expiries',
+        intro: 'These visas are approaching their expiry date and may need renewal:',
+        rows,
+      })
+    }
+    tenantsNotified++
+  }
+
+  return { tenantsNotified }
 }
