@@ -33,19 +33,20 @@ Assuming the env vars in §4 are set, these are real and functional:
 - **Marketing site** — accurate to the product, interactive device mockups.
 - **Deploys** — Prisma migrations (`migrate deploy`, self-baselining).
 
-## 2. What's stubbed / NOT working yet ⚠️
+## 2. Status of the previously-stubbed items
 
-These exist in the UI/API but are placeholders — plan around them:
+1. ✅ **Employee document files** — DONE. Upload/download now use Supabase signed
+   URLs against a private `documents` bucket (`storage.ts` +
+   `document.service.ts`). Requires `SUPABASE_*` configured.
+2. ✅ **SIF file storage** — DONE. Generated SIF content is uploaded to the
+   private bucket and the real path is stored on `SifFile.fileUrl`. Requires
+   `SUPABASE_*` configured.
+3. ✅ **Alert delivery** — DONE. The visa/WPS cron jobs now email a digest of
+   freshly-fired alerts to each tenant's admins/HR (each alert emailed once).
+   Requires `RESEND_API_KEY` + `EMAIL_FROM`; no-op if email isn't configured.
 
-1. **Employee document files** — upload/download presigned URLs are
-   **placeholders** (`document.service.ts`). Document *metadata* (type, name,
-   expiry) is stored and tracked, but the **actual files are not stored or
-   retrievable**. `storage.ts` only handles images, not documents.
-2. **SIF file storage** — the SIF *content* is generated and returned by the API,
-   but it is **not uploaded to a bucket**, so the stored `fileUrl` is a
-   placeholder and download-by-URL won't work.
-3. **Alert delivery** — visa/WPS alerts are generated in the DB by cron and shown
-   **in-app on the dashboard**, but are **not delivered by email or push**.
+Still intentionally out of scope (not blocking normal use):
+
 4. **WPS submission** — SIF generation only; "submit/confirm" are status changes,
    **not real MOHRE/bank API calls**.
 5. **In-memory stores** — WebAuthn challenges and rate limiting live in process

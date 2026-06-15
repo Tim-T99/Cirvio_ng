@@ -129,3 +129,34 @@ export async function sendPasswordResetEmail(opts: {
   )
   return sendEmail({ to: opts.to, subject: 'Reset your Cirvio password', html })
 }
+
+/** Compliance alert digest (visa / WPS deadlines). */
+export async function sendAlertDigestEmail(opts: {
+  to: string
+  subject: string
+  heading: string
+  intro: string
+  rows: { primary: string; secondary: string; tag: string; urgent?: boolean }[]
+}): Promise<boolean> {
+  const items = opts.rows
+    .map(
+      (r) => `
+      <tr>
+        <td style="padding:9px 0;border-bottom:1px solid #f0eeec;">
+          <div style="font-size:14px;color:#1c1917;font-weight:500;">${r.primary}</div>
+          <div style="font-size:12px;color:#78716c;">${r.secondary}</div>
+        </td>
+        <td align="right" style="padding:9px 0;border-bottom:1px solid #f0eeec;white-space:nowrap;">
+          <span style="font-size:12px;font-weight:600;color:${r.urgent ? '#b84545' : '#c68a2e'};">${r.tag}</span>
+        </td>
+      </tr>`,
+    )
+    .join('')
+  const html = layout(
+    opts.heading,
+    `<p style="font-size:14px;color:#44403c;line-height:1.6;margin:0 0 18px;">${opts.intro}</p>
+     <table style="width:100%;border-collapse:collapse;margin:0 0 22px;">${items}</table>
+     <p style="margin:0;">${button(`${frontendUrl()}/dashboard`, 'Open Cirvio')}</p>`,
+  )
+  return sendEmail({ to: opts.to, subject: opts.subject, html })
+}
