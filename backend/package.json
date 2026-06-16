@@ -11,6 +11,7 @@
     "start": "node scripts/migrate.js && node dist/server.js",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
+    "seed": "tsx prisma/seed.ts",
     "generate": "prisma generate",
     "postinstall": "prisma generate",
     "vercel-build": "prisma generate",
