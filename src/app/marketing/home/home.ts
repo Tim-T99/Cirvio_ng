@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, OnDestroy, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { SeoService } from '../../core/seo.service';
 
 interface Feature { icon: string; title: string; desc: string; }
 interface Step { n: string; title: string; desc: string; }
@@ -18,7 +19,16 @@ type TabKey = 'dashboard' | 'org' | 'visas' | 'ai' | 'export';
 })
 export class HomeComponent implements AfterViewInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
+  private seo = inject(SeoService);
   private observer?: IntersectionObserver;
+
+  constructor() {
+    this.seo.set({
+      title: 'Cirvio — Workforce Compliance, Simplified for the Gulf',
+      description: 'Track visas, Emirates IDs, and WPS payroll compliance, get ahead of every deadline, and turn your workforce data into reports — from one platform built for the Gulf.',
+      path: '/',
+    });
+  }
 
   readonly features: Feature[] = [
     { icon: 'users',    title: 'Employee Records',      desc: 'Complete digital profiles — personal details, documents, departments, and a real reporting hierarchy.' },

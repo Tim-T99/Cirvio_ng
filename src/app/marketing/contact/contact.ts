@@ -1,6 +1,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { SeoService } from '../../core/seo.service';
 
 interface ContactForm {
   firstName: string;
@@ -20,6 +21,15 @@ interface ContactForm {
 })
 export class ContactComponent {
   private http = inject(HttpClient);
+  private seo = inject(SeoService);
+
+  constructor() {
+    this.seo.set({
+      title: 'Contact Cirvio — Book a Demo',
+      description: 'Get in touch with the Cirvio team for sales, pricing, support, or a live demo of our UAE workforce compliance platform.',
+      path: '/contact',
+    });
+  }
 
   readonly subjects: string[] = [
     'General enquiry',

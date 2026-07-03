@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { SeoService } from '../../core/seo.service';
 
 interface Plan {
   icon: string;
@@ -25,7 +26,16 @@ interface Faq { q: string; a: string; }
 })
 export class PricingComponent implements AfterViewInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
+  private seo = inject(SeoService);
   private observer?: IntersectionObserver;
+
+  constructor() {
+    this.seo.set({
+      title: 'Pricing — Simple, Transparent Plans | Cirvio',
+      description: 'Simple, transparent pricing for Cirvio workforce compliance software. No hidden modules, no surprise add-ons. Start a 14-day free trial, no credit card required.',
+      path: '/pricing',
+    });
+  }
 
   readonly plans: Plan[] = [
     {

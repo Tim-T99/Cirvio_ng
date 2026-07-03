@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { SeoService } from '../../core/seo.service';
 
 interface Value { icon: string; title: string; desc: string; }
 interface Stat { value: string; label: string; }
@@ -13,7 +14,16 @@ interface Stat { value: string; label: string; }
 })
 export class AboutComponent implements AfterViewInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
+  private seo = inject(SeoService);
   private observer?: IntersectionObserver;
+
+  constructor() {
+    this.seo.set({
+      title: 'About Cirvio — Built for UAE & Gulf Workforce Compliance',
+      description: 'Cirvio exists so businesses never miss a compliance deadline. Learn why we built UAE-first workforce compliance software for visas, Emirates IDs, and WPS payroll.',
+      path: '/about',
+    });
+  }
 
   readonly values: Value[] = [
     { icon: 'target', title: 'Built for UAE compliance',          desc: 'Every feature is designed around the specific requirements of MOHRE, GDRFA, and UAE labour law — not retrofitted from a generic HR tool.' },

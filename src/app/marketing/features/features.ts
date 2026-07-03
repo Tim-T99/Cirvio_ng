@@ -1,6 +1,7 @@
 import { Component, AfterViewInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { SeoService } from '../../core/seo.service';
 
 interface FeatureBlock {
   icon: string;
@@ -20,7 +21,16 @@ interface Extra { icon: string; title: string; desc: string; }
 })
 export class FeaturesComponent implements AfterViewInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
+  private seo = inject(SeoService);
   private observer?: IntersectionObserver;
+
+  constructor() {
+    this.seo.set({
+      title: 'Features — Visa, Emirates ID & WPS Compliance Tools | Cirvio',
+      description: 'Every tool your HR team needs: employee records, visa & Emirates ID tracking, WPS payroll compliance, smart alerts, an AI workforce assistant, and Power BI / CSV export.',
+      path: '/features',
+    });
+  }
 
   readonly features: FeatureBlock[] = [
     {
