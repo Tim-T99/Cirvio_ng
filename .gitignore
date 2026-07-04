@@ -45,3 +45,6 @@ Thumbs.db
 
 # One-time seed scripts (may contain credentials)
 backend/prisma/seed-admin.ts
+
+# Claude Code personal-local settings (not shared)
+.claude/settings.local.json
