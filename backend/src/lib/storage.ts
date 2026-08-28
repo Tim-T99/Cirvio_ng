@@ -3,7 +3,7 @@
 // Supabase Storage helper — uploads images (tenant logos, user avatars)
 // to a public bucket and returns their public URL.
 //
-// Required env vars (set on the backend host, e.g. Railway):
+// Required env vars (set on the backend host):
 //   SUPABASE_URL                — https://<project-ref>.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY   — service-role key (server-side only, never exposed)
 //   SUPABASE_STORAGE_BUCKET     — optional, defaults to "public-assets"

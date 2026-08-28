@@ -15,7 +15,7 @@ The `start` script runs `node scripts/migrate.js && node dist/server.js`.
    from `db push`), it baselines the existing DB by marking `0_init` as applied,
    then deploys again.
 
-So the **first** deploy self-baselines the existing Railway database; every
+So the **first** deploy self-baselines the existing Supabase database; every
 deploy after that is a clean one-shot `migrate deploy` that applies only new
 migrations.
 

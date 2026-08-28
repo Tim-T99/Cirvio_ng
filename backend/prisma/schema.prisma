@@ -1,7 +1,7 @@
 // ═════════════════════════════════════════════════════════════════
 // CIRVIO — PRISMA SCHEMA
 // Multi-tenant Staff Management SaaS (UAE-first; country per tenant)
-// Stack: PostgreSQL + Prisma (DB host per DATABASE_URL; backend on Railway)
+// Stack: Supabase PostgreSQL + Prisma (DB host configured by DATABASE_URL)
 // ID strategy: uuid via gen_random_uuid() (pgcrypto extension)
 // ═════════════════════════════════════════════════════════════════
 

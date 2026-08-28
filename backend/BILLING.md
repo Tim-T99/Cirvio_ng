@@ -16,7 +16,7 @@ return a clear "not configured" response and the app runs normally on trials.
 | `STRIPE_WEBHOOK_SECRET` | for billing | `whsec_...` from the webhook endpoint you create        |
 | `FRONTEND_URL`          | yes      | Used for Checkout success/cancel + portal return URLs    |
 
-Set these in **Railway → backend service → Variables**.
+Set these in your backend host's environment variables.
 
 ## One-time Stripe setup
 

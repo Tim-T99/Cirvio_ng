@@ -17,7 +17,7 @@ you can use a free provider (default: **Groq**) — no Anthropic key required.
 | `LLM_API_KEY`  | no       | Alternative to `GROQ_API_KEY` (used if `GROQ_API_KEY` is unset).             |
 
 ### Where to set it
-Railway → your backend service → **Variables** tab → add `GROQ_API_KEY`, then
+Your backend host's environment variables → add `GROQ_API_KEY`, then
 redeploy. Get a free key (no credit card) at <https://console.groq.com>.
 
 ### Switching providers (all free-tier, no code change)

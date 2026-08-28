@@ -6,7 +6,7 @@ bucket** and referenced by their public URL (`User.avatarUrl`,
 
 ## Required environment variables
 
-Set these on the backend host (e.g. Railway):
+Set these on the backend host:
 
 | Variable                    | Required | Description                                                        |
 | --------------------------- | -------- | ------------------------------------------------------------------ |

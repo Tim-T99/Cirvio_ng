@@ -6,7 +6,7 @@ and the admin gets a copyable accept-link in the UI (Settings → Team).
 
 ## Environment variables
 
-Set on the backend host (e.g. Railway):
+Set on the backend host:
 
 | Variable         | Required | Description                                                                 |
 | ---------------- | -------- | --------------------------------------------------------------------------- |

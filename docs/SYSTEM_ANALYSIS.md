@@ -43,7 +43,7 @@ pages, and `requestPasswordReset` emails the link via Resend.
   Consider a small "integrations health" panel in the admin console.
 
 ### 2.4 WebAuthn challenge store is in-memory
-Passkey challenges live in a per-process `Map` (5-min TTL). On Vercel/Railway
+Passkey challenges live in a per-process `Map` (5-min TTL). On serverless
 with more than one instance — or any cold start between `options` and
 `verify` — passkey registration/login will intermittently fail. Needs a shared
 store (Redis or a short-lived DB row) before scaling past one instance.

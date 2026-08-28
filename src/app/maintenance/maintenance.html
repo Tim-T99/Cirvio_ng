@@ -1,0 +1,46 @@
+<main class="maintenance-shell">
+  <div class="star-field" aria-hidden="true">
+    <span class="star star-one"></span>
+    <span class="star star-two"></span>
+    <span class="star star-three"></span>
+    <span class="star star-four"></span>
+    <span class="star star-five"></span>
+  </div>
+
+  <header class="maintenance-header">
+    <a routerLink="/" aria-label="Cirvio home">
+      <app-logo [width]="112" color="var(--cirvio-cream)" />
+    </a>
+    <span class="status-pill"><span class="status-dot"></span>Building something useful</span>
+  </header>
+
+  <section class="maintenance-content" aria-labelledby="maintenance-title">
+    <div class="orbit-scene" aria-hidden="true">
+      <div class="orbit orbit-wide"></div>
+      <div class="orbit orbit-tight"></div>
+      <div class="orbit-core"><span>✦</span></div>
+      <span class="orbit-dot orbit-dot-one"></span>
+      <span class="orbit-dot orbit-dot-two"></span>
+    </div>
+
+    <p class="eyebrow">A little more time in the workshop</p>
+    <h1 id="maintenance-title">We are tuning up<br /><em>your next move.</em></h1>
+    <p class="description">
+      Sign in and workspace creation are getting a careful upgrade. The doors will open soon,
+      with a smoother, brighter experience waiting on the other side.
+    </p>
+
+    <div class="progress-wrap" aria-label="Maintenance progress">
+      <div class="progress-label"><span>Cirvio is in progress</span><strong>Almost there</strong></div>
+      <div class="progress-track"><span class="progress-fill"></span></div>
+    </div>
+
+    <a routerLink="/" class="home-link">Back to Cirvio home <span aria-hidden="true">&#8594;</span></a>
+  </section>
+
+  <footer class="maintenance-footer">
+    <span>Workforce compliance, built for the Gulf.</span>
+    <span class="footer-mark">&#9670;</span>
+    <span>We will be ready when you are.</span>
+  </footer>
+</main>
