@@ -10,7 +10,7 @@
 //
 // Deterministic + idempotent: it deletes the seed tenants by slug (cascade) and
 // recreates them, so re-runs give the same data. Run with DATABASE_URL set:
-//   railway run npm run seed         (recommended)
+//   npm run seed                      (with DATABASE_URL set)
 //   DATABASE_URL="<url>" npm run seed
 // ─────────────────────────────────────────────
 

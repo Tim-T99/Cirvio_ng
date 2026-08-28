@@ -50,8 +50,8 @@ Still intentionally out of scope (not blocking normal use):
 4. **WPS submission** — SIF generation only; "submit/confirm" are status changes,
    **not real MOHRE/bank API calls**.
 5. **In-memory stores** — WebAuthn challenges and rate limiting live in process
-   memory → they break across **multiple instances / serverless** (fine on a
-   single Railway instance).
+  memory → they break across **multiple instances / serverless** and should
+  move to shared infrastructure for horizontally scaled deployments.
 
 ## 3. Feature roadmap
 
@@ -93,7 +93,7 @@ Still intentionally out of scope (not blocking normal use):
 
 ## 4. Setup checklist — what you must configure
 
-Set these as environment variables on the **backend host (Railway → Variables)**
+Set these as environment variables on the **backend host**
 unless noted. Grouped by what they unlock.
 
 ### Required to boot
@@ -105,8 +105,8 @@ unless noted. Grouped by what they unlock.
 | `FRONTEND_URL` | e.g. `https://app.cirvio.com` (email links, Stripe redirect, OData) |
 | `ALLOWED_ORIGINS` | your frontend origin(s), comma-separated |
 | `NODE_ENV` | `production` |
-| `TRUST_PROXY` | `1` (behind Railway/Cloudflare) |
-| `PORT` | set automatically by Railway |
+| `TRUST_PROXY` | `1` (behind a reverse proxy/Cloudflare) |
+| `PORT` | set automatically by the backend host |
 
 ### Passkeys / passwordless login
 | Var | Value |
@@ -158,13 +158,12 @@ each `price_…` and tick the features each plan includes.
 | `RATE_LIMIT_MULTIPLIER` | scales rate limits |
 
 ### Frontend
-- `src/environments/environment.prod.ts` → set `apiUrl` to your API host
-  (currently `https://cirviong-production.up.railway.app`). Make sure it matches
+- `src/environments/environment.prod.ts` → set `apiUrl` to your API host. Make sure it matches
   `ALLOWED_ORIGINS` on the backend.
 
 ### Hosting / DNS
 - **Frontend** (Angular static) → Vercel; point your app domain at it.
-- **Backend** (Express, long-running) → Railway; point your API domain at it.
+- **Backend** (Express, long-running) → deploy to your chosen Node.js host; point your API domain at it.
   Keep the backend off serverless (cron jobs + chat would time out).
 - `WEBAUTHN_RP_ID` **must** equal the domain users actually visit.
 
