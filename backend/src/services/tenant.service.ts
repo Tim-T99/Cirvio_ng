@@ -10,6 +10,7 @@ import { prisma } from '../prisma/client'
 import { UserRole, TenantStatus } from '@prisma/client'
 import { hashToken, hashPassword } from '../../utils/hash'
 import { signToken } from '../../utils/jwt'
+import { sessionDeviceData } from '../../utils/device'
 import crypto from 'crypto'
 
 
@@ -43,7 +44,7 @@ export const registerTenant = async (data: {
   password: string
   country?: string
   industry?: string
-}) => {
+}, ipAddress?: string, userAgent?: string) => {
   // Check email uniqueness across all users
   const existingUser = await prisma.user.findFirst({ where: { email: data.email } })
   if (existingUser) {
@@ -102,6 +103,9 @@ export const registerTenant = async (data: {
       userId: user.id,
       token: hashedToken,
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 8),
+      ipAddress,
+      userAgent,
+      ...sessionDeviceData(userAgent, ipAddress),
     },
   })
 

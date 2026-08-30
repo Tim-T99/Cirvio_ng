@@ -25,7 +25,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       res.status(400).json({ error: 'Password must contain a number' })
       return
     }
-    const result = await tenantService.registerTenant({ organizationName, firstName, lastName, email, password, country, industry })
+    const result = await tenantService.registerTenant(
+      { organizationName, firstName, lastName, email, password, country, industry },
+      req.ip,
+      req.headers['user-agent'],
+    )
     res.status(201).json(result)
   } catch (err) {
     const message = (err as Error).message
