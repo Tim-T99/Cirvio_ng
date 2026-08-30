@@ -209,6 +209,10 @@
                 <input type="tel" class="field" [value]="editForm()['phone']" (input)="setEdit('phone',$any($event.target).value)" style="font-size:13px;" />
               </div>
               <div>
+                <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Personal email</label>
+                <input type="email" class="field" [value]="editForm()['personalEmail']" (input)="setEdit('personalEmail',$any($event.target).value)" placeholder="you@example.com" style="font-size:13px;" />
+              </div>
+              <div>
                 <label style="display:block;font-size:12px;font-weight:500;color:var(--fg-2);margin-bottom:5px;">Basic salary (AED)</label>
                 <input type="number" class="field" [value]="editForm()['basicSalaryAed']" (input)="setEdit('basicSalaryAed',+$any($event.target).value||'')" style="font-size:13px;" />
               </div>

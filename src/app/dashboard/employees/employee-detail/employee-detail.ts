@@ -115,6 +115,10 @@ export class EmployeeDetailComponent implements OnInit {
   managerOptions = signal<{ id: string; firstName: string; lastName: string; jobTitle?: string }[]>([]);
 
   ngOnInit() {
+    const requestedTab = this.route.snapshot.queryParamMap.get('tab');
+    if (requestedTab === 'visas' || requestedTab === 'wps' || requestedTab === 'docs') {
+      this.activeTab.set(requestedTab);
+    }
     this.http.get<CurrentUserProfile>(`${API}/users/me`).subscribe({
       next: (u) => {
         this.currentUserRole.set(u.role ?? null);
