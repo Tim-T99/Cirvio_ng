@@ -100,7 +100,7 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 // ─── Cron Jobs ────────────────────────────────────────────────────────────
-if (process.env.ENABLE_JOBS !== "false") {
+if (process.env.ENABLE_JOBS !== "false" && !process.env.VERCEL) {
   startVisaAlertJob();
   startWpsAlertJob();
 }
