@@ -86,82 +86,187 @@
       <!-- ── Overview tab ── -->
       @if (activeTab() === 'overview') {
         @if (!editing()) {
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-            <!-- Personal -->
-            <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
-              <h2 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Personal</h2>
-              <div style="display:flex;flex-direction:column;gap:12px;">
-                @for (row of [
-                  {label:'Full name',  value: emp.firstName+' '+(emp.middleName?emp.middleName+' ':'')+emp.lastName},
-                  {label:'Gender',     value: emp.gender},
-                  {label:'Date of birth', value: emp.dateOfBirth},
-                  {label:'Nationality',   value: emp.nationality}
-                ]; track row.label) {
-                  <div>
-                    <p style="font-size:11px;color:var(--fg-3);margin:0 0 2px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
-                    <p style="font-size:14px;color:var(--fg-1);margin:0;">{{ row.value || '—' }}</p>
+          <div style="display:grid;grid-template-columns:1.35fr 0.9fr;gap:20px;align-items:start;">
+            <div style="display:flex;flex-direction:column;gap:20px;">
+              <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+                  <div style="display:flex;align-items:center;gap:14px;">
+                    <div style="width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--cirvio-mint-50),var(--cirvio-mint-100));border:1px solid var(--cirvio-mint-200);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:var(--cirvio-hunter);">
+                      {{ initials(emp) || '—' }}
+                    </div>
+                    <div>
+                      <p style="font-size:11px;color:var(--fg-3);letter-spacing:0.06em;text-transform:uppercase;margin:0 0 4px;">Employee profile</p>
+                      <h3 style="font-size:20px;font-weight:700;color:var(--fg-1);margin:0;">{{ emp.firstName }} {{ emp.lastName }}</h3>
+                    </div>
                   </div>
-                }
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span [style.background]="statusStyle(emp.status).bg" [style.color]="statusStyle(emp.status).color"
+                      style="font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:3px 9px;border-radius:var(--radius-pill);">{{ emp.status }}</span>
+                    @if (emp.employeeNo) {
+                      <span style="font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:3px 9px;border-radius:var(--radius-pill);background:var(--neutral-100);color:var(--fg-3);">#{{ emp.employeeNo }}</span>
+                    }
+                  </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px;">
+                  @for (item of [
+                    {label:'Department', value: emp.department?.name || '—'},
+                    {label:'Manager', value: emp.manager ? (emp.manager.firstName + ' ' + emp.manager.lastName) : 'Unassigned'},
+                    {label:'Start date', value: emp.startDate ? (emp.startDate | date:'d MMM y') : '—'},
+                    {label:'Tenure', value: tenureLabel(emp.startDate)}
+                  ]; track item.label) {
+                    <div style="padding:12px 14px;border:1px solid var(--border-soft);border-radius:var(--radius-md);background:var(--neutral-25);">
+                      <p style="margin:0 0 4px;font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);">{{ item.label }}</p>
+                      <p style="margin:0;font-size:13px;font-weight:600;color:var(--fg-1);">{{ item.value }}</p>
+                    </div>
+                  }
+                </div>
+
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px;">
+                  <button (click)="activeTab.set('overview')" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--neutral-25);color:var(--fg-2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+                    Edit profile
+                  </button>
+                  <button (click)="activeTab.set('visas')" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--neutral-25);color:var(--fg-2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+                    View visa records
+                  </button>
+                  <button (click)="activeTab.set('wps')" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--neutral-25);color:var(--fg-2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+                    Payroll summary
+                  </button>
+                  <button (click)="activeTab.set('docs')" style="padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--neutral-25);color:var(--fg-2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+                    Documents
+                  </button>
+                </div>
+              </div>
+
+              <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+                <h3 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Personal details</h3>
+                <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px;">
+                  @for (row of [
+                    {label:'Full name', value: emp.firstName + ' ' + (emp.middleName ? emp.middleName + ' ' : '') + emp.lastName},
+                    {label:'Gender', value: emp.gender ? typeLabel(emp.gender) : null},
+                    {label:'Date of birth', value: emp.dateOfBirth ? (emp.dateOfBirth | date:'d MMM y') : null},
+                    {label:'Nationality', value: emp.nationality},
+                    {label:'Employment type', value: emp.employmentType ? typeLabel(emp.employmentType) : null},
+                    {label:'Job title', value: emp.jobTitle}
+                  ]; track row.label) {
+                    <div>
+                      <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
+                      <p style="font-size:14px;color:var(--fg-1);margin:0;">{{ row.value || '—' }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+                <h3 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Contact</h3>
+                <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px;">
+                  @for (row of [
+                    {label:'Work email', value: emp.workEmail},
+                    {label:'Personal email', value: emp.personalEmail},
+                    {label:'Phone', value: emp.phone},
+                    {label:'Linked user', value: emp.user ? (emp.user.email + ' · ' + emp.user.role) : 'No user account'}
+                  ]; track row.label) {
+                    <div>
+                      <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
+                      <p style="font-size:14px;color:var(--fg-1);margin:0;word-break:break-word;">{{ row.value || '—' }}</p>
+                    </div>
+                  }
+                </div>
               </div>
             </div>
 
-            <!-- Contact -->
-            <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
-              <h2 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Contact</h2>
-              <div style="display:flex;flex-direction:column;gap:12px;">
-                @for (row of [
-                  {label:'Work email',    value: emp.workEmail},
-                  {label:'Personal email',value: emp.personalEmail},
-                  {label:'Phone',         value: emp.phone}
-                ]; track row.label) {
-                  <div>
-                    <p style="font-size:11px;color:var(--fg-3);margin:0 0 2px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
-                    <p style="font-size:14px;color:var(--fg-1);margin:0;">{{ row.value || '—' }}</p>
+            <div style="display:flex;flex-direction:column;gap:20px;">
+              <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+                <h3 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Identity & payroll</h3>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                  @for (row of [
+                    {label:'Emirates ID', value: emp.eidNumber},
+                    {label:'EID expiry', value: emp.eidExpiry ? (emp.eidExpiry | date:'d MMM y') : null},
+                    {label:'Passport no.', value: emp.passportNumber},
+                    {label:'Passport expiry', value: emp.passportExpiry ? (emp.passportExpiry | date:'d MMM y') : null},
+                    {label:'Labour card', value: emp.labourCardNo},
+                    {label:'Basic salary', value: formatCurrency(emp.basicSalaryAed)},
+                    {label:'Allowances', value: formatCurrency(emp.allowancesAed)}
+                  ]; track row.label) {
+                    <div style="padding-bottom:8px;border-bottom:1px solid var(--border-soft);">
+                      <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
+                      <p style="font-size:14px;color:var(--fg-1);margin:0;font-family:{{ row.label.includes('ID') || row.label.includes('no.') || row.label.includes('card') ? 'monospace' : 'inherit' }};">{{ row.value || '—' }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+                <h3 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Emergency contact</h3>
+                @let contact = emp.emergencyContact ?? null;
+                @if (contact) {
+                  <div style="display:flex;flex-direction:column;gap:12px;">
+                    @for (row of [
+                      {label:'Name', value: contact.name},
+                      {label:'Relationship', value: contact.relationship},
+                      {label:'Phone', value: contact.phone},
+                      {label:'Email', value: contact.email}
+                    ]; track row.label) {
+                      <div>
+                        <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
+                        <p style="font-size:14px;color:var(--fg-1);margin:0;">{{ row.value || '—' }}</p>
+                      </div>
+                    }
                   </div>
+                } @else {
+                  <p style="margin:0;font-size:14px;color:var(--fg-3);">No emergency contact on file.</p>
                 }
               </div>
-            </div>
 
-            <!-- Employment -->
-            <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
-              <h2 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Employment</h2>
-              <div style="display:flex;flex-direction:column;gap:12px;">
-                @for (row of [
-                  {label:'Job title',       value: emp.jobTitle},
-                  {label:'Department',      value: emp.department?.name},
-                  {label:'Reports to',      value: emp.manager ? (emp.manager.firstName + ' ' + emp.manager.lastName) : null},
-                  {label:'Direct reports',  value: emp._count.reports ? (emp._count.reports + '') : null},
-                  {label:'Type',            value: emp.employmentType.replace('_',' ')},
-                  {label:'Employee no.',    value: emp.employeeNo},
-                  {label:'Start date',      value: emp.startDate ? (emp.startDate | date:'d MMM y') : null},
-                  {label:'End date',        value: emp.endDate   ? (emp.endDate   | date:'d MMM y') : null}
-                ]; track row.label) {
+              <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+                <h3 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Organisation</h3>
+                <div style="display:flex;flex-direction:column;gap:12px;">
                   <div>
-                    <p style="font-size:11px;color:var(--fg-3);margin:0 0 2px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
-                    <p style="font-size:14px;color:var(--fg-1);margin:0;">{{ row.value || '—' }}</p>
+                    <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;text-transform:uppercase;letter-spacing:0.04em;">Reports to</p>
+                    <p style="font-size:14px;color:var(--fg-1);margin:0;">{{ emp.manager ? (emp.manager.firstName + ' ' + emp.manager.lastName) : '—' }}</p>
                   </div>
-                }
+                  <div>
+                    <p style="font-size:11px;color:var(--fg-3);margin:0 0 4px;text-transform:uppercase;letter-spacing:0.04em;">Direct reports</p>
+                    <p style="font-size:14px;color:var(--fg-1);margin:0;">{{ emp._count.reports || 0 }}</p>
+                  </div>
+                  @let reports = teamReports();
+                  @if (reports.length) {
+                    <div>
+                      <p style="font-size:11px;color:var(--fg-3);margin:0 0 8px;text-transform:uppercase;letter-spacing:0.04em;">Team</p>
+                      <div style="display:flex;flex-direction:column;gap:8px;">
+                        @for (report of reports.slice(0, 4); track report.id) {
+                          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--neutral-25);">
+                            <div>
+                              <p style="margin:0;font-size:13px;font-weight:500;color:var(--fg-1);">{{ report.firstName }} {{ report.lastName }}</p>
+                              @if (report.jobTitle) {
+                                <p style="margin:2px 0 0;font-size:11px;color:var(--fg-3);">{{ report.jobTitle }}</p>
+                              }
+                            </div>
+                            <span [style.background]="statusStyle(report.status).bg" [style.color]="statusStyle(report.status).color"
+                              style="font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;padding:2px 6px;border-radius:var(--radius-pill);">{{ report.status }}</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
               </div>
-            </div>
 
-            <!-- Identity & Salary -->
-            <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
-              <h2 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Identity & Salary</h2>
-              <div style="display:flex;flex-direction:column;gap:12px;">
-                @for (row of [
-                  {label:'Emirates ID',     value: emp.eidNumber},
-                  {label:'EID expiry',      value: emp.eidExpiry      ? (emp.eidExpiry | date:'d MMM y')      : null},
-                  {label:'Passport no.',    value: emp.passportNumber},
-                  {label:'Passport expiry', value: emp.passportExpiry ? (emp.passportExpiry | date:'d MMM y') : null},
-                  {label:'Labour card',     value: emp.labourCardNo},
-                  {label:'Basic salary',    value: emp.basicSalaryAed != null ? 'AED ' + emp.basicSalaryAed : null},
-                  {label:'Allowances',      value: emp.allowancesAed  != null ? 'AED ' + emp.allowancesAed  : null}
-                ]; track row.label) {
-                  <div>
-                    <p style="font-size:11px;color:var(--fg-3);margin:0 0 2px;text-transform:uppercase;letter-spacing:0.04em;">{{ row.label }}</p>
-                    <p style="font-size:14px;color:var(--fg-1);margin:0;font-family:{{ row.label.includes('ID')||row.label.includes('no.')||row.label.includes('card')?'monospace':'inherit' }};">{{ row.value || '—' }}</p>
-                  </div>
-                }
+              <div style="background:var(--bg-elev-1);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;">
+                <h3 style="font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);margin:0 0 16px;">Status snapshot</h3>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  @for (item of [
+                    {label:'Visa status', value: emp._count.visaRecords ? 'Active records on file' : 'No visa records'},
+                    {label:'Payroll', value: emp._count.wpsRecords ? 'Last payout recorded' : 'No payroll summary'},
+                    {label:'Documents', value: emp._count.documents ? 'Files uploaded' : 'No uploads yet'},
+                    {label:'Profile freshness', value: 'Updated ' + (emp.updatedAt ? (emp.updatedAt | date:'d MMM y') : 'recently')}
+                  ]; track item.label) {
+                    <div style="display:flex;justify-content:space-between;gap:12px;border:1px solid var(--border-soft);padding:10px 12px;border-radius:var(--radius-sm);background:var(--neutral-25);">
+                      <span style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg-3);">{{ item.label }}</span>
+                      <span style="font-size:12px;font-weight:600;color:var(--fg-1);text-align:right;">{{ item.value }}</span>
+                    </div>
+                  }
+                </div>
               </div>
             </div>
           </div>

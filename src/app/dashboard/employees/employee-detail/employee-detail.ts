@@ -6,17 +6,26 @@ import { environment } from '../../../../environments/environment';
 
 const API = `${environment.apiUrl}/api`;
 
+interface EmergencyContact {
+  name?: string;
+  phone?: string;
+  relationship?: string;
+  email?: string;
+}
+
 interface EmployeeFull {
   id: string;
   firstName: string; lastName: string; middleName?: string;
   dateOfBirth?: string; gender?: string; nationality?: string;
   workEmail?: string; personalEmail?: string; phone?: string;
+  photoUrl?: string | null;
   jobTitle?: string; employeeNo?: string;
   employmentType: string; status: string;
   startDate?: string; endDate?: string;
   eidNumber?: string; eidExpiry?: string;
   passportNumber?: string; passportExpiry?: string; labourCardNo?: string;
   basicSalaryAed?: number; allowancesAed?: number;
+  emergencyContact?: EmergencyContact | null;
   wpsPersonId?: string; wpsBankCode?: string;
   managerId?: string | null; jobLevel?: number | null;
   createdAt: string; updatedAt: string;
@@ -373,6 +382,38 @@ export class EmployeeDetailComponent implements OnInit {
 
   fileSizeLabel(kb: number): string {
     return kb < 1024 ? `${kb} KB` : `${(kb/1024).toFixed(1)} MB`;
+  }
+
+  initials(emp: EmployeeFull | null): string {
+    if (!emp) return '';
+    const a = emp.firstName?.trim()[0] ?? '';
+    const b = emp.lastName?.trim()[0] ?? '';
+    return `${a}${b}`.toUpperCase();
+  }
+
+  teamReports(): { id: string; firstName: string; lastName: string; jobTitle?: string; status: string }[] {
+    return this.employee()?.reports ?? [];
+  }
+
+  formatCurrency(value?: number | null): string {
+    if (value === null || value === undefined || Number.isNaN(value)) return '—';
+    return `AED ${value.toLocaleString()}`;
+  }
+
+  tenureLabel(startDate?: string): string {
+    if (!startDate) return '—';
+    const start = new Date(startDate);
+    if (Number.isNaN(start.getTime())) return '—';
+    const now = new Date();
+    const years = now.getFullYear() - start.getFullYear();
+    const months = now.getMonth() - start.getMonth();
+    const totalMonths = (years * 12) + months;
+    if (totalMonths <= 0) return 'New hire';
+    const y = Math.floor(totalMonths / 12);
+    const m = totalMonths % 12;
+    if (y && m) return `${y}y ${m}m`;
+    if (y) return `${y}y`;
+    return `${m}m`;
   }
 
   typeLabel(t: string): string { return t.replace(/_/g, ' '); }
