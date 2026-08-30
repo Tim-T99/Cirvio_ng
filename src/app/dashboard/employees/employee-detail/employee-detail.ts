@@ -27,6 +27,13 @@ interface EmployeeFull {
   _count: { visaRecords: number; documents: number; wpsRecords: number; reports: number };
 }
 
+interface CurrentUserProfile {
+  id: string;
+  email: string;
+  role: string;
+  employee?: { id: string } | null;
+}
+
 interface VisaRecord {
   id: string; visaType: string; visaNumber?: string;
   expiryDate: string; status: string; emirate?: string;
@@ -64,10 +71,12 @@ export class EmployeeDetailComponent implements OnInit {
   wpsRecords = signal<WpsRecord[]>([]);
   documents = signal<Document[]>([]);
   departments = signal<Department[]>([]);
+  currentUserRole = signal<string | null>(null);
 
   loading   = signal(true);
   error     = signal('');
   activeTab = signal<'overview' | 'visas' | 'wps' | 'docs'>('overview');
+  readonly isViewer = computed(() => this.currentUserRole() === 'VIEWER');
 
   // Edit state
   editing   = signal(false);
@@ -106,8 +115,26 @@ export class EmployeeDetailComponent implements OnInit {
   managerOptions = signal<{ id: string; firstName: string; lastName: string; jobTitle?: string }[]>([]);
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id')!;
-    this.loadEmployee(id);
+    this.http.get<CurrentUserProfile>(`${API}/users/me`).subscribe({
+      next: (u) => {
+        this.currentUserRole.set(u.role ?? null);
+        const routeId = this.route.snapshot.paramMap.get('id');
+        const targetId = routeId === 'me' ? u.employee?.id : routeId;
+        if (!targetId) {
+          this.error.set('Your account is not linked to an employee profile.');
+          this.loading.set(false);
+          return;
+        }
+        this.loadEmployee(targetId);
+      },
+      error: () => {
+        this.currentUserRole.set(null);
+        const routeId = this.route.snapshot.paramMap.get('id');
+        if (routeId) this.loadEmployee(routeId);
+        else this.loading.set(false);
+      },
+    });
+
     this.http.get<Department[]>(`${API}/employees/departments/list`).subscribe({ next: d => this.depts.set(d) });
     this.http.get<{ data: { id: string; firstName: string; lastName: string; jobTitle?: string }[] }>(
       `${API}/employees?pageSize=500`
@@ -136,7 +163,7 @@ export class EmployeeDetailComponent implements OnInit {
 
   startEdit() {
     const e = this.employee()!;
-    this.editForm.set({
+    const base = {
       firstName: e.firstName, lastName: e.lastName, middleName: e.middleName ?? '',
       gender: e.gender ?? '', dateOfBirth: e.dateOfBirth?.substring(0,10) ?? '',
       nationality: e.nationality ?? '', workEmail: e.workEmail ?? '',
@@ -150,7 +177,22 @@ export class EmployeeDetailComponent implements OnInit {
       labourCardNo: e.labourCardNo ?? '',
       basicSalaryAed: e.basicSalaryAed ?? '', allowancesAed: e.allowancesAed ?? '',
       wpsPersonId: e.wpsPersonId ?? '', wpsBankCode: e.wpsBankCode ?? '',
-    });
+    };
+
+    if (this.isViewer()) {
+      this.editForm.set({
+        firstName: base.firstName,
+        lastName: base.lastName,
+        middleName: base.middleName,
+        phone: base.phone,
+        workEmail: base.workEmail,
+        personalEmail: base.personalEmail,
+        jobTitle: base.jobTitle,
+      });
+    } else {
+      this.editForm.set(base);
+    }
+
     this.saveError.set('');
     this.editing.set(true);
   }
@@ -160,6 +202,15 @@ export class EmployeeDetailComponent implements OnInit {
   saveEdit() {
     const id = this.employee()!.id;
     const body = { ...this.editForm() };
+
+    if (this.isViewer()) {
+      for (const key of Object.keys(body)) {
+        if (!['firstName', 'lastName', 'middleName', 'phone', 'workEmail', 'personalEmail', 'jobTitle'].includes(key)) {
+          delete body[key];
+        }
+      }
+    }
+
     if (!body['departmentId']) delete body['departmentId'];
     ['basicSalaryAed','allowancesAed','jobLevel'].forEach(k => { if (body[k] === '') delete body[k]; });
     // managerId sent as-is ('' clears the manager; backend normalises to null)
@@ -301,7 +352,10 @@ export class EmployeeDetailComponent implements OnInit {
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
-  back() { this.router.navigate(['/dashboard/employees']); }
+  back() {
+    const role = this.currentUserRole();
+    this.router.navigate([role === 'VIEWER' ? '/dashboard' : '/dashboard/employees']);
+  }
 
   statusStyle(s: string): { bg: string; color: string } {
     switch (s) {

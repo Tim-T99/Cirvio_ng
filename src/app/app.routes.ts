@@ -33,6 +33,7 @@ export const routes: Routes = [
     children: [
       { path: '',                loadComponent: () => import('./dashboard/home/home').then(m => m.HomeComponent) },
       { path: 'employees',       loadComponent: () => import('./dashboard/employees/employees').then(m => m.EmployeesComponent) },
+      { path: 'employees/me',    loadComponent: () => import('./dashboard/employees/employee-detail/employee-detail').then(m => m.EmployeeDetailComponent) },
       { path: 'employees/:id',   loadComponent: () => import('./dashboard/employees/employee-detail/employee-detail').then(m => m.EmployeeDetailComponent) },
       { path: 'visas',           loadComponent: () => import('./dashboard/visas/visas').then(m => m.VisasComponent) },
       { path: 'wps',             loadComponent: () => import('./dashboard/wps/wps').then(m => m.WpsComponent) },

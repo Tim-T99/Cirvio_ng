@@ -34,6 +34,7 @@ export class SidenavComponent {
   private readonly allLinks = [
     { label: 'Home',       path: '/dashboard',            exact: true,  icon: 'home',     feature: null as string | null },
     { label: 'Employees',  path: '/dashboard/employees',  exact: false, icon: 'employees', feature: null as string | null },
+    { label: 'My profile', path: '/dashboard/employees/me', exact: false, icon: 'employees', feature: null as string | null },
     { label: 'Visas',      path: '/dashboard/visas',      exact: false, icon: 'visas',     feature: null as string | null },
     { label: 'WPS',        path: '/dashboard/wps',        exact: false, icon: 'wps',       feature: null as string | null },
     { label: 'Org Chart',  path: '/dashboard/org',        exact: false, icon: 'org',       feature: null as string | null },
@@ -45,7 +46,18 @@ export class SidenavComponent {
   // Hide a link only when entitlements are known AND its feature is excluded.
   readonly navLinks = computed(() => {
     const f = this.features();
-    return this.allLinks.filter(l => !l.feature || f === null || f.includes(l.feature));
+    const role = this.profile()?.role;
+    const visible = this.allLinks.filter(l => !l.feature || f === null || f.includes(l.feature));
+
+    if (role === 'VIEWER') {
+      return visible.filter(l =>
+        l.path === '/dashboard' ||
+        l.path === '/dashboard/employees/me' ||
+        l.path === '/dashboard/settings'
+      );
+    }
+
+    return visible.filter(l => l.path !== '/dashboard/employees/me');
   });
 
   constructor() {

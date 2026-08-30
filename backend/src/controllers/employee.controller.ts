@@ -5,6 +5,7 @@
 
 import { Request, Response } from 'express'
 import * as employeeService from '../services/employee.service'
+import { prisma } from '../prisma/client'
 
 
 export const create = async (req: Request, res: Response): Promise<void> => {
@@ -36,6 +37,33 @@ export const create = async (req: Request, res: Response): Promise<void> => {
 export const list = async (req: Request, res: Response): Promise<void> => {
   try {
     const { status, departmentId, employmentType, search, nationality, page, pageSize } = req.query
+
+    if (req.user!.role === 'VIEWER') {
+      const me = await prisma.user.findUnique({
+        where: { id: req.user!.userId },
+        select: { employeeId: true },
+      })
+
+      if (!me?.employeeId) {
+        res.status(403).json({ error: 'Your account is not linked to an employee profile.' })
+        return
+      }
+
+      const result = await employeeService.listEmployees(req.user!.tenantId, {
+        status: status as any,
+        departmentId: departmentId as string,
+        employmentType: employmentType as any,
+        search: search as string,
+        nationality: nationality as string,
+        employeeIds: [me.employeeId],
+        page: page ? parseInt(page as string) : undefined,
+        pageSize: pageSize ? parseInt(pageSize as string) : undefined,
+      })
+
+      res.status(200).json(result)
+      return
+    }
+
     const result = await employeeService.listEmployees(req.user!.tenantId, {
       status: status as any,
       departmentId: departmentId as string,
@@ -53,6 +81,18 @@ export const list = async (req: Request, res: Response): Promise<void> => {
 
 export const getById = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (req.user!.role === 'VIEWER') {
+      const me = await prisma.user.findUnique({
+        where: { id: req.user!.userId },
+        select: { employeeId: true },
+      })
+
+      if (!me?.employeeId || req.params.employeeId !== me.employeeId) {
+        res.status(403).json({ error: 'You can only view your own employee record.' })
+        return
+      }
+    }
+
     const employee = await employeeService.getEmployeeById(
       req.params.employeeId as string,
       req.user!.tenantId
@@ -70,6 +110,18 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
 
 export const getWithRecords = async (req: Request, res: Response): Promise<void> => {
   try {
+    if (req.user!.role === 'VIEWER') {
+      const me = await prisma.user.findUnique({
+        where: { id: req.user!.userId },
+        select: { employeeId: true },
+      })
+
+      if (!me?.employeeId || req.params.employeeId !== me.employeeId) {
+        res.status(403).json({ error: 'You can only view your own employee record.' })
+        return
+      }
+    }
+
     const employee = await employeeService.getEmployeeWithRecords(
       req.params.employeeId as string,
       req.user!.tenantId

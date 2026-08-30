@@ -106,9 +106,22 @@ export class EmployeesComponent implements OnInit {
   readonly STATUS_OPTS      = ['ACTIVE', 'ON_LEAVE', 'SUSPENDED', 'TERMINATED'];
 
   ngOnInit() {
-    this.loadDepartments();
-    this.loadManagerOptions();
-    this.loadEmployees();
+    this.http.get<{ role: string; employee?: { id: string } | null }>(`${API}/users/me`).subscribe({
+      next: (u) => {
+        if (u.role === 'VIEWER') {
+          this.router.navigate(['/dashboard/employees/me']);
+          return;
+        }
+        this.loadDepartments();
+        this.loadManagerOptions();
+        this.loadEmployees();
+      },
+      error: () => {
+        this.loadDepartments();
+        this.loadManagerOptions();
+        this.loadEmployees();
+      },
+    });
   }
 
   // ── Loaders ──────────────────────────────────────────────────────────────────

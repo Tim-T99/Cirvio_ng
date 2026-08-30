@@ -9,8 +9,47 @@ import * as employeeCtrl from '../controllers/employee.controller'
 import { requireUser } from '../middleware/auth.middleware'
 import { requireActiveTenant, stripTenantFromBody } from '../middleware/tenant.middleware'
 import { requireRole } from '../middleware/role.middleware'
+import { prisma } from '../prisma/client'
 
 const router = Router()
+
+const allowSelfOrRole = (...roles: Array<'TENANT_ADMIN' | 'HR_MANAGER'>) => {
+  return async (req: any, res: any, next: any): Promise<void> => {
+    if (!req.user) {
+      res.status(401).json({ error: 'Authentication required' })
+      return
+    }
+
+    if (req.user.role === 'VIEWER') {
+      const me = await prisma.user.findUnique({
+        where: { id: req.user.userId },
+        select: { employeeId: true },
+      })
+
+      if (!me?.employeeId || req.params.employeeId !== me.employeeId) {
+        res.status(403).json({ error: 'You can only update your own employee record.' })
+        return
+      }
+
+      if (req.body) {
+        const allowed = new Set(['firstName', 'lastName', 'middleName', 'phone', 'workEmail', 'personalEmail', 'jobTitle'])
+        Object.keys(req.body).forEach((key) => {
+          if (!allowed.has(key)) delete req.body[key]
+        })
+      }
+
+      next()
+      return
+    }
+
+    if (!roles.includes(req.user.role)) {
+      res.status(403).json({ error: 'Insufficient permissions' })
+      return
+    }
+
+    next()
+  }
+}
 
 router.use(requireUser)
 router.use(requireActiveTenant)
@@ -24,7 +63,7 @@ router.get('/:employeeId/records', employeeCtrl.getWithRecords)
 
 // ── Mutate (HR_MANAGER+) ──
 router.post('/', requireRole('TENANT_ADMIN', 'HR_MANAGER'), employeeCtrl.create)
-router.patch('/:employeeId', requireRole('TENANT_ADMIN', 'HR_MANAGER'), employeeCtrl.update)
+router.patch('/:employeeId', allowSelfOrRole('TENANT_ADMIN', 'HR_MANAGER'), employeeCtrl.update)
 router.patch('/:employeeId/status', requireRole('TENANT_ADMIN', 'HR_MANAGER'), employeeCtrl.updateStatus)
 router.post('/:employeeId/terminate', requireRole('TENANT_ADMIN'), employeeCtrl.terminate)
 

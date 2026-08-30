@@ -265,6 +265,7 @@ export const listEmployees = async (
     employmentType?: EmploymentType
     search?: string
     nationality?: string
+    employeeIds?: string[]
     page?: number
     pageSize?: number
   }
@@ -280,6 +281,7 @@ export const listEmployees = async (
     ...(filters?.employmentType && { employmentType: filters.employmentType }),
     ...(filters?.nationality && { nationality: filters.nationality }),
     ...(filters?.departmentId && { departmentId: filters.departmentId }),
+    ...(filters?.employeeIds?.length && { id: { in: filters.employeeIds } }),
     ...(filters?.search && {
       OR: [
         { firstName: { contains: filters.search, mode: 'insensitive' as const } },
