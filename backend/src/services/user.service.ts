@@ -87,6 +87,36 @@ const safeUserSelect = {
   updatedAt: true,
 } as const
 
+export const ensureUserEmployeeLink = async (userId: string, tenantId: string) => {
+  const user = await prisma.user.findFirst({
+    where: { id: userId, tenantId },
+    select: { id: true, email: true, employeeId: true },
+  })
+
+  if (!user || user.employeeId) return user?.employeeId ?? null
+
+  const match = await prisma.employee.findFirst({
+    where: {
+      tenantId,
+      OR: [
+        { workEmail: { equals: user.email, mode: 'insensitive' } },
+        { personalEmail: { equals: user.email, mode: 'insensitive' } },
+      ],
+    },
+    select: { id: true },
+    orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+  })
+
+  if (!match) return null
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { employeeId: match.id },
+  })
+
+  return match.id
+}
+
 
 // ─────────────────────────────────────────────
 // AUTH
@@ -359,6 +389,8 @@ export const getUserById = async (
   tenantId: string
 ) => {
   // [S2] Scoped to tenant
+  await ensureUserEmployeeLink(userId, tenantId)
+
   const user = await prisma.user.findFirst({
     where: { id: userId, tenantId },
     select: {

@@ -45,3 +45,9 @@ Thumbs.db
 
 # One-time seed scripts (may contain credentials)
 backend/prisma/seed-admin.ts
+
+# Local environment and tool metadata
+.env
+.env.*
+.agents/
+skills-lock.json

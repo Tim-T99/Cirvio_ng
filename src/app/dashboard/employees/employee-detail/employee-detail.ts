@@ -40,6 +40,7 @@ interface CurrentUserProfile {
   id: string;
   email: string;
   role: string;
+  employeeId?: string | null;
   employee?: { id: string } | null;
 }
 
@@ -132,7 +133,7 @@ export class EmployeeDetailComponent implements OnInit {
       next: (u) => {
         this.currentUserRole.set(u.role ?? null);
         const routeId = this.route.snapshot.paramMap.get('id');
-        const targetId = routeId === 'me' ? u.employee?.id : routeId;
+        const targetId = routeId === 'me' ? (u.employeeId ?? u.employee?.id ?? null) : routeId;
         if (!targetId) {
           this.error.set('Your account is not linked to an employee profile.');
           this.loading.set(false);

@@ -9,7 +9,7 @@ import * as employeeCtrl from '../controllers/employee.controller'
 import { requireUser } from '../middleware/auth.middleware'
 import { requireActiveTenant, stripTenantFromBody } from '../middleware/tenant.middleware'
 import { requireRole } from '../middleware/role.middleware'
-import { prisma } from '../prisma/client'
+import * as userService from '../services/user.service'
 
 const router = Router()
 
@@ -21,12 +21,9 @@ const allowSelfOrRole = (...roles: Array<'TENANT_ADMIN' | 'HR_MANAGER'>) => {
     }
 
     if (req.user.role === 'VIEWER') {
-      const me = await prisma.user.findUnique({
-        where: { id: req.user.userId },
-        select: { employeeId: true },
-      })
+      const linkedEmployeeId = await userService.ensureUserEmployeeLink(req.user.userId, req.user.tenantId)
 
-      if (!me?.employeeId || req.params.employeeId !== me.employeeId) {
+      if (!linkedEmployeeId || req.params.employeeId !== linkedEmployeeId) {
         res.status(403).json({ error: 'You can only update your own employee record.' })
         return
       }

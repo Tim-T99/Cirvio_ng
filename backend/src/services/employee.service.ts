@@ -235,6 +235,28 @@ export const createEmployee = async (
     select: employeeFullSelect,
   })
 
+  const matchingUser = await prisma.user.findFirst({
+    where: {
+      tenantId,
+      OR: [
+        { email: { equals: data.workEmail ?? '', mode: 'insensitive' } },
+        { email: { equals: data.personalEmail ?? '', mode: 'insensitive' } },
+      ],
+    },
+    select: { id: true },
+  })
+
+  if (matchingUser && !matchingUser.id) {
+    // no-op guard for the type system; Prisma resolves this as a valid select
+  }
+
+  if (matchingUser) {
+    await prisma.user.update({
+      where: { id: matchingUser.id },
+      data: { employeeId: employee.id },
+    })
+  }
+
   // [S6] Log creation
   await prisma.userActivityLog.create({
     data: {
